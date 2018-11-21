@@ -169,6 +169,8 @@ static bool for_all_transactions(const std::string &filename, const std::functio
 	return fret;
 }
 
+gulps_log_level log_scr;
+
 int main(int argc, char *argv[])
 {
 #ifdef WIN32
@@ -234,12 +236,35 @@ int main(int argc, char *argv[])
 	bool r = command_line::handle_error_helper(desc_options, [&]() {
 		auto parser = po::command_line_parser(argc, argv).options(desc_options).positional(positional_options);
 		po::store(parser.run(), vm);
+		
+		if(!command_line::is_arg_defaulted(vm, arg_log_level))
+		{
+			if(!log_scr.parse_cat_string(command_line::get_arg(vm, arg_log_level).c_str()))
+			{
+				GULPS_ERROR("Failed to parse filter string ", command_line::get_arg(vm, arg_log_level).c_str());
+				return false;
+			}
+		}
+		
 		po::notify(vm);
 		return true;
 	});
 	if(!r)
 		return 1;
-
+	
+	if(log_scr.is_active())
+	{
+		std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(false, gulps::COLOR_WHITE));
+		out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { 
+				if(msg.out != gulps::OUT_LOG_0 && msg.out != gulps::OUT_USER_0)
+					return false;
+				if(printed)
+					return false;
+				return log_scr.match_msg(msg);
+				});
+		gulps::inst().add_output(std::move(out));
+	}
+	
 	if(command_line::get_arg(vm, command_line::arg_help))
 	{
 		GULPS_PRINT("Ryo '", RYO_RELEASE_NAME, "' (", RYO_VERSION_FULL, ")\n)");
