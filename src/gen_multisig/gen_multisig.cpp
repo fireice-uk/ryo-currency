@@ -49,19 +49,26 @@
  * 
  * \brief Generates a set of multisig wallets
  */
+#define GULPS_CAT_MAJOR "gen_multisig"
+
 #include "common/command_line.h"
 #include "common/i18n.h"
-#include "common/scoped_message_writer.h"
 #include "common/util.h"
 #include "crypto/crypto.h" // for crypto::secret_key definition
 #include "include_base_utils.h"
 #include "wallet/wallet2.h"
 #include "wallet/wallet_args.h"
 #include <boost/algorithm/string.hpp>
-#include <boost/format.hpp>
 #include <boost/program_options.hpp>
 #include <iostream>
 #include <sstream>
+
+#include "common/gulps.hpp"
+
+#define GULPS_PRINT_FAIL(...) GULPS_ERROR(tr("Error: "), __VA_ARGS__)
+#define GULPS_PRINTF_FAIL(...) GULPS_ERRORF(tr("Error: "), __VA_ARGS__)
+#define GULPS_PRINT_OK(...) GULPS_PRINT(__VA_ARGS__)
+#define GULPS_PRINTF_OK(...) GULPS_PRINTF(__VA_ARGS__)
 
 using namespace std;
 using namespace epee;
@@ -95,7 +102,7 @@ const command_line::arg_descriptor<std::vector<std::string>> arg_command = {"com
 
 static bool generate_multisig(uint32_t threshold, uint32_t total, const std::string &basename, network_type nettype, bool create_address_file)
 {
-	tools::msg_writer() << (boost::format(genms::tr("Generating %u %u/%u multisig wallets")) % total % threshold % total).str();
+	GULPS_PRINTF_OK(genms::tr("Generating {} {}/{} multisig wallets"), total, threshold, total);
 
 	const auto pwd_container = tools::password_container::prompt(true, "Enter password for new multisig wallets");
 
@@ -119,7 +126,7 @@ static bool generate_multisig(uint32_t threshold, uint32_t total, const std::str
 		{
 			if(!tools::wallet2::verify_multisig_info(wallets[n]->get_multisig_info(), sk[n], pk[n]))
 			{
-				tools::fail_msg_writer() << tr("Failed to verify multisig info");
+				GULPS_PRINT_FAIL( tr("Failed to verify multisig info"));
 				return false;
 			}
 		}
@@ -153,7 +160,7 @@ static bool generate_multisig(uint32_t threshold, uint32_t total, const std::str
 			{
 				if(!tools::wallet2::verify_extra_multisig_info(extra_info[n], pkeys, signers[n]))
 				{
-					tools::fail_msg_writer() << genms::tr("Error verifying multisig extra info");
+					GULPS_PRINT_FAIL( genms::tr("Error verifying multisig extra info"));
 					return false;
 				}
 			}
@@ -161,19 +168,19 @@ static bool generate_multisig(uint32_t threshold, uint32_t total, const std::str
 			{
 				if(!wallets[n]->finalize_multisig(pwd_container->password(), pkeys, signers))
 				{
-					tools::fail_msg_writer() << genms::tr("Error finalizing multisig");
+					GULPS_PRINT_FAIL( genms::tr("Error finalizing multisig"));
 					return false;
 				}
 			}
 		}
 
 		std::string address = wallets[0]->get_account().get_public_address_str(wallets[0]->nettype());
-		tools::success_msg_writer() << genms::tr("Generated multisig wallets for address ") << address << std::endl
-									<< ss.str();
+		GULPS_PRINT_OK(genms::tr("Generated multisig wallets for address "), address);
+		GULPS_PRINT_OK(ss.str());
 	}
 	catch(const std::exception &e)
 	{
-		tools::fail_msg_writer() << genms::tr("Error creating multisig wallets: ") << e.what();
+		GULPS_PRINT_FAIL( genms::tr("Error creating multisig wallets: ") ,  e.what());
 		return false;
 	}
 
@@ -191,6 +198,12 @@ int main(int argc, char *argv[])
 		argv = argptrs.data();
 	}
 #endif
+
+	gulps::inst().set_thread_tag("GEN_MULTISIG");
+
+	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(false, gulps::COLOR_WHITE));
+	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return msg.lvl >= gulps::LEVEL_ERROR; });
+	auto temp_handle = gulps::inst().add_output(std::move(out));
 
 	po::options_description desc_params(wallet_args::tr("Wallet options"));
 	command_line::add_arg(desc_params, arg_filename_base);
@@ -211,9 +224,12 @@ int main(int argc, char *argv[])
 		/*[](const std::string &s, bool emphasis) { tools::scoped_message_writer(emphasis ? epee::console_color_white : epee::console_color_default, true) << s; },
 		 * \todo-gulps*/
 		"ryo-gen-multisig.log",
-		vm_error_code);
+		vm_error_code,
+		true);
 	if(!vm)
 		return vm_error_code;
+	
+	gulps::inst().remove_output(temp_handle);
 
 	bool testnet, stagenet;
 	uint32_t threshold = 0, total = 0;
@@ -223,14 +239,14 @@ int main(int argc, char *argv[])
 	stagenet = command_line::get_arg(*vm, arg_stagenet);
 	if(testnet && stagenet)
 	{
-		tools::fail_msg_writer() << genms::tr("Error: Can't specify more than one of --testnet and --stagenet");
+		GULPS_PRINT_FAIL( genms::tr("Error: Can't specify more than one of --testnet and --stagenet"));
 		return 1;
 	}
 	if(command_line::has_arg(*vm, arg_scheme))
 	{
 		if(sscanf(command_line::get_arg(*vm, arg_scheme).c_str(), "%u/%u", &threshold, &total) != 2)
 		{
-			tools::fail_msg_writer() << genms::tr("Error: expected N/M, but got: ") << command_line::get_arg(*vm, arg_scheme);
+			GULPS_PRINT_FAIL( genms::tr("Error: expected N/M, but got: ") ,  command_line::get_arg(*vm, arg_scheme));
 			return 1;
 		}
 	}
@@ -238,7 +254,7 @@ int main(int argc, char *argv[])
 	{
 		if(threshold)
 		{
-			tools::fail_msg_writer() << genms::tr("Error: either --scheme or both of --threshold and --participants may be given");
+			GULPS_PRINT_FAIL( genms::tr("Error: either --scheme or both of --threshold and --participants may be given"));
 			return 1;
 		}
 		threshold = command_line::get_arg(*vm, arg_threshold);
@@ -247,14 +263,14 @@ int main(int argc, char *argv[])
 	{
 		if(total)
 		{
-			tools::fail_msg_writer() << genms::tr("Error: either --scheme or both of --threshold and --participants may be given");
+			GULPS_PRINT_FAIL( genms::tr("Error: either --scheme or both of --threshold and --participants may be given"));
 			return 1;
 		}
 		total = command_line::get_arg(*vm, arg_participants);
 	}
 	if(threshold <= 1 || threshold > total)
 	{
-		tools::fail_msg_writer() << (boost::format(genms::tr("Error: expected N > 1 and N <= M, but got N==%u and M==%d")) % threshold % total).str();
+		GULPS_PRINTF_FAIL( (genms::tr("Error: expected N > 1 and N <= M, but got N=={} and M=={}")), threshold, total);
 		return 1;
 	}
 	if(!(*vm)["filename-base"].defaulted() && !command_line::get_arg(*vm, arg_filename_base).empty())
@@ -263,13 +279,13 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		tools::fail_msg_writer() << genms::tr("Error: --filename-base is required");
+		GULPS_PRINT_FAIL( genms::tr("Error: --filename-base is required"));
 		return 1;
 	}
 
 	if(threshold != total - 1 && threshold != total)
 	{
-		tools::fail_msg_writer() << genms::tr("Error: unsupported scheme: only N/N and N-1/N are supported");
+		GULPS_PRINT_FAIL( genms::tr("Error: unsupported scheme: only N/N and N-1/N are supported"));
 		return 1;
 	}
 	bool create_address_file = command_line::get_arg(*vm, arg_create_address_file);
