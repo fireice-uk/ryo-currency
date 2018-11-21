@@ -42,6 +42,8 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#define GULPS_CAT_MAJOR "blockch_import"
+
 #include <algorithm>
 #include <atomic>
 #include <cstdio>
@@ -58,6 +60,8 @@
 #include "serialization/json_utils.h"   // dump_json()
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
+
+#include "common/gulps.hpp"
 
 //#undef RYO_DEFAULT_LOG_CATEGORY
 //#define RYO_DEFAULT_LOG_CATEGORY "bcutil"
@@ -118,7 +122,7 @@ int parse_db_arguments(const std::string &db_arg_str, std::string &db_type, int 
 	}
 	else if(db_args.size() > 2)
 	{
-		std::cerr << "unrecognized database argument format: " << db_arg_str << ENDL;
+		GULPS_ERROR( "unrecognized database argument format: " , db_arg_str );
 		return 1;
 	}
 
@@ -194,8 +198,8 @@ int check_flush(cryptonote::core &core, std::list<block_complete_entry> &blocks,
 		cryptonote::block block;
 		if(!parse_and_validate_block_from_blob(b.block, block))
 		{
-			MERROR("Failed to parse block: "
-				   << epee::string_tools::pod_to_hex(get_blob_hash(b.block)));
+			GULPS_ERROR("Failed to parse block: ",
+				   epee::string_tools::pod_to_hex(get_blob_hash(b.block)));
 			core.cleanup_handle_incoming_blocks();
 			return 1;
 		}
@@ -214,8 +218,8 @@ int check_flush(cryptonote::core &core, std::list<block_complete_entry> &blocks,
 			core.handle_incoming_tx(tx_blob, tvc, true, true, false);
 			if(tvc.m_verifivation_failed)
 			{
-				MERROR("transaction verification failed, tx_id = "
-					   << epee::string_tools::pod_to_hex(get_blob_hash(tx_blob)));
+				GULPS_ERROR("transaction verification failed, tx_id = ",
+					   epee::string_tools::pod_to_hex(get_blob_hash(tx_blob)));
 				core.cleanup_handle_incoming_blocks();
 				return 1;
 			}
@@ -229,14 +233,14 @@ int check_flush(cryptonote::core &core, std::list<block_complete_entry> &blocks,
 
 		if(bvc.m_verifivation_failed)
 		{
-			MERROR("Block verification failed, id = "
-				   << epee::string_tools::pod_to_hex(get_blob_hash(block_entry.block)));
+			GULPS_ERROR("Block verification failed, id = ",
+				   epee::string_tools::pod_to_hex(get_blob_hash(block_entry.block)));
 			core.cleanup_handle_incoming_blocks();
 			return 1;
 		}
 		if(bvc.m_marked_as_orphaned)
 		{
-			MERROR("Block received at sync phase was marked as orphaned");
+			GULPS_ERROR("Block received at sync phase was marked as orphaned");
 			core.cleanup_handle_incoming_blocks();
 			return 1;
 		}
@@ -260,7 +264,7 @@ int import_from_file(cryptonote::core &core, const std::string &import_file_path
 	boost::system::error_code ec;
 	if(!boost::filesystem::exists(fs_import_file_path, ec))
 	{
-		MFATAL("bootstrap file not found: " << fs_import_file_path);
+		GULPS_ERROR("bootstrap file not found: ", fs_import_file_path);
 		return false;
 	}
 
@@ -273,16 +277,16 @@ int import_from_file(cryptonote::core &core, const std::string &import_file_path
 	std::streampos pos;
 	// BootstrapFile bootstrap(import_file_path);
 	uint64_t total_source_blocks = bootstrap.count_blocks(import_file_path, pos, seek_height);
-	MINFO("bootstrap file last block number: " << total_source_blocks - 1 << " (zero-based height)  total blocks: " << total_source_blocks);
+	GULPS_INFO("bootstrap file last block number: ", total_source_blocks - 1, " (zero-based height)  total blocks: " , total_source_blocks);
 
 	if(total_source_blocks - 1 <= start_height)
 	{
 		return false;
 	}
 
-	std::cout << ENDL;
-	std::cout << "Preparing to read blocks..." << ENDL;
-	std::cout << ENDL;
+	GULPS_PRINT("\n");
+	GULPS_PRINT( "Preparing to read blocks..." );
+	GULPS_PRINT("\n");
 
 	std::ifstream import_file;
 	import_file.open(import_file_path, std::ios_base::binary | std::ifstream::in);
@@ -291,7 +295,7 @@ int import_from_file(cryptonote::core &core, const std::string &import_file_path
 	uint64_t num_imported = 0;
 	if(import_file.fail())
 	{
-		MFATAL("import_file.open() fail");
+		GULPS_ERROR("import_file.open() fail");
 		return false;
 	}
 
@@ -316,12 +320,12 @@ int import_from_file(cryptonote::core &core, const std::string &import_file_path
 
 	// These are what we'll try to use, and they don't have to be a determination
 	// from source and destination blockchains, but those are the defaults.
-	MINFO("start block: " << start_height << "  stop block: " << block_stop);
+	GULPS_INFO("start block: " , start_height, "  stop block: ", block_stop);
 
 	bool use_batch = opt_batch && !opt_verify;
 
-	MINFO("Reading blockchain from bootstrap file...");
-	std::cout << ENDL;
+	GULPS_INFO("Reading blockchain from bootstrap file...");
+	GULPS_PRINT("\n");
 
 	std::list<block_complete_entry> blocks;
 
@@ -356,8 +360,8 @@ int import_from_file(cryptonote::core &core, const std::string &import_file_path
 		// TODO: bootstrap.read_chunk();
 		if(!import_file)
 		{
-			std::cout << refresh_string;
-			MINFO("End of file reached");
+			GULPS_PRINT( refresh_string);
+			GULPS_INFO("End of file reached");
 			quit = 1;
 			break;
 		}
@@ -368,20 +372,20 @@ int import_from_file(cryptonote::core &core, const std::string &import_file_path
 		{
 			throw std::runtime_error("Error in deserialization of chunk size");
 		}
-		MDEBUG("chunk_size: " << chunk_size);
+		GULPS_LOG_L1("chunk_size: " , chunk_size);
 
 		if(chunk_size > BUFFER_SIZE)
 		{
-			MWARNING("WARNING: chunk_size " << chunk_size << " > BUFFER_SIZE " << BUFFER_SIZE);
+			GULPS_WARN("WARNING: chunk_size ", chunk_size, " > BUFFER_SIZE ", BUFFER_SIZE);
 			throw std::runtime_error("Aborting: chunk size exceeds buffer size");
 		}
 		if(chunk_size > CHUNK_SIZE_WARNING_THRESHOLD)
 		{
-			MINFO("NOTE: chunk_size " << chunk_size << " > " << CHUNK_SIZE_WARNING_THRESHOLD);
+			GULPS_INFO("NOTE: chunk_size ",  chunk_size, " > ", CHUNK_SIZE_WARNING_THRESHOLD);
 		}
 		else if(chunk_size == 0)
 		{
-			MFATAL("ERROR: chunk_size == 0");
+			GULPS_ERROR("ERROR: chunk_size == 0");
 			return 2;
 		}
 		import_file.read(buffer_block, chunk_size);
@@ -389,28 +393,26 @@ int import_from_file(cryptonote::core &core, const std::string &import_file_path
 		{
 			if(import_file.eof())
 			{
-				std::cout << refresh_string;
-				MINFO("End of file reached - file was truncated");
+				GULPS_PRINT( refresh_string);
+				GULPS_INFO("End of file reached - file was truncated");
 				quit = 1;
 				break;
 			}
 			else
 			{
-				MFATAL("ERROR: unexpected end of file: bytes read before error: "
-					   << import_file.gcount() << " of chunk_size " << chunk_size);
+				GULPS_ERROR("ERROR: unexpected end of file: bytes read before error: ",
+						import_file.gcount(), " of chunk_size ", chunk_size);
 				return 2;
 			}
 		}
 		bytes_read += chunk_size;
-		MDEBUG("Total bytes read: " << bytes_read);
+		GULPS_LOG_L1("Total bytes read: " , bytes_read);
 
 		if(h > block_stop)
 		{
-			std::cout << refresh_string << "block " << h - 1
-					  << " / " << block_stop
-					  << std::flush;
-			std::cout << ENDL << ENDL;
-			MINFO("Specified block number reached - stopping.  block: " << h - 1 << "  total blocks: " << h);
+			GULPS_PRINT(refresh_string, "block ", h - 1, " / ", block_stop);
+			GULPS_PRINT("\n\n");
+			GULPS_INFO("Specified block number reached - stopping.  block: ", h - 1, "  total blocks: ", h);
 			quit = 1;
 			break;
 		}
@@ -430,21 +432,19 @@ int import_from_file(cryptonote::core &core, const std::string &import_file_path
 				++h;
 				if((h - 1) % display_interval == 0)
 				{
-					std::cout << refresh_string;
-					MDEBUG("loading block number " << h - 1);
+					GULPS_PRINT( refresh_string);
+					GULPS_LOG_L1("loading block number " , h - 1);
 				}
 				else
 				{
-					MDEBUG("loading block number " << h - 1);
+					GULPS_LOG_L1("loading block number " , h - 1);
 				}
 				b = bp.block;
-				MDEBUG("block prev_id: " << b.prev_id << ENDL);
+				GULPS_LOG_L1("block prev_id: ", b.prev_id);
 
 				if((h - 1) % progress_interval == 0)
 				{
-					std::cout << refresh_string << "block " << h - 1
-							  << " / " << block_stop
-							  << std::flush;
+					GULPS_PRINT(refresh_string, "block ", h - 1, " / ", block_stop);
 				}
 
 				if(opt_verify)
@@ -501,8 +501,8 @@ int import_from_file(cryptonote::core &core, const std::string &import_file_path
 					}
 					catch(const std::exception &e)
 					{
-						std::cout << refresh_string;
-						MFATAL("Error adding block to blockchain: " << e.what());
+						GULPS_PRINT( refresh_string);
+						GULPS_ERROR("Error adding block to blockchain: ", e.what());
 						quit = 2; // make sure we don't commit partial block data
 						break;
 					}
@@ -513,15 +513,15 @@ int import_from_file(cryptonote::core &core, const std::string &import_file_path
 						{
 							uint64_t bytes, h2;
 							bool q2;
-							std::cout << refresh_string;
+							GULPS_PRINT( refresh_string);
 							// zero-based height
-							std::cout << ENDL << "[- batch commit at height " << h - 1 << " -]" << ENDL;
+							GULPS_PRINT("\n[- batch commit at height ", h - 1, " -]\n");
 							core.get_blockchain_storage().get_db().batch_stop();
 							pos = import_file.tellg();
 							bytes = bootstrap.count_bytes(import_file, db_batch_size, h2, q2);
 							import_file.seekg(pos);
 							core.get_blockchain_storage().get_db().batch_start(db_batch_size, bytes);
-							std::cout << ENDL;
+							GULPS_PRINT( "\n");
 							core.get_blockchain_storage().get_db().show_stats();
 						}
 					}
@@ -531,8 +531,8 @@ int import_from_file(cryptonote::core &core, const std::string &import_file_path
 		}
 		catch(const std::exception &e)
 		{
-			std::cout << refresh_string;
-			MFATAL("exception while reading from file, height=" << h << ": " << e.what());
+			GULPS_PRINT( refresh_string);
+			GULPS_ERROR("exception while reading from file, height=", h, ": ", e.what());
 			return 2;
 		}
 	} // while
@@ -561,12 +561,12 @@ quitting:
 	}
 
 	core.get_blockchain_storage().get_db().show_stats();
-	MINFO("Number of blocks imported: " << num_imported);
+	GULPS_INFO("Number of blocks imported: " , num_imported);
 	if(h > 0)
 		// TODO: if there was an error, the last added block is probably at zero-based height h-2
-		MINFO("Finished at block: " << h - 1 << "  total blocks: " << h);
+		GULPS_INFO("Finished at block: ", h - 1, "  total blocks: ", h);
 
-	std::cout << ENDL;
+	GULPS_PRINT( "\n");
 	return 0;
 }
 
@@ -600,6 +600,9 @@ int main(int argc, char *argv[])
 	tools::on_startup();
 
 	std::string import_file_path;
+	
+	//TODO CREATE GULPS_OUTPUT
+	gulps::inst().set_thread_tag("BLOCKCH_IMPORT");
 
 	po::options_description desc_cmd_only("Command line options");
 	po::options_description desc_cmd_sett("Command line options and settings options");
@@ -656,19 +659,19 @@ int main(int argc, char *argv[])
 
 	if(command_line::get_arg(vm, command_line::arg_help))
 	{
-		std::cout << "Ryo '" << RYO_RELEASE_NAME << "' (" << RYO_VERSION_FULL << ")" << ENDL << ENDL;
-		std::cout << desc_options << std::endl;
+		GULPS_PRINT("Ryo '", RYO_RELEASE_NAME, "' (", RYO_VERSION_FULL, ")\n\n");
+		GULPS_PRINT( desc_options );
 		return 0;
 	}
 
 	if(!opt_batch && !command_line::is_arg_defaulted(vm, arg_batch_size))
 	{
-		std::cerr << "Error: batch-size set, but batch option not enabled" << ENDL;
+		GULPS_ERROR( "Error: batch-size set, but batch option not enabled" );
 		return 1;
 	}
 	if(!db_batch_size)
 	{
-		std::cerr << "Error: batch-size must be > 0" << ENDL;
+		GULPS_ERROR( "Error: batch-size must be > 0" );
 		return 1;
 	}
 	if(opt_verify && command_line::is_arg_defaulted(vm, arg_batch_size))
@@ -688,7 +691,7 @@ int main(int argc, char *argv[])
 	opt_stagenet = command_line::get_arg(vm, cryptonote::arg_stagenet_on);
 	if(opt_testnet && opt_stagenet)
 	{
-		std::cerr << "Error: Can't specify more than one of --testnet and --stagenet" << ENDL;
+		GULPS_ERROR( "Error: Can't specify more than one of --testnet and --stagenet" );
 		return 1;
 	}
 	m_config_folder = command_line::get_arg(vm, cryptonote::arg_data_dir);
@@ -700,7 +703,7 @@ int main(int argc, char *argv[])
 	else
 		mlog_set_log(std::string(std::to_string(log_level) + ",bcutil:INFO").c_str());
 
-	MINFO("Starting...");
+	GULPS_INFO("Starting...");
 
 	boost::filesystem::path fs_import_file_path;
 
@@ -724,33 +727,33 @@ int main(int argc, char *argv[])
 	res = parse_db_arguments(db_arg_str, db_type, db_flags);
 	if(res)
 	{
-		std::cerr << "Error parsing database argument(s)" << ENDL;
+		GULPS_ERROR( "Error parsing database argument(s)" );
 		return 1;
 	}
 
 	if(!cryptonote::blockchain_valid_db_type(db_type))
 	{
-		std::cerr << "Invalid database type: " << db_type << std::endl;
+		GULPS_ERROR( "Invalid database type: " ,  db_type );
 		return 1;
 	}
 
-	MINFO("database: " << db_type);
-	MINFO("database flags: " << db_flags);
-	MINFO("verify:  " << std::boolalpha << opt_verify << std::noboolalpha);
+	GULPS_INFO("database: " , db_type);
+	GULPS_INFO("database flags: " , db_flags);
+	GULPS_INFO("verify:  " , std::boolalpha , opt_verify , std::noboolalpha);
 	if(opt_batch)
 	{
-		MINFO("batch:   " << std::boolalpha << opt_batch << std::noboolalpha
-						  << "  batch size: " << db_batch_size);
+		GULPS_INFO("batch:   ", std::boolalpha, opt_batch, std::noboolalpha
+						  ,"  batch size: ", db_batch_size);
 	}
 	else
 	{
-		MINFO("batch:   " << std::boolalpha << opt_batch << std::noboolalpha);
+		GULPS_INFO("batch:   " , std::boolalpha , opt_batch , std::noboolalpha);
 	}
-	MINFO("resume:  " << std::boolalpha << opt_resume << std::noboolalpha);
-	MINFO("nettype: " << (opt_testnet ? "testnet" : opt_stagenet ? "stagenet" : "mainnet"));
+	GULPS_INFO("resume:  " , std::boolalpha , opt_resume , std::noboolalpha);
+	GULPS_INFO("nettype: ", (opt_testnet ? "testnet" : opt_stagenet ? "stagenet" : "mainnet"));
 
-	MINFO("bootstrap file path: " << import_file_path);
-	MINFO("database path:       " << m_config_folder);
+	GULPS_INFO("bootstrap file path: " , import_file_path);
+	GULPS_INFO("database path:       " , m_config_folder);
 
 	cryptonote::cryptonote_protocol_stub pr; //TODO: stub only for this kind of test, make real validation of relayed objects
 	cryptonote::core core(&pr);
@@ -761,7 +764,7 @@ int main(int argc, char *argv[])
 		core.disable_dns_checkpoints(true);
 		if(!core.init(vm, NULL))
 		{
-			std::cerr << "Failed to initialize core" << ENDL;
+			GULPS_ERROR( "Failed to initialize core" );
 			return 1;
 		}
 		core.get_blockchain_storage().get_db().set_batch_transactions(true);
@@ -769,15 +772,15 @@ int main(int argc, char *argv[])
 		if(!command_line::is_arg_defaulted(vm, arg_pop_blocks))
 		{
 			num_blocks = command_line::get_arg(vm, arg_pop_blocks);
-			MINFO("height: " << core.get_blockchain_storage().get_current_blockchain_height());
+			GULPS_INFO("height: " , core.get_blockchain_storage().get_current_blockchain_height());
 			pop_blocks(core, num_blocks);
-			MINFO("height: " << core.get_blockchain_storage().get_current_blockchain_height());
+			GULPS_INFO("height: " , core.get_blockchain_storage().get_current_blockchain_height());
 			return 0;
 		}
 
 		if(!command_line::is_arg_defaulted(vm, arg_drop_hf))
 		{
-			MINFO("Dropping hard fork tables...");
+			GULPS_INFO("Dropping hard fork tables...");
 			core.get_blockchain_storage().get_db().drop_hard_fork_info();
 			core.deinit();
 			return 0;
@@ -793,7 +796,7 @@ int main(int argc, char *argv[])
 	}
 	catch(const DB_ERROR &e)
 	{
-		std::cout << std::string("Error loading blockchain db: ") + e.what() + " -- shutting down now" << ENDL;
+		GULPS_PRINT("Error loading blockchain db: ", e.what(), " -- shutting down now" );
 		core.deinit();
 		return 1;
 	}

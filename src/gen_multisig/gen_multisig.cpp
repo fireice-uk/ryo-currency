@@ -175,8 +175,7 @@ static bool generate_multisig(uint32_t threshold, uint32_t total, const std::str
 		}
 
 		std::string address = wallets[0]->get_account().get_public_address_str(wallets[0]->nettype());
-		GULPS_PRINT_OK(genms::tr("Generated multisig wallets for address "), address);
-		GULPS_PRINT_OK(ss.str());
+		GULPS_PRINTF_OK(genms::tr("Generated multisig wallets for address {}\n{}"), address, ss.str());
 	}
 	catch(const std::exception &e)
 	{

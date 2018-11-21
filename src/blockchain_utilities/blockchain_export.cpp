@@ -42,6 +42,8 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#define GULPS_CAT_MAJOR "blockch_export"
+
 #include "blockchain_db/blockchain_db.h"
 #include "blockchain_db/db_types.h"
 #include "blocksdat_file.h"
@@ -50,6 +52,8 @@
 #include "cryptonote_core/cryptonote_core.h"
 #include "cryptonote_core/tx_pool.h"
 #include "version.h"
+
+#include "common/gulps.hpp"
 
 //#undef RYO_DEFAULT_LOG_CATEGORY
 //#define RYO_DEFAULT_LOG_CATEGORY "bcutil"
@@ -85,6 +89,9 @@ int main(int argc, char *argv[])
 	tools::on_startup();
 
 	boost::filesystem::path output_file_path;
+	
+	//TODO CREATE GULPS_OUTPUT
+	gulps::inst().set_thread_tag("BLOCKCH_EXPORT");
 
 	po::options_description desc_cmd_only("Command line options");
 	po::options_description desc_cmd_sett("Command line options and settings options");
@@ -120,8 +127,8 @@ int main(int argc, char *argv[])
 
 	if(command_line::get_arg(vm, command_line::arg_help))
 	{
-		std::cout << "Ryo '" << RYO_RELEASE_NAME << "' (" << RYO_VERSION_FULL << ")" << ENDL << ENDL;
-		std::cout << desc_options << std::endl;
+		GULPS_PRINTF("Ryo '{}' ({})\n", RYO_RELEASE_NAME, RYO_VERSION_FULL);
+		GULPS_PRINT(desc_options);
 		return 0;
 	}
 
@@ -132,13 +139,13 @@ int main(int argc, char *argv[])
 		mlog_set_log(std::string(std::to_string(log_level) + ",bcutil:INFO").c_str());
 	block_stop = command_line::get_arg(vm, arg_block_stop);
 
-	LOG_PRINT_L0("Starting...");
+	GULPS_PRINT("Starting...");
 
 	bool opt_testnet = command_line::get_arg(vm, cryptonote::arg_testnet_on);
 	bool opt_stagenet = command_line::get_arg(vm, cryptonote::arg_stagenet_on);
 	if(opt_testnet && opt_stagenet)
 	{
-		std::cerr << "Can't specify more than one of --testnet and --stagenet" << std::endl;
+		GULPS_ERROR("Can't specify more than one of --testnet and --stagenet");
 		return 1;
 	}
 	bool opt_blocks_dat = command_line::get_arg(vm, arg_blocks_dat);
@@ -150,7 +157,7 @@ int main(int argc, char *argv[])
 	std::string db_type = command_line::get_arg(vm, arg_database);
 	if(!cryptonote::blockchain_valid_db_type(db_type))
 	{
-		std::cerr << "Invalid database type: " << db_type << std::endl;
+		GULPS_ERROR("Invalid database type: ", db_type);
 		return 1;
 	}
 
@@ -158,7 +165,7 @@ int main(int argc, char *argv[])
 		output_file_path = boost::filesystem::path(command_line::get_arg(vm, arg_output_file));
 	else
 		output_file_path = boost::filesystem::path(m_config_folder) / "export" / BLOCKCHAIN_RAW;
-	LOG_PRINT_L0("Export output file: " << output_file_path.string());
+	GULPS_PRINT("Export output file: " , output_file_path.string());
 
 	// If we wanted to use the memory pool, we would set up a fake_core.
 
@@ -171,7 +178,7 @@ int main(int argc, char *argv[])
 	//   Blockchain* core_storage = new Blockchain(NULL);
 	// because unlike blockchain_storage constructor, which takes a pointer to
 	// tx_memory_pool, Blockchain's constructor takes tx_memory_pool object.
-	LOG_PRINT_L0("Initializing source blockchain (BlockchainDB)");
+	GULPS_PRINT("Initializing source blockchain (BlockchainDB)");
 	Blockchain *core_storage = NULL;
 	tx_memory_pool m_mempool(*core_storage);
 	core_storage = new Blockchain(m_mempool);
@@ -179,30 +186,30 @@ int main(int argc, char *argv[])
 	BlockchainDB *db = new_db(db_type);
 	if(db == NULL)
 	{
-		LOG_ERROR("Attempted to use non-existent database type: " << db_type);
+		GULPS_ERROR("Attempted to use non-existent database type: ", db_type);
 		throw std::runtime_error("Attempting to use non-existent database type");
 	}
-	LOG_PRINT_L0("database: " << db_type);
+	GULPS_PRINT("database: " , db_type);
 
 	boost::filesystem::path folder(m_config_folder);
 	folder /= db->get_db_name();
 	const std::string filename = folder.string();
 
-	LOG_PRINT_L0("Loading blockchain from folder " << filename << " ...");
+	GULPS_PRINTF("Loading blockchain from folder {} ...", filename);
 	try
 	{
 		db->open(filename, DBF_RDONLY);
 	}
 	catch(const std::exception &e)
 	{
-		LOG_PRINT_L0("Error opening database: " << e.what());
+		GULPS_ERROR("Error opening database: " , e.what());
 		return 1;
 	}
 	r = core_storage->init(db, opt_testnet ? cryptonote::TESTNET : opt_stagenet ? cryptonote::STAGENET : cryptonote::MAINNET);
 
 	CHECK_AND_ASSERT_MES(r, 1, "Failed to initialize source blockchain storage");
-	LOG_PRINT_L0("Source blockchain storage initialized OK");
-	LOG_PRINT_L0("Exporting blockchain raw data...");
+	GULPS_PRINT("Source blockchain storage initialized OK");
+	GULPS_PRINT("Exporting blockchain raw data...");
 
 	if(opt_blocks_dat)
 	{
@@ -215,7 +222,7 @@ int main(int argc, char *argv[])
 		r = bootstrap.store_blockchain_raw(core_storage, NULL, output_file_path, block_stop);
 	}
 	CHECK_AND_ASSERT_MES(r, 1, "Failed to export blockchain raw data");
-	LOG_PRINT_L0("Blockchain raw data exported OK");
+	GULPS_PRINT("Blockchain raw data exported OK");
 	return 0;
 
 	CATCH_ENTRY("Export error", 1);

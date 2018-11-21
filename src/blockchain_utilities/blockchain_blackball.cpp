@@ -42,6 +42,8 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#define GULPS_CAT_MAJOR "blockch_blackball"
+
 #include "cryptonote_core/blockchain.h"
 #include "blockchain_db/blockchain_db.h"
 #include "blockchain_db/db_types.h"
@@ -53,6 +55,8 @@
 #include "wallet/ringdb.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/range/adaptor/transformed.hpp>
+
+#include "common/gulps.hpp"
 
 //#undef RYO_DEFAULT_LOG_CATEGORY
 //#define RYO_DEFAULT_LOG_CATEGORY "bcutil"
@@ -191,6 +195,10 @@ int main(int argc, char *argv[])
 	tools::on_startup();
 
 	boost::filesystem::path output_file_path;
+	
+	//TODO CREATE GULPS_OUTPUT
+	gulps::inst().set_thread_tag("BLOCKCH_BLACKBALL");
+
 
 	po::options_description desc_cmd_only("Command line options");
 	po::options_description desc_cmd_sett("Command line options and settings options");
@@ -234,8 +242,8 @@ int main(int argc, char *argv[])
 
 	if(command_line::get_arg(vm, command_line::arg_help))
 	{
-		std::cout << "Ryo '" << RYO_RELEASE_NAME << "' (" << RYO_VERSION_FULL << ")" << ENDL << ENDL;
-		std::cout << desc_options << std::endl;
+		GULPS_PRINT("Ryo '", RYO_RELEASE_NAME, "' (", RYO_VERSION_FULL, ")\n)");
+		GULPS_PRINT(desc_options);
 		return 0;
 	}
 
@@ -245,7 +253,7 @@ int main(int argc, char *argv[])
 	else
 		mlog_set_log(std::string(std::to_string(log_level) + ",bcutil:INFO").c_str());
 
-	LOG_PRINT_L0("Starting...");
+	GULPS_PRINT("Starting...");
 
 	bool opt_testnet = command_line::get_arg(vm, cryptonote::arg_testnet_on);
 	bool opt_stagenet = command_line::get_arg(vm, cryptonote::arg_stagenet_on);
@@ -256,7 +264,7 @@ int main(int argc, char *argv[])
 	std::string db_type = command_line::get_arg(vm, arg_database);
 	if(!cryptonote::blockchain_valid_db_type(db_type))
 	{
-		std::cerr << "Invalid database type: " << db_type << std::endl;
+		GULPS_ERROR("Invalid database type: ", db_type);
 		return 1;
 	}
 
@@ -271,11 +279,11 @@ int main(int argc, char *argv[])
 	//   Blockchain* core_storage = new Blockchain(NULL);
 	// because unlike blockchain_storage constructor, which takes a pointer to
 	// tx_memory_pool, Blockchain's constructor takes tx_memory_pool object.
-	LOG_PRINT_L0("Initializing source blockchain (BlockchainDB)");
+	GULPS_PRINT("Initializing source blockchain (BlockchainDB)");
 	const std::vector<std::string> inputs = command_line::get_arg(vm, arg_inputs);
 	if(inputs.empty())
 	{
-		LOG_PRINT_L0("No inputs given");
+		GULPS_ERROR("No inputs given");
 		return 1;
 	}
 	std::vector<std::unique_ptr<Blockchain>> core_storage(inputs.size());
@@ -288,15 +296,15 @@ int main(int argc, char *argv[])
 		BlockchainDB *db = new_db(db_type);
 		if(db == NULL)
 		{
-			LOG_ERROR("Attempted to use non-existent database type: " << db_type);
+			GULPS_ERROR("Attempted to use non-existent database type: ", db_type);
 			throw std::runtime_error("Attempting to use non-existent database type");
 		}
-		LOG_PRINT_L0("database: " << db_type);
+		GULPS_PRINT("database: " , db_type);
 
 		std::string filename = inputs[n];
 		while(boost::ends_with(filename, "/") || boost::ends_with(filename, "\\"))
 			filename.pop_back();
-		LOG_PRINT_L0("Loading blockchain from folder " << filename << " ...");
+		GULPS_PRINTF("Loading blockchain from folder {} ..." , filename);
 
 		try
 		{
@@ -304,13 +312,13 @@ int main(int argc, char *argv[])
 		}
 		catch(const std::exception &e)
 		{
-			LOG_PRINT_L0("Error opening database: " << e.what());
+			GULPS_PRINT("Error opening database: " , e.what());
 			return 1;
 		}
 		r = core_storage[n]->init(db, net_type);
 
 		CHECK_AND_ASSERT_MES(r, 1, "Failed to initialize source blockchain storage");
-		LOG_PRINT_L0("Source blockchain storage initialized OK");
+		GULPS_PRINT("Source blockchain storage initialized OK");
 	}
 
 	boost::filesystem::path direc(output_file_path.string());
@@ -318,7 +326,7 @@ int main(int argc, char *argv[])
 	{
 		if(!boost::filesystem::is_directory(direc))
 		{
-			MERROR("LMDB needs a directory path, but a file was passed: " << output_file_path.string());
+			GULPS_ERROR("LMDB needs a directory path, but a file was passed: " , output_file_path.string());
 			return 1;
 		}
 	}
@@ -326,12 +334,12 @@ int main(int argc, char *argv[])
 	{
 		if(!boost::filesystem::create_directories(direc))
 		{
-			MERROR("Failed to create directory: " << output_file_path.string());
+			GULPS_ERROR("Failed to create directory: " , output_file_path.string());
 			return 1;
 		}
 	}
 
-	LOG_PRINT_L0("Scanning for blackballable outputs...");
+	GULPS_PRINT("Scanning for blackballable outputs...");
 
 	size_t done = 0;
 	std::unordered_map<crypto::key_image, std::vector<uint64_t>> relative_rings;
@@ -343,7 +351,7 @@ int main(int argc, char *argv[])
 
 	for(size_t n = 0; n < inputs.size(); ++n)
 	{
-		LOG_PRINT_L0("Reading blockchain from " << inputs[n]);
+		GULPS_PRINT("Reading blockchain from " , inputs[n]);
 		for_all_transactions(inputs[n], [&](const cryptonote::transaction_prefix &tx) -> bool {
 			for(const auto &in : tx.vin)
 			{
@@ -363,17 +371,19 @@ int main(int argc, char *argv[])
 				if(ring_size == 1)
 				{
 					const crypto::public_key pkey = core_storage[n]->get_output_key(txin.amount, txin.key_offsets[0]);
-					MINFO("Blackballing output " << pkey << ", due to being used in a 1-ring");
+					GULPS_INFOF("Blackballing output {}, due to being used in a 1-ring", pkey);
 					ringdb.blackball(pkey);
 					newly_spent.insert(output_data(txin.amount, txin.key_offsets[0]));
 					spent.insert(output_data(txin.amount, txin.key_offsets[0]));
 				}
 				else if(relative_rings.find(txin.k_image) != relative_rings.end())
-				{
-					MINFO("Key image " << txin.k_image << " already seen: rings " << boost::join(relative_rings[txin.k_image] | boost::adaptors::transformed([](uint64_t out) { return std::to_string(out); }), " ") << ", " << boost::join(txin.key_offsets | boost::adaptors::transformed([](uint64_t out) { return std::to_string(out); }), " "));
+				{	
+					GULPS_INFO("Key image ", txin.k_image, " already seen: rings ", boost::join(relative_rings[txin.k_image] | 
+					boost::adaptors::transformed([](uint64_t out) { return std::to_string(out); }), " "),
+					", ", boost::join(txin.key_offsets | boost::adaptors::transformed([](uint64_t out) { return std::to_string(out); }), " "));
 					if(relative_rings[txin.k_image] != txin.key_offsets)
 					{
-						MINFO("Rings are different");
+						GULPS_INFO("Rings are different");
 						const std::vector<uint64_t> r0 = cryptonote::relative_output_offsets_to_absolute(relative_rings[txin.k_image]);
 						const std::vector<uint64_t> r1 = cryptonote::relative_output_offsets_to_absolute(txin.key_offsets);
 						std::vector<uint64_t> common;
@@ -384,19 +394,19 @@ int main(int argc, char *argv[])
 						}
 						if(common.empty())
 						{
-							MERROR("Rings for the same key image are disjoint");
+							GULPS_ERROR("Rings for the same key image are disjoint");
 						}
 						else if(common.size() == 1)
 						{
 							const crypto::public_key pkey = core_storage[n]->get_output_key(txin.amount, common[0]);
-							MINFO("Blackballing output " << pkey << ", due to being used in rings with a single common element");
+							GULPS_INFOF("Blackballing output {}, due to being used in rings with a single common element" , pkey);
 							ringdb.blackball(pkey);
 							newly_spent.insert(output_data(txin.amount, common[0]));
 							spent.insert(output_data(txin.amount, common[0]));
 						}
 						else
 						{
-							MINFO("The intersection has more than one element, it's still ok");
+							GULPS_INFO("The intersection has more than one element, it's still ok");
 							for(const auto &out : r0)
 								if(std::find(common.begin(), common.end(), out) != common.end())
 									new_ring.push_back(out);
@@ -412,7 +422,7 @@ int main(int argc, char *argv[])
 
 	while(!newly_spent.empty())
 	{
-		LOG_PRINT_L0("Secondary pass due to " << newly_spent.size() << " newly found spent outputs");
+		GULPS_PRINTF("Secondary pass due to {} newly found spent outputs" , newly_spent.size());
 		std::unordered_set<output_data> work_spent = std::move(newly_spent);
 		newly_spent.clear();
 
@@ -434,7 +444,7 @@ int main(int argc, char *argv[])
 				if(known == absolute.size() - 1)
 				{
 					const crypto::public_key pkey = core_storage[0]->get_output_key(od.amount, last_unknown);
-					MINFO("Blackballing output " << pkey << ", due to being used in a " << absolute.size() << "-ring where all other outputs are known to be spent");
+					GULPS_INFOF("Blackballing output {}, due to being used in a {}-ring where all other outputs are known to be spent", pkey, absolute.size());
 					ringdb.blackball(pkey);
 					newly_spent.insert(output_data(od.amount, last_unknown));
 					spent.insert(output_data(od.amount, last_unknown));
@@ -443,7 +453,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	LOG_PRINT_L0("Blockchain blackball data exported OK");
+	GULPS_PRINT("Blockchain blackball data exported OK");
 	return 0;
 
 	CATCH_ENTRY("Export error", 1);
