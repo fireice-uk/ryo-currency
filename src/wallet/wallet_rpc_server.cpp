@@ -92,7 +92,6 @@ boost::optional<tools::password_container> password_prompter(const char *prompt,
 	if(!pwd_container)
 	{
 		GULPS_ERROR(tr("failed to read wallet password"));
-		GULPS_LOG_ERROR(tr("failed to read wallet password"));
 	}
 	return pwd_container;
 }
@@ -127,7 +126,6 @@ bool wallet_rpc_server::run()
 		catch(const std::exception &ex)
 		{
 			GULPS_ERROR("Exception at while refreshing, what=", ex.what());
-			GULPS_LOG_ERROR("Exception at while refreshing, what=", ex.what());
 		}
 		return true;
 	},
@@ -172,7 +170,6 @@ bool wallet_rpc_server::init(const boost::program_options::variables_map *vm)
 		if(tools::is_local_address(walvars->get_daemon_address()))
 		{
 			GULPS_INFO(tr("Daemon is local, assuming trusted"));
-			GULPS_LOG_L0(tr("Daemon is local, assuming trusted"));
 			m_trusted_daemon = true;
 		}
 	}
@@ -188,10 +185,8 @@ bool wallet_rpc_server::init(const boost::program_options::variables_map *vm)
 		{
 #ifdef _WIN32
 			GULPS_ERROR(tr("Failed to create directory "),  m_wallet_dir);
-			GULPS_LOG_ERROR(tr("Failed to create directory "),  m_wallet_dir);
 #else
-			GULPS_ERROR(tr("Failed to create directory {}: {}"), m_wallet_dir, strerror(errno));
-			GULPS_LOG_ERROR(tr("Failed to create directory {}: {}"), m_wallet_dir, strerror(errno));
+			GULPS_ERROR(fmt::format(tr("Failed to create directory {}: {}"), m_wallet_dir, strerror(errno)));
 #endif
 			return false;
 		}
@@ -202,8 +197,7 @@ bool wallet_rpc_server::init(const boost::program_options::variables_map *vm)
 		if(rpc_config->login)
 		{
 			const cryptonote::rpc_args::descriptors arg{};
-			GULPS_ERROR(tr("Cannot specify --{} and --{}"), arg_disable_rpc_login.name, arg.rpc_login.name);
-			GULPS_LOG_ERROR(tr("Cannot specify --{} and --{}"), arg_disable_rpc_login.name, arg.rpc_login.name);
+			GULPS_ERROR(fmt::format(tr("Cannot specify --{} and --{}"), arg_disable_rpc_login.name, arg.rpc_login.name));
 			return false;
 		}
 	}
@@ -221,8 +215,7 @@ bool wallet_rpc_server::init(const boost::program_options::variables_map *vm)
 			rpc_login_file = tools::private_file::create(temp);
 			if(!rpc_login_file.handle())
 			{
-				GULPS_ERROR(tr("Failed to create file {}. Check permissions or remove file"), temp);
-				GULPS_LOG_ERROR(tr("Failed to create file {}. Check permissions or remove file"), temp);
+				GULPS_ERROR(fmt::format(tr("Failed to create file {}. Check permissions or remove file"), temp));
 				return false;
 			}
 			std::fputs(http_login->username.c_str(), rpc_login_file.handle());
@@ -233,11 +226,9 @@ bool wallet_rpc_server::init(const boost::program_options::variables_map *vm)
 			if(std::ferror(rpc_login_file.handle()))
 			{
 				GULPS_ERROR(tr("Error writing to file "), temp);
-				GULPS_LOG_ERROR(tr("Error writing to file "), temp);
 				return false;
 			}
 			GULPS_INFO(tr("RPC username/password is stored in file "), temp);
-			GULPS_LOG_L0(tr("RPC username/password is stored in file "), temp);
 		}
 		else // chosen user/pass
 		{
@@ -3036,7 +3027,7 @@ int main(int argc, char **argv)
 	gulps::inst().set_thread_tag("WALLET_RPC");
 
 	//Temp error output
-	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(true, gulps::COLOR_WHITE));
+	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(false, gulps::COLOR_WHITE));
 	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return msg.lvl >= gulps::LEVEL_ERROR; });
 	uint64_t temp_handle = gulps::inst().add_output(std::move(out));
 	
@@ -3050,7 +3041,7 @@ int main(int argc, char **argv)
 	command_line::add_arg(desc_params, arg_from_json);
 	command_line::add_arg(desc_params, arg_wallet_dir);
 	command_line::add_arg(desc_params, arg_prompt_for_password);
-
+	
 	int vm_error_code = 1;
 	const auto vm = wallet_args::main(
 		argc, argv,
@@ -3063,10 +3054,10 @@ int main(int argc, char **argv)
 		vm_error_code,
 		true);
 	if(!vm)
-	{
+	{	
 		return vm_error_code;
 	}
-	
+
 	gulps::inst().remove_output(temp_handle);
 
 	cryptonote::network_type net_type = cryptonote::UNDEFINED;
@@ -3078,7 +3069,6 @@ int main(int argc, char **argv)
 		if(testnet && stagenet)
 		{
 			GULPS_ERROR(tools::wallet_rpc_server::tr("Can't specify more than one of --testnet and --stagenet"));
-			GULPS_LOG_ERROR(tools::wallet_rpc_server::tr("Can't specify more than one of --testnet and --stagenet"));
 			return 1;
 		}
 		
@@ -3098,7 +3088,6 @@ int main(int argc, char **argv)
 		if(!wallet_file.empty() && !from_json.empty())
 		{
 			GULPS_ERROR(tools::wallet_rpc_server::tr("Can't specify more than one of --wallet-file and --generate-from-json"));
-			GULPS_LOG_ERROR(tools::wallet_rpc_server::tr("Can't specify more than one of --wallet-file and --generate-from-json"));
 			return 1;
 		}
 
@@ -3111,12 +3100,10 @@ int main(int argc, char **argv)
 		if(wallet_file.empty() && from_json.empty())
 		{
 			GULPS_ERROR(tools::wallet_rpc_server::tr("Must specify --wallet-file or --generate-from-json or --wallet-dir"));
-			GULPS_LOG_ERROR(tools::wallet_rpc_server::tr("Must specify --wallet-file or --generate-from-json or --wallet-dir"));
 			return 1;
 		}
 
 		GULPS_INFO(tools::wallet_rpc_server::tr("Loading wallet..."));
-		GULPS_LOG_L0(tools::wallet_rpc_server::tr("Loading wallet..."));
 		if(!wallet_file.empty())
 		{
 			wal = tools::wallet2::make_from_file(*vm, wallet_file, password_prompt).first;
@@ -3130,7 +3117,6 @@ int main(int argc, char **argv)
 			catch(const std::exception &e)
 			{
 				GULPS_ERROR(tr("Error creating wallet: "), e.what());
-				GULPS_LOG_ERROR(tr("Error creating wallet: "), e.what());
 				return 1;
 			}
 		}
@@ -3151,19 +3137,15 @@ int main(int argc, char **argv)
 		if(quit)
 		{
 			GULPS_INFO(tools::wallet_rpc_server::tr("Saving wallet..."));
-			GULPS_LOG_L0(tools::wallet_rpc_server::tr("Saving wallet..."));
 			wal->store();
 			GULPS_INFO(tools::wallet_rpc_server::tr("Successfully saved"));
-			GULPS_LOG_L0(tools::wallet_rpc_server::tr("Successfully saved"));
 			return 1;
 		}
 		GULPS_INFO(tools::wallet_rpc_server::tr("Successfully loaded"));
-		GULPS_LOG_L0(tools::wallet_rpc_server::tr("Successfully loaded"));
 	}
 	catch(const std::exception &e)
 	{
 		GULPS_ERROR(tools::wallet_rpc_server::tr("Wallet initialization failed: "), e.what());
-		GULPS_LOG_ERROR(tools::wallet_rpc_server::tr("Wallet initialization failed: "), e.what());
 		return 1;
 	}
 just_dir:
@@ -3176,7 +3158,6 @@ just_dir:
 		wrpc.send_stop_signal();
 	});
 	GULPS_INFO(tools::wallet_rpc_server::tr("Starting wallet RPC server"));
-	GULPS_LOG_L0(tools::wallet_rpc_server::tr("Starting wallet RPC server"));
 	try
 	{
 		wrpc.run();
@@ -3184,23 +3165,18 @@ just_dir:
 	catch(const std::exception &e)
 	{
 		GULPS_ERROR(tools::wallet_rpc_server::tr("Failed to run wallet: "), e.what());
-		GULPS_LOG_ERROR(tools::wallet_rpc_server::tr("Failed to run wallet: "), e.what());
 		return 1;
 	}
 	GULPS_INFO(tools::wallet_rpc_server::tr("Stopped wallet RPC server"));
-	GULPS_LOG_L0(tools::wallet_rpc_server::tr("Stopped wallet RPC server"));
 	try
 	{
 		GULPS_INFO(tools::wallet_rpc_server::tr("Saving wallet..."));
-		GULPS_LOG_L0(tools::wallet_rpc_server::tr("Saving wallet..."));
 		wrpc.stop_wallet_backend();
 		GULPS_INFO(tools::wallet_rpc_server::tr("Successfully saved"));
-		GULPS_LOG_L0(tools::wallet_rpc_server::tr("Successfully saved"));
 	}
 	catch(const std::exception &e)
 	{
 		GULPS_ERROR(tools::wallet_rpc_server::tr("Failed to save wallet: "), e.what());
-		GULPS_LOG_ERROR(tools::wallet_rpc_server::tr("Failed to save wallet: "), e.what());
 		return 1;
 	}
 	return 0;
