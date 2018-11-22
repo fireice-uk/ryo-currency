@@ -235,22 +235,37 @@ int main(int argc, char *argv[])
 	po::variables_map vm;
 	bool r = command_line::handle_error_helper(desc_options, [&]() {
 		auto parser = po::command_line_parser(argc, argv).options(desc_options).positional(positional_options);
-		po::store(parser.run(), vm);
-		
-		if(!command_line::is_arg_defaulted(vm, arg_log_level))
-		{
-			if(!log_scr.parse_cat_string(command_line::get_arg(vm, arg_log_level).c_str()))
-			{
-				GULPS_ERROR("Failed to parse filter string ", command_line::get_arg(vm, arg_log_level).c_str());
-				return false;
-			}
-		}
-		
+		po::store(parser.run(), vm);		
 		po::notify(vm);
 		return true;
 	});
 	if(!r)
 		return 1;
+
+	mlog_configure(mlog_get_default_log_path("ryo-blockchain-blackball.log"), true);
+	/*if(!command_line::is_arg_defaulted(vm, arg_log_level))
+		mlog_set_log(command_line::get_arg(vm, arg_log_level).c_str());
+	else
+		mlog_set_log(std::string(std::to_string(log_level) + ",bcutil:INFO").c_str());*/
+	
+	if(!command_line::is_arg_defaulted(vm, arg_log_level))
+	{
+		if(!log_scr.parse_cat_string(command_line::get_arg(vm, arg_log_level).c_str()))
+		{	
+			//TODO ERROR MESSAGE
+			std::cout << "Failed to parse filter string " << command_line::get_arg(vm, arg_log_level).c_str() << std::endl;
+			return 1;
+		}
+	}
+	else
+	{
+		if(!log_scr.parse_cat_string(std::to_string(log_level).c_str()))
+		{	
+			//TODO ERROR MESSAGE
+			std::cout << "Failed to parse filter string " << command_line::get_arg(vm, arg_log_level).c_str() << std::endl;
+			return 1;
+		}
+	}
 	
 	if(log_scr.is_active())
 	{
@@ -271,12 +286,6 @@ int main(int argc, char *argv[])
 		GULPS_PRINT(desc_options);
 		return 0;
 	}
-
-	mlog_configure(mlog_get_default_log_path("ryo-blockchain-blackball.log"), true);
-	if(!command_line::is_arg_defaulted(vm, arg_log_level))
-		mlog_set_log(command_line::get_arg(vm, arg_log_level).c_str());
-	else
-		mlog_set_log(std::string(std::to_string(log_level) + ",bcutil:INFO").c_str());
 
 	GULPS_PRINT("Starting...");
 

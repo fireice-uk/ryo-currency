@@ -645,22 +645,46 @@ int main(int argc, char *argv[])
 
 	po::variables_map vm;
 	bool r = command_line::handle_error_helper(desc_options, [&]() {
-		po::store(po::parse_command_line(argc, argv, desc_options), vm);
-		
-		if(!command_line::is_arg_defaulted(vm, arg_log_level))
-		{
-			if(!log_scr.parse_cat_string(command_line::get_arg(vm, arg_log_level).c_str()))
-			{
-				GULPS_ERROR("Failed to parse filter string ", command_line::get_arg(vm, arg_log_level).c_str());
-				return false;
-			}
-		}
-		
+		po::store(po::parse_command_line(argc, argv, desc_options), vm);		
 		po::notify(vm);
 		return true;
 	});
 	if(!r)
 		return 1;
+
+	opt_verify = command_line::get_arg(vm, arg_verify);
+	opt_batch = command_line::get_arg(vm, arg_batch);
+	opt_resume = command_line::get_arg(vm, arg_resume);
+	block_stop = command_line::get_arg(vm, arg_block_stop);
+	db_batch_size = command_line::get_arg(vm, arg_batch_size);
+
+	m_config_folder = command_line::get_arg(vm, cryptonote::arg_data_dir);
+	db_arg_str = command_line::get_arg(vm, arg_database);
+
+	mlog_configure(mlog_get_default_log_path("ryo-blockchain-import.log"), true);
+	/*if(!command_line::is_arg_defaulted(vm, arg_log_level))
+		mlog_set_log(command_line::get_arg(vm, arg_log_level).c_str());
+	else
+		mlog_set_log(std::string(std::to_string(log_level) + ",bcutil:INFO").c_str());*/
+	
+	if(!command_line::is_arg_defaulted(vm, arg_log_level))
+	{
+		if(!log_scr.parse_cat_string(command_line::get_arg(vm, arg_log_level).c_str()))
+		{	
+			//TODO ERROR MESSAGE
+			std::cout << "Failed to parse filter string " << command_line::get_arg(vm, arg_log_level).c_str() << std::endl;
+			return 1;
+		}
+	}
+	else
+	{
+		if(!log_scr.parse_cat_string(std::to_string(log_level).c_str()))
+		{	
+			//TODO ERROR MESSAGE
+			std::cout << "Failed to parse filter string " << command_line::get_arg(vm, arg_log_level).c_str() << std::endl;
+			return 1;
+		}
+	}
 	
 	if(log_scr.is_active())
 	{
@@ -674,13 +698,7 @@ int main(int argc, char *argv[])
 				});
 		gulps::inst().add_output(std::move(out));
 	}
-
-	opt_verify = command_line::get_arg(vm, arg_verify);
-	opt_batch = command_line::get_arg(vm, arg_batch);
-	opt_resume = command_line::get_arg(vm, arg_resume);
-	block_stop = command_line::get_arg(vm, arg_block_stop);
-	db_batch_size = command_line::get_arg(vm, arg_batch_size);
-
+	
 	if(command_line::get_arg(vm, command_line::arg_help))
 	{
 		GULPS_PRINT("Ryo '", RYO_RELEASE_NAME, "' (", RYO_VERSION_FULL, ")\n\n");
@@ -710,7 +728,6 @@ int main(int argc, char *argv[])
 			db_batch_size = db_batch_size_verify;
 		}
 	}
-
 	opt_testnet = command_line::get_arg(vm, cryptonote::arg_testnet_on);
 	opt_stagenet = command_line::get_arg(vm, cryptonote::arg_stagenet_on);
 	if(opt_testnet && opt_stagenet)
@@ -718,14 +735,6 @@ int main(int argc, char *argv[])
 		GULPS_ERROR( "Error: Can't specify more than one of --testnet and --stagenet" );
 		return 1;
 	}
-	m_config_folder = command_line::get_arg(vm, cryptonote::arg_data_dir);
-	db_arg_str = command_line::get_arg(vm, arg_database);
-
-	mlog_configure(mlog_get_default_log_path("ryo-blockchain-import.log"), true);
-	if(!command_line::is_arg_defaulted(vm, arg_log_level))
-		mlog_set_log(command_line::get_arg(vm, arg_log_level).c_str());
-	else
-		mlog_set_log(std::string(std::to_string(log_level) + ",bcutil:INFO").c_str());
 
 	GULPS_INFO("Starting...");
 
