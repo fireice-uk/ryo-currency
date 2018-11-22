@@ -198,10 +198,6 @@ int main(int argc, char *argv[])
 
 	boost::filesystem::path output_file_path;
 	
-	//TODO CREATE GULPS_OUTPUT
-	gulps::inst().set_thread_tag("BLOCKCH_BLACKBALL");
-
-
 	po::options_description desc_cmd_only("Command line options");
 	po::options_description desc_cmd_sett("Command line options and settings options");
 	const command_line::arg_descriptor<std::string, false, true, 2> arg_blackball_db_dir = {
@@ -241,31 +237,39 @@ int main(int argc, char *argv[])
 	});
 	if(!r)
 		return 1;
-
-	mlog_configure(mlog_get_default_log_path("ryo-blockchain-blackball.log"), true);
-	/*if(!command_line::is_arg_defaulted(vm, arg_log_level))
-		mlog_set_log(command_line::get_arg(vm, arg_log_level).c_str());
-	else
-		mlog_set_log(std::string(std::to_string(log_level) + ",bcutil:INFO").c_str());*/
 	
+	gulps::inst().set_thread_tag("BLOCKCH_BLACKBALL");
+	
+	//Temp error output
+	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(false, gulps::COLOR_WHITE));
+	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return msg.lvl >= gulps::LEVEL_ERROR; });
+	auto temp_handle = gulps::inst().add_output(std::move(out));
+	
+	mlog_configure(mlog_get_default_log_path("ryo-blockchain-blackball.log"), true);
 	if(!command_line::is_arg_defaulted(vm, arg_log_level))
 	{
+		mlog_set_log(command_line::get_arg(vm, arg_log_level).c_str());
+		
 		if(!log_scr.parse_cat_string(command_line::get_arg(vm, arg_log_level).c_str()))
 		{	
 			//TODO ERROR MESSAGE
-			std::cout << "Failed to parse filter string " << command_line::get_arg(vm, arg_log_level).c_str() << std::endl;
+			GULPS_ERROR("Failed to parse filter string ", command_line::get_arg(vm, arg_log_level).c_str());
 			return 1;
 		}
 	}
 	else
-	{
+	{	
+		mlog_set_log(std::string(std::to_string(log_level) + ",bcutil:INFO").c_str());
+		
 		if(!log_scr.parse_cat_string(std::to_string(log_level).c_str()))
 		{	
 			//TODO ERROR MESSAGE
-			std::cout << "Failed to parse filter string " << command_line::get_arg(vm, arg_log_level).c_str() << std::endl;
+			GULPS_ERRORF("Failed to parse filter string {}", log_level);
 			return 1;
 		}
 	}
+      
+	gulps::inst().remove_output(temp_handle);
 	
 	if(log_scr.is_active())
 	{
@@ -412,9 +416,8 @@ int main(int argc, char *argv[])
 				}
 				else if(relative_rings.find(txin.k_image) != relative_rings.end())
 				{	
-					GULPS_INFO("Key image ", txin.k_image, " already seen: rings ", boost::join(relative_rings[txin.k_image] | 
-					boost::adaptors::transformed([](uint64_t out) { return std::to_string(out); }), " "),
-					", ", boost::join(txin.key_offsets | boost::adaptors::transformed([](uint64_t out) { return std::to_string(out); }), " "));
+					GULPS_INFO("Key image ", txin.k_image, " already seen: rings ", boost::join(relative_rings[txin.k_image] | boost::adaptors::transformed([](uint64_t out) { return std::to_string(out); }), " "), ", ", boost::join(txin.key_offsets | boost::adaptors::transformed([](uint64_t out) { return std::to_string(out); }), " "));
+					
 					if(relative_rings[txin.k_image] != txin.key_offsets)
 					{
 						GULPS_INFO("Rings are different");
