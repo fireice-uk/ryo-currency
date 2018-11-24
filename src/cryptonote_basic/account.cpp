@@ -44,6 +44,8 @@
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
 
+#define GULPS_CAT_MAJOR "crybas_account"
+
 #include <fstream>
 
 #include "account.h"
@@ -55,6 +57,9 @@ extern "C" {
 }
 #include "cryptonote_basic_impl.h"
 #include "cryptonote_format_utils.h"
+
+#include "common/gulps.hpp"
+
 
 //#undef RYO_DEFAULT_LOG_CATEGORY
 //#define RYO_DEFAULT_LOG_CATEGORY "account"
@@ -75,7 +80,7 @@ hw::device &account_keys::get_device() const
 void account_keys::set_device(hw::device &hwdev)
 {
 	m_device = &hwdev;
-	MCDEBUG("device", "account_keys::set_device device type: " << typeid(hwdev).name());
+	GULPS_CAT_LOG_L1("device", "account_keys::set_device device type: ", typeid(hwdev).name());
 }
 
 //-----------------------------------------------------------------
@@ -170,7 +175,7 @@ void account_base::create_from_device(const std::string &device_name)
 	hw::device &hwdev = hw::get_device(device_name);
 	m_keys.set_device(hwdev);
 	hwdev.set_name(device_name);
-	MCDEBUG("ledger", "device type: " << typeid(hwdev).name());
+	GULPS_CAT_LOG_L1("ledger", "device type: ", typeid(hwdev).name());
 	hwdev.init();
 	hwdev.connect();
 	hwdev.get_public_address(m_keys.m_account_address);

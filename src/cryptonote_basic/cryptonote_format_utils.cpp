@@ -47,6 +47,9 @@
 #include "include_base_utils.h"
 using namespace epee;
 
+#define GULPS_CAT_MAJOR "formt_utils"
+#include "common/gulps.hpp"
+
 #include "crypto/cn_slow_hash.hpp"
 #include "crypto/crypto.h"
 #include "crypto/hash.h"
@@ -101,7 +104,7 @@ static std::atomic<uint64_t> block_hashes_cached_count(0);
 	{                                                \
 		if(!(expr))                                  \
 		{                                            \
-			MWARNING(message);                       \
+			GULPS_WARN(message);                       \
 			throw std::runtime_error(message);       \
 		}                                            \
 	}
@@ -161,7 +164,7 @@ bool expand_transaction_1(transaction &tx, bool base_only)
 		rct::rctSig &rv = tx.rct_signatures;
 		if(rv.outPk.size() != tx.vout.size())
 		{
-			LOG_PRINT_L1("Failed to parse transaction from blob, bad outPk size in tx " << get_transaction_hash(tx));
+			GULPS_LOGF_L1("Failed to parse transaction from blob, bad outPk size in tx {}", get_transaction_hash(tx));
 			return false;
 		}
 		for(size_t n = 0; n < tx.rct_signatures.outPk.size(); ++n)
@@ -174,7 +177,7 @@ bool expand_transaction_1(transaction &tx, bool base_only)
 			{
 				if(rv.p.bulletproofs.size() != tx.vout.size())
 				{
-					LOG_PRINT_L1("Failed to parse transaction from blob, bad bulletproofs size in tx " << get_transaction_hash(tx));
+					GULPS_LOGF_L1("Failed to parse transaction from blob, bad bulletproofs size in tx {}", get_transaction_hash(tx));
 					return false;
 				}
 				for(size_t n = 0; n < rv.outPk.size(); ++n)

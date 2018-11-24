@@ -62,6 +62,8 @@ using namespace epee;
 #include "serialization/container.h"
 #include "string_tools.h"
 
+#include "common/gulps.hpp"
+
 //#undef RYO_DEFAULT_LOG_CATEGORY
 //#define RYO_DEFAULT_LOG_CATEGORY "cn"
 
@@ -180,7 +182,7 @@ bool get_block_reward(network_type nettype, size_t median_size, size_t current_b
 
 	if(current_block_size > 2 * median_size)
 	{
-		MERROR("Block cumulative size is too big: " << current_block_size << ", expected less than " << 2 * median_size);
+		GULPS_ERRORF("Block cumulative size is too big: {}, expected less than {}", current_block_size, 2 * median_size);
 		return false;
 	}
 
@@ -391,7 +393,7 @@ bool parse_hash256(const std::string str_hash, crypto::hash &hash)
 	bool res = epee::string_tools::parse_hexstr_to_binbuff(str_hash, buf);
 	if(!res || buf.size() != sizeof(crypto::hash))
 	{
-		std::cout << "invalid hash format: <" << str_hash << '>' << std::endl;
+		GULPS_ERRORF("invalid hash format: <{}>", str_hash);
 		return false;
 	}
 	else
