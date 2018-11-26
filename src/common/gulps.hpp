@@ -716,6 +716,14 @@ public:
 #define GULPS_CAT2_LOG_L1(maj, min, ...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_DEBUG, maj, min, gulps::COLOR_WHITE, __VA_ARGS__)
 #define GULPS_CAT2_LOG_L2(maj, min, ...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_TRACE, maj, min, gulps::COLOR_WHITE, __VA_ARGS__)
 #define GULPS_CAT2_LOG_L3(maj, min, ...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_TRACE2, maj, min, gulps::COLOR_WHITE, __VA_ARGS__)
+
+#define GULPS_CAT_ERRORF(min, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_ERROR, GULPS_CAT_MAJOR, min, gulps::COLOR_BOLD_RED, __VA_ARGS__)
+
+#define GULPS_VERIFY_ERR_TX(...) GULPS_CAT_ERROR("verify - tx", __VA_ARGS__)
+#define GULPS_VERIFY_ERR_BLK(...) GULPS_CAT_ERROR("verify - block", __VA_ARGS__)
+
+#define GULPS_VERIFYF_ERR_TX(...) GULPS_CAT_ERRORF("verify - tx", __VA_ARGS__)
+#define GULPS_VERIFYF_ERR_BLK(...) GULPS_CAT_ERRORF("verify - block", __VA_ARGS__)
 /*
 #define GULPS_ERROR(...) GULPS_OUTPUT(gulps::LEVEL_ERROR, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, fmt::color::red, __VA_ARGS__)
 #define GULPS_WARN(fstr, ...) GULPS_OUTPUT(gulps::LEVEL_WARN, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, fmt::color::orange, fstr, __VA_ARGS__)
