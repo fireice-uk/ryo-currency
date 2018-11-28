@@ -150,12 +150,12 @@ static const struct
 Blockchain::Blockchain(tx_memory_pool &tx_pool) : m_db(), m_tx_pool(tx_pool), m_hardfork(NULL), m_timestamps_and_difficulties_height(0), m_current_block_cumul_sz_limit(0), m_current_block_cumul_sz_median(0),
 												  m_enforce_dns_checkpoints(false), m_max_prepare_blocks_threads(4), m_db_blocks_per_sync(1), m_db_sync_mode(db_async), m_db_default_sync(false), m_fast_sync(true), m_show_time_stats(false), m_sync_counter(0), m_cancel(false)
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 }
 //------------------------------------------------------------------
 bool Blockchain::have_tx(const crypto::hash &id) const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	// WARNING: this function does not take m_blockchain_lock, and thus should only call read only
 	// m_db functions which do not depend on one another (ie, no getheight + gethash(height-1), as
 	// well as not accessing class members, even read only (ie, m_invalid_blocks). The caller must
@@ -165,7 +165,7 @@ bool Blockchain::have_tx(const crypto::hash &id) const
 //------------------------------------------------------------------
 bool Blockchain::have_tx_keyimg_as_spent(const crypto::key_image &key_im) const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	// WARNING: this function does not take m_blockchain_lock, and thus should only call read only
 	// m_db functions which do not depend on one another (ie, no getheight + gethash(height-1), as
 	// well as not accessing class members, even read only (ie, m_invalid_blocks). The caller must
@@ -179,7 +179,7 @@ bool Blockchain::have_tx_keyimg_as_spent(const crypto::key_image &key_im) const
 template <class visitor_t>
 bool Blockchain::scan_outputkeys_for_indexes(size_t tx_version, const txin_to_key &tx_in_to_key, visitor_t &vis, const crypto::hash &tx_prefix_hash, uint64_t *pmax_related_block_height) const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 
 	// ND: Disable locking and make method private.
 	//CRITICAL_REGION_LOCAL(m_blockchain_lock);
@@ -229,7 +229,7 @@ bool Blockchain::scan_outputkeys_for_indexes(size_t tx_version, const txin_to_ke
 		// check for partial results and add the rest if needed;
 		if(outputs.size() < absolute_offsets.size() && outputs.size() > 0)
 		{
-			GULPS_LOG_L1("Additional outputs needed: {}", absolute_offsets.size() - outputs.size());
+			GULPS_LOGF_L1("Additional outputs needed: {}", absolute_offsets.size() - outputs.size());
 			std::vector<uint64_t> add_offsets;
 			std::vector<output_data_t> add_outputs;
 			for(size_t i = outputs.size(); i < absolute_offsets.size(); i++)
@@ -307,7 +307,7 @@ bool Blockchain::scan_outputkeys_for_indexes(size_t tx_version, const txin_to_ke
 //------------------------------------------------------------------
 uint64_t Blockchain::get_current_blockchain_height() const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	// WARNING: this function does not take m_blockchain_lock, and thus should only call read only
 	// m_db functions which do not depend on one another (ie, no getheight + gethash(height-1), as
 	// well as not accessing class members, even read only (ie, m_invalid_blocks). The caller must
@@ -319,7 +319,7 @@ uint64_t Blockchain::get_current_blockchain_height() const
 //       dereferencing a null BlockchainDB pointer
 bool Blockchain::init(BlockchainDB *db, const network_type nettype, bool offline, const cryptonote::test_options *test_options)
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_tx_pool);
 	CRITICAL_REGION_LOCAL1(m_blockchain_lock);
 
@@ -328,7 +328,7 @@ bool Blockchain::init(BlockchainDB *db, const network_type nettype, bool offline
 	address_parse_info dev_addr;
 	if(!get_account_address_from_str<MAINNET>(dev_addr, std::string(common_config::DEV_FUND_ADDRESS)))
 	{
-		LOG_ERROR("Failed to parse dev address");
+		GULPS_LOG_ERROR("Failed to parse dev address");
 		return false;
 	}
 
@@ -336,18 +336,18 @@ bool Blockchain::init(BlockchainDB *db, const network_type nettype, bool offline
 	crypto::public_key vk;
 	if(!secret_key_to_public_key(m_dev_view_key, vk) || vk != dev_addr.address.m_view_public_key)
 	{
-		LOG_ERROR("Dev private view key failed verification!");
+		GULPS_LOG_ERROR("Dev private view key failed verification!");
 		return false;
 	}
 
 	if(db == nullptr)
 	{
-		LOG_ERROR("Attempted to init Blockchain with null DB");
+		GULPS_LOG_ERROR("Attempted to init Blockchain with null DB");
 		return false;
 	}
 	if(!db->is_open())
 	{
-		LOG_ERROR("Attempted to init Blockchain with unopened DB");
+		GULPS_LOG_ERROR("Attempted to init Blockchain with unopened DB");
 		delete db;
 		return false;
 	}
@@ -395,7 +395,7 @@ bool Blockchain::init(BlockchainDB *db, const network_type nettype, bool offline
 	//       taking testnet into account
 	if(!m_db->height())
 	{
-		MINFO("Blockchain not loaded, generating genesis block.");
+		GULPS_INFO("Blockchain not loaded, generating genesis block.");
 		block bl = boost::value_initialized<block>();
 		block_verification_context bvc = boost::value_initialized<block_verification_context>();
 		if(m_nettype == TESTNET)
@@ -445,7 +445,7 @@ bool Blockchain::init(BlockchainDB *db, const network_type nettype, bool offline
 		load_compiled_in_block_hashes();
 #endif
 
-	MINFO("Blockchain initialized. last block: " << m_db->height() - 1 << ", " << epee::misc_utils::get_time_interval_string(timestamp_diff) << " time ago, current difficulty: " << get_difficulty_for_next_block());
+	GULPS_INFOF("Blockchain initialized. last block: {}, {} time ago, current difficulty: {}", m_db->height() - 1 , epee::misc_utils::get_time_interval_string(timestamp_diff) , get_difficulty_for_next_block());
 	m_db->block_txn_stop();
 
 	uint64_t num_popped_blocks = 0;
@@ -458,15 +458,15 @@ bool Blockchain::init(BlockchainDB *db, const network_type nettype, bool offline
 		if(ideal_hf_version <= 1 || ideal_hf_version == top_block.major_version)
 		{
 			if(num_popped_blocks > 0)
-				MGINFO("Initial popping done, top block: " << top_id << ", top height: " << top_height << ", block version: " << (uint64_t)top_block.major_version);
+				GULPS_GLOBALF_INFO("Initial popping done, top block: {}, top height: {}, block version: {}", top_id , top_height, (uint64_t)top_block.major_version);
 			break;
 		}
 		else
 		{
 			if(num_popped_blocks == 0)
-				MGINFO("Current top block " << top_id << " at height " << top_height << " has version " << (uint64_t)top_block.major_version << " which disagrees with the ideal version " << (uint64_t)ideal_hf_version);
+				GULPS_GLOBALF_INFO("Current top block {} at height {} has version {} which disagrees with the ideal version {}", top_id, top_height, (uint64_t)top_block.major_version, (uint64_t)ideal_hf_version);
 			if(num_popped_blocks % 100 == 0)
-				MGINFO("Popping blocks... " << top_height);
+				GULPS_GLOBALF_INFO("Popping blocks... {}", top_height);
 			++num_popped_blocks;
 			block popped_block;
 			std::vector<transaction> popped_txs;
@@ -478,7 +478,7 @@ bool Blockchain::init(BlockchainDB *db, const network_type nettype, bool offline
 			// so we re-throw
 			catch(const std::exception &e)
 			{
-				MERROR("Error popping block from blockchain: " << e.what());
+				GULPS_ERRORF("Error popping block from blockchain: {}", e.what());
 				throw;
 			}
 			catch(...)
@@ -511,7 +511,7 @@ bool Blockchain::init(BlockchainDB *db, HardFork *&hf, const network_type nettyp
 //------------------------------------------------------------------
 bool Blockchain::store_blockchain()
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	// lock because the rpc_thread command handler also calls this
 	CRITICAL_REGION_LOCAL(m_db->m_synchronization_lock);
 
@@ -524,7 +524,7 @@ bool Blockchain::store_blockchain()
 	}
 	catch(const std::exception &e)
 	{
-		MERROR(std::string("Error syncing blockchain db: ") + e.what() + "-- shutting down now to prevent issues!");
+		GULPS_ERRORF("Error syncing blockchain db: {}-- shutting down now to prevent issues!", e.what());
 		throw;
 	}
 	catch(...)
@@ -535,15 +535,15 @@ bool Blockchain::store_blockchain()
 
 	TIME_MEASURE_FINISH(save);
 	if(m_show_time_stats)
-		MINFO("Blockchain stored OK, took: " << save << " ms");
+		GULPS_INFOF("Blockchain stored OK, took: {} ms", save );
 	return true;
 }
 //------------------------------------------------------------------
 bool Blockchain::deinit()
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 
-	MTRACE("Stopping blockchain read/write activity");
+	GULPS_LOG_L2("Stopping blockchain read/write activity");
 
 	// stop async service
 	m_async_work_idle.reset();
@@ -561,15 +561,15 @@ bool Blockchain::deinit()
 	try
 	{
 		m_db->close();
-		MTRACE("Local blockchain read/write activity stopped successfully");
+		GULPS_LOG_L2("Local blockchain read/write activity stopped successfully");
 	}
 	catch(const std::exception &e)
 	{
-		LOG_ERROR(std::string("Error closing blockchain db: ") + e.what());
+		GULPS_LOGF_ERROR("Error closing blockchain db: {}", e.what());
 	}
 	catch(...)
 	{
-		LOG_ERROR("There was an issue closing/storing the blockchain, shutting down now to prevent issues!");
+		GULPS_LOG_ERROR("There was an issue closing/storing the blockchain, shutting down now to prevent issues!");
 	}
 
 	delete m_hardfork;
@@ -584,7 +584,7 @@ bool Blockchain::deinit()
 // from it to the tx_pool
 block Blockchain::pop_block_from_blockchain()
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 
 	m_timestamps_and_difficulties_height = 0;
@@ -600,12 +600,12 @@ block Blockchain::pop_block_from_blockchain()
 	// so we re-throw
 	catch(const std::exception &e)
 	{
-		LOG_ERROR("Error popping block from blockchain: " << e.what());
+	GULPS_LOGF_ERROR("Error popping block from blockchain: {}", e.what());
 		throw;
 	}
 	catch(...)
 	{
-		LOG_ERROR("Error popping block from blockchain, throwing!");
+		GULPS_LOG_ERROR("Error popping block from blockchain, throwing!");
 		throw;
 	}
 
@@ -624,7 +624,7 @@ block Blockchain::pop_block_from_blockchain()
 			bool r = m_tx_pool.add_tx(tx, tvc, true, true, false);
 			if(!r)
 			{
-				LOG_ERROR("Error returning transaction to tx_pool");
+				GULPS_LOG_ERROR("Error returning transaction to tx_pool");
 			}
 		}
 	}
@@ -642,7 +642,7 @@ block Blockchain::pop_block_from_blockchain()
 //------------------------------------------------------------------
 bool Blockchain::reset_and_set_genesis_block(const block &b)
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 	m_timestamps_and_difficulties_height = 0;
 	m_alternative_chains.clear();
@@ -657,7 +657,7 @@ bool Blockchain::reset_and_set_genesis_block(const block &b)
 //------------------------------------------------------------------
 crypto::hash Blockchain::get_tail_id(uint64_t &height) const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 	height = m_db->height() - 1;
 	return get_tail_id();
@@ -665,7 +665,7 @@ crypto::hash Blockchain::get_tail_id(uint64_t &height) const
 //------------------------------------------------------------------
 crypto::hash Blockchain::get_tail_id() const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	// WARNING: this function does not take m_blockchain_lock, and thus should only call read only
 	// m_db functions which do not depend on one another (ie, no getheight + gethash(height-1), as
 	// well as not accessing class members, even read only (ie, m_invalid_blocks). The caller must
@@ -687,7 +687,7 @@ crypto::hash Blockchain::get_tail_id() const
  */
 bool Blockchain::get_short_chain_history(std::list<crypto::hash> &ids) const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 	uint64_t i = 0;
 	uint64_t current_multiplier = 1;
@@ -730,7 +730,7 @@ bool Blockchain::get_short_chain_history(std::list<crypto::hash> &ids) const
 //------------------------------------------------------------------
 crypto::hash Blockchain::get_block_id_by_height(uint64_t height) const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	// WARNING: this function does not take m_blockchain_lock, and thus should only call read only
 	// m_db functions which do not depend on one another (ie, no getheight + gethash(height-1), as
 	// well as not accessing class members, even read only (ie, m_invalid_blocks). The caller must
@@ -744,12 +744,12 @@ crypto::hash Blockchain::get_block_id_by_height(uint64_t height) const
 	}
 	catch(const std::exception &e)
 	{
-		MERROR(std::string("Something went wrong fetching block hash by height: ") + e.what());
+		GULPS_ERRORF("Something went wrong fetching block hash by height: {}", e.what());
 		throw;
 	}
 	catch(...)
 	{
-		MERROR(std::string("Something went wrong fetching block hash by height"));
+		GULPS_ERROR("Something went wrong fetching block hash by height");
 		throw;
 	}
 	return null_hash;
@@ -757,7 +757,7 @@ crypto::hash Blockchain::get_block_id_by_height(uint64_t height) const
 //------------------------------------------------------------------
 bool Blockchain::get_block_by_hash(const crypto::hash &h, block &blk, bool *orphan) const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 
 	// try to find block in main chain
@@ -782,12 +782,12 @@ bool Blockchain::get_block_by_hash(const crypto::hash &h, block &blk, bool *orph
 	}
 	catch(const std::exception &e)
 	{
-		MERROR(std::string("Something went wrong fetching block by hash: ") + e.what());
+		GULPS_ERROR("Something went wrong fetching block by hash: {}", e.what());
 		throw;
 	}
 	catch(...)
 	{
-		MERROR(std::string("Something went wrong fetching block hash by hash"));
+		GULPS_ERROR("Something went wrong fetching block hash by hash");
 		throw;
 	}
 
@@ -800,7 +800,7 @@ bool Blockchain::get_block_by_hash(const crypto::hash &h, block &blk, bool *orph
 // less blocks than desired if there aren't enough.
 difficulty_type Blockchain::get_difficulty_for_next_block()
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 	std::vector<uint64_t> timestamps;
 	std::vector<difficulty_type> difficulties;
@@ -870,7 +870,7 @@ difficulty_type Blockchain::get_difficulty_for_next_block()
 // that had been removed.
 bool Blockchain::rollback_blockchain_switching(std::list<block> &original_chain, uint64_t rollback_height)
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 
 	// fail if rollback_height passed is too high
@@ -900,10 +900,10 @@ bool Blockchain::rollback_blockchain_switching(std::list<block> &original_chain,
 
 	m_hardfork->reorganize_from_chain_height(rollback_height);
 
-	LOG_PRINT_L1("Rollback to height " << rollback_height << " was successful.");
+	GULPS_LOGF_L1("Rollback to height {} was successful.", rollback_height );
 	if(original_chain.size())
 	{
-		LOG_PRINT_L1("Restoration to previous blockchain successful as well.");
+		GULPS_LOG_L1("Restoration to previous blockchain successful as well.");
 	}
 	return true;
 }
@@ -929,7 +929,7 @@ double calc_poisson_ln(double lam, uint64_t k)
 // boolean based on success therein.
 bool Blockchain::switch_to_alternative_blockchain(std::list<blocks_ext_by_hash::iterator> &alt_chain, bool discard_disconnected_chain)
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 
 	m_timestamps_and_difficulties_height = 0;
@@ -940,7 +940,7 @@ bool Blockchain::switch_to_alternative_blockchain(std::list<blocks_ext_by_hash::
 	// verify that main chain has front of alt chain's parent block
 	if(!m_db->block_exists(alt_chain.front()->second.bl.prev_id))
 	{
-		LOG_ERROR("Attempting to move to an alternate chain, but it doesn't appear to connect to the main chain!");
+		GULPS_LOG_ERROR("Attempting to move to an alternate chain, but it doesn't appear to connect to the main chain!");
 		return false;
 	}
 
@@ -964,11 +964,11 @@ bool Blockchain::switch_to_alternative_blockchain(std::list<blocks_ext_by_hash::
 		// This would fail later anyway
 		if(high_timestamp > get_adjusted_time() + block_ftl)
 		{
-			LOG_ERROR("Attempting to move to an alternate chain, but it failed FTL check! timestamp: " << high_timestamp << " limit: " << get_adjusted_time() + block_ftl);
+		GULPS_LOGF_ERROR("Attempting to move to an alternate chain, but it failed FTL check! timestamp: {} limit: {}", high_timestamp , get_adjusted_time() + block_ftl);
 			return false;
 		}
 
-		LOG_PRINT_L1("Poisson check triggered by reorg size of " << alt_chain_size);
+		GULPS_LOGF_L1("Poisson check triggered by reorg size of {}", alt_chain_size);
 
 		uint64_t failed_checks = 0, i = 1;
 		constexpr crypto::hash zero_hash = {{0}};
@@ -984,7 +984,7 @@ bool Blockchain::switch_to_alternative_blockchain(std::list<blocks_ext_by_hash::
 
 			if(low_timestamp >= high_timestamp)
 			{
-				LOG_PRINT_L1("Skipping check at depth " << i << " due to tampered timestamp on main chain.");
+				GULPS_LOGF_L1("Skipping check at depth {} due to tampered timestamp on main chain.", i );
 				failed_checks++;
 				continue;
 			}
@@ -992,17 +992,17 @@ bool Blockchain::switch_to_alternative_blockchain(std::list<blocks_ext_by_hash::
 			double lam = double(high_timestamp - low_timestamp) / double(common_config::DIFFICULTY_TARGET);
 			if(calc_poisson_ln(lam, alt_chain_size + i) < common_config::POISSON_LOG_P_REJECT)
 			{
-				LOG_PRINT_L1("Poisson check at depth " << i << " failed! delta_t: " << (high_timestamp - low_timestamp) << " size: " << alt_chain_size + i);
+				GULPS_LOGF_L1("Poisson check at depth {} failed! delta_t: {} size: {}", i , (high_timestamp - low_timestamp) , alt_chain_size + i);
 				failed_checks++;
 			}
 		}
 
 		i--; //Convert to number of checks
-		LOG_PRINT_L1("Poisson check result " << failed_checks << " fails out of " << i);
+		GULPS_LOGF_L1("Poisson check result {} fails out of {}", failed_checks , i);
 
 		if(failed_checks > i / 2)
 		{
-			LOG_ERROR("Attempting to move to an alternate chain, but it failed Poisson check! " << failed_checks << " fails out of " << i << " alt_chain_size: " << alt_chain_size);
+		GULPS_LOGF_ERROR("Attempting to move to an alternate chain, but it failed Poisson check! {} fails out of {} alt_chain_size: {}", failed_checks , i,  alt_chain_size);
 			return false;
 		}
 	}
@@ -1031,7 +1031,7 @@ bool Blockchain::switch_to_alternative_blockchain(std::list<blocks_ext_by_hash::
 		// return false
 		if(!r || !bvc.m_added_to_main_chain)
 		{
-			LOG_PRINT_L1("Failed to switch to alternative blockchain");
+			GULPS_LOG_L1("Failed to switch to alternative blockchain");
 
 			// rollback_blockchain_switching should be moved to two different
 			// functions: rollback and apply_chain, but for now we pretend it is
@@ -1042,7 +1042,7 @@ bool Blockchain::switch_to_alternative_blockchain(std::list<blocks_ext_by_hash::
 			// about them again so we can immediately dismiss them, but needs some
 			// looking into.
 			add_block_as_invalid(ch_ent->second, get_block_hash(ch_ent->second.bl));
-			LOG_PRINT_L1("The block was inserted as invalid while connecting new alternative chain, block_id: " << get_block_hash(ch_ent->second.bl));
+			GULPS_LOGF_L1("The block was inserted as invalid while connecting new alternative chain, block_id: {}", get_block_hash(ch_ent->second.bl));
 			m_alternative_chains.erase(*alt_ch_iter++);
 
 			for(auto alt_ch_to_orph_iter = alt_ch_iter; alt_ch_to_orph_iter != alt_chain.end();)
@@ -1064,7 +1064,7 @@ bool Blockchain::switch_to_alternative_blockchain(std::list<blocks_ext_by_hash::
 			bool r = handle_alternative_block(old_ch_ent, get_block_hash(old_ch_ent), bvc);
 			if(!r)
 			{
-				LOG_PRINT_L1("Failed to push ex-main chain blocks to alternative chain ");
+				GULPS_LOG_L1("Failed to push ex-main chain blocks to alternative chain ");
 				// previously this would fail the blockchain switching, but I don't
 				// think this is bad enough to warrant that.
 			}
@@ -1079,7 +1079,7 @@ bool Blockchain::switch_to_alternative_blockchain(std::list<blocks_ext_by_hash::
 
 	m_hardfork->reorganize_from_chain_height(split_height);
 
-	MGINFO_GREEN("REORGANIZE SUCCESS! on height: " << split_height << ", new blockchain size: " << m_db->height());
+	GULPS_GLOBALF_INFO_CLR(gulps::COLOR_GREEN, "REORGANIZE SUCCESS! on height: {}, new blockchain size: {}", split_height , m_db->height());
 	return true;
 }
 //------------------------------------------------------------------
@@ -1087,7 +1087,7 @@ bool Blockchain::switch_to_alternative_blockchain(std::list<blocks_ext_by_hash::
 // an alternate chain.
 difficulty_type Blockchain::get_next_difficulty_for_alternative_chain(const std::list<blocks_ext_by_hash::iterator> &alt_chain, block_extended_info &bei) const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	std::vector<uint64_t> timestamps;
 	std::vector<difficulty_type> cumulative_difficulties;
 
@@ -1170,14 +1170,14 @@ difficulty_type Blockchain::get_next_difficulty_for_alternative_chain(const std:
 //   a non-overflowing tx amount (dubious necessity on this check)
 bool Blockchain::prevalidate_miner_transaction(const block &b, uint64_t height)
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CHECK_AND_ASSERT_MES(b.miner_tx.vin.size() == 1, false, "coinbase transaction in the block has no inputs");
 	CHECK_AND_ASSERT_MES(b.miner_tx.vin[0].type() == typeid(txin_gen), false, "coinbase transaction in the block has the wrong type");
 	CHECK_AND_ASSERT_MES(b.miner_tx.rct_signatures.type == rct::RCTTypeNull, false, "V1 miner transactions are not allowed.");
 
 	if(boost::get<txin_gen>(b.miner_tx.vin[0]).height != height)
 	{
-		MWARNING("The miner transaction in block has invalid height: " << boost::get<txin_gen>(b.miner_tx.vin[0]).height << ", expected: " << height);
+		GULPS_WARNF("The miner transaction in block has invalid height: {}, expected: ", boost::get<txin_gen>(b.miner_tx.vin[0]).height, height);
 		return false;
 	}
 	GULPS_LOG_L1("Miner tx hash: ", get_transaction_hash(b.miner_tx));
@@ -1189,7 +1189,7 @@ bool Blockchain::prevalidate_miner_transaction(const block &b, uint64_t height)
 	//      does not overflow a uint64_t, and this transaction *is* a uint64_t...
 	if(!check_outs_overflow(b.miner_tx))
 	{
-		MERROR("miner transaction has money overflow in block " << get_block_hash(b));
+		GULPS_ERRORF("miner transaction has money overflow in block {}", get_block_hash(b));
 		return false;
 	}
 
@@ -1199,7 +1199,7 @@ bool Blockchain::prevalidate_miner_transaction(const block &b, uint64_t height)
 // This function validates the miner transaction reward
 bool Blockchain::validate_miner_transaction_v2(const block &b, uint64_t height, size_t cumulative_block_size, uint64_t fee, uint64_t &base_reward, uint64_t already_generated_coins, bool &partial_block_reward)
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	crypto::public_key tx_pub = get_tx_pub_key_from_extra(b.miner_tx);
 	crypto::key_derivation deriv;
 
@@ -1240,7 +1240,7 @@ bool Blockchain::validate_miner_transaction_v2(const block &b, uint64_t height, 
 
 	if(base_reward + fee < miner_money)
 	{
-		GULPS_VERIFYF_ERR_TX("coinbase transaction spend too much money ({}). Block reward is {}({}+{})", miner_money, base_reward + fee, base_reward, fee);
+		GULPS_VERIFYF_ERR_TX("coinbase transaction spend too much money ({}). Block reward is {}({}+{})", print_money(miner_money), print_money(base_reward + fee), print_money(base_reward), print_money(fee));
 		return false;
 	}
 
@@ -1249,7 +1249,7 @@ bool Blockchain::validate_miner_transaction_v2(const block &b, uint64_t height, 
 
 	if(dev_money_needed != dev_money)
 	{
-		GULPS_VERIFYF_ERR_TX("Coinbase transaction generates wrong dev fund amount. Generated {} nedded {}", dev_money, dev_money_needed);
+		GULPS_VERIFYF_ERR_TX("Coinbase transaction generates wrong dev fund amount. Generated {} nedded {}", print_money(dev_money), print_money(dev_money_needed));
 		return false;
 	}
 
@@ -1266,7 +1266,7 @@ bool Blockchain::validate_miner_transaction_v2(const block &b, uint64_t height, 
 
 bool Blockchain::validate_miner_transaction_v1(const block &b, size_t cumulative_block_size, uint64_t fee, uint64_t &base_reward, uint64_t already_generated_coins, bool &partial_block_reward)
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	//validate reward
 	uint64_t money_in_use = 0;
 	for(auto &o : b.miner_tx.vout)
@@ -1283,7 +1283,7 @@ bool Blockchain::validate_miner_transaction_v1(const block &b, size_t cumulative
 	}
 	if(base_reward + fee < money_in_use)
 	{
-		GULPS_VERIFYF_ERR_TX("coinbase transaction spend too much money ({}). Block reward is {}({}+{})", money_in_use, base_reward + fee, base_reward, fee);
+		GULPS_VERIFYF_ERR_TX("coinbase transaction spend too much money ({}). Block reward is {}({}+{})", print_money(money_in_use), print_money(base_reward + fee), print_money(base_reward), print_money(fee));
 		return false;
 	}
 
@@ -1301,7 +1301,7 @@ bool Blockchain::validate_miner_transaction_v1(const block &b, size_t cumulative
 // get the block sizes of the last <count> blocks, and return by reference <sz>.
 void Blockchain::get_last_n_blocks_sizes(std::vector<size_t> &sz, size_t count) const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 	auto h = m_db->height();
 
@@ -1321,13 +1321,13 @@ void Blockchain::get_last_n_blocks_sizes(std::vector<size_t> &sz, size_t count) 
 //------------------------------------------------------------------
 uint64_t Blockchain::get_current_cumulative_blocksize_limit() const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	return m_current_block_cumul_sz_limit;
 }
 //------------------------------------------------------------------
 uint64_t Blockchain::get_current_cumulative_blocksize_median() const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	return m_current_block_cumul_sz_median;
 }
 //------------------------------------------------------------------
@@ -1344,7 +1344,7 @@ uint64_t Blockchain::get_current_cumulative_blocksize_median() const
 // necessary at all.
 bool Blockchain::create_block_template(block &b, const account_public_address &miner_address, difficulty_type &diffic, uint64_t &height, uint64_t &expected_reward, const blobdata &ex_nonce)
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	size_t median_size;
 	uint64_t already_generated_coins;
 
@@ -1385,7 +1385,7 @@ bool Blockchain::create_block_template(block &b, const account_public_address &m
 		auto cur_res = m_tx_pool.m_transactions.find(cur_hash);
 		if(cur_res == m_tx_pool.m_transactions.end())
 		{
-			LOG_ERROR("Creating block template: error: transaction not found");
+			GULPS_LOG_ERROR("Creating block template: error: transaction not found");
 			continue;
 		}
 		tx_memory_pool::tx_details &cur_tx = cur_res->second;
@@ -1393,21 +1393,21 @@ bool Blockchain::create_block_template(block &b, const account_public_address &m
 		real_fee += cur_tx.fee;
 		if(cur_tx.blob_size != get_object_blobsize(cur_tx.tx))
 		{
-			LOG_ERROR("Creating block template: error: invalid transaction size");
+			GULPS_LOG_ERROR("Creating block template: error: invalid transaction size");
 		}
 
 		if(cur_tx.fee != cur_tx.tx.rct_signatures.txnFee)
 		{
-			LOG_ERROR("Creating block template: error: invalid fee");
+			GULPS_LOG_ERROR("Creating block template: error: invalid fee");
 		}
 	}
 	if(txs_size != real_txs_size)
 	{
-		LOG_ERROR("Creating block template: error: wrongly calculated transaction size");
+		GULPS_LOG_ERROR("Creating block template: error: wrongly calculated transaction size");
 	}
 	if(fee != real_fee)
 	{
-		LOG_ERROR("Creating block template: error: wrongly calculated fee");
+		GULPS_LOG_ERROR("Creating block template: error: wrongly calculated fee");
 	}
 	CRITICAL_REGION_END();
 	GULPS_LOGF_L1("Creating block template: height {}, median size {}, already generated coins {}, transaction size {}, fee {}", height, median_size, already_generated_coins, txs_size, fee);
@@ -1467,7 +1467,7 @@ bool Blockchain::create_block_template(block &b, const account_public_address &m
 #endif
 		return true;
 	}
-	LOG_ERROR("Failed to create_block_template with " << 10 << " tries");
+GULPS_LOGF_ERROR("Failed to create_block_template with {}, tries", 10);
 	return false;
 }
 //------------------------------------------------------------------
@@ -1475,7 +1475,7 @@ bool Blockchain::create_block_template(block &b, const account_public_address &m
 // the needed number of timestamps for the BLOCKCHAIN_TIMESTAMP_CHECK_WINDOW.
 bool Blockchain::complete_timestamps_vector(uint64_t start_top_height, std::vector<uint64_t> &timestamps)
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 
 	uint64_t window_size = check_hard_fork_feature(FORK_V3_DIFFICULTY) ? common_config::BLOCKCHAIN_TIMESTAMP_CHECK_WINDOW_V3 : common_config::BLOCKCHAIN_TIMESTAMP_CHECK_WINDOW_V2;
 
@@ -1503,7 +1503,7 @@ bool Blockchain::complete_timestamps_vector(uint64_t start_top_height, std::vect
 // a long forked chain eventually.
 bool Blockchain::handle_alternative_block(const block &b, const crypto::hash &id, block_verification_context &bvc)
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 	m_timestamps_and_difficulties_height = 0;
 	uint64_t block_height = get_block_height(b);
@@ -1528,8 +1528,7 @@ bool Blockchain::handle_alternative_block(const block &b, const crypto::hash &id
 	// this is a cheap test
 	if(!m_hardfork->check_for_height(b, block_height))
 	{
-		LOG_PRINT_L1("Block with id: " << id << std::endl
-									   << "has old version for height " << block_height);
+		GULPS_LOGF_L1("Block with id: {}\nhas old version for height {}", id , block_height);
 		bvc.m_verifivation_failed = true;
 		return false;
 	}
@@ -1600,7 +1599,7 @@ bool Blockchain::handle_alternative_block(const block &b, const crypto::hash &id
 		bool is_a_checkpoint;
 		if(!m_checkpoints.check_block(bei.height, id, is_a_checkpoint))
 		{
-			LOG_ERROR("CHECKPOINT VALIDATION FAILED");
+			GULPS_LOG_ERROR("CHECKPOINT VALIDATION FAILED");
 			bvc.m_verifivation_failed = true;
 			return false;
 		}
@@ -1649,7 +1648,7 @@ bool Blockchain::handle_alternative_block(const block &b, const crypto::hash &id
 		if(is_a_checkpoint)
 		{
 			//do reorganize!
-			MGINFO_GREEN("###### REORGANIZE on height: " << alt_chain.front()->second.height << " of " << m_db->height() - 1 << ", checkpoint is found in alternative chain on height " << bei.height);
+			GULPS_GLOBALF_INFO_CLR(gulps::COLOR_GREEN, "###### REORGANIZE on height: {} of {}, checkpoint is found in alternative chain on height {}", alt_chain.front()->second.height , m_db->height() - 1 , bei.height);
 
 			bool r = switch_to_alternative_blockchain(alt_chain, true);
 
@@ -1663,8 +1662,7 @@ bool Blockchain::handle_alternative_block(const block &b, const crypto::hash &id
 		else if(main_chain_cumulative_difficulty < bei.cumulative_difficulty) //check if difficulty bigger then in main chain
 		{
 			//do reorganize!
-			MGINFO_GREEN("###### REORGANIZE on height: " << alt_chain.front()->second.height << " of " << m_db->height() - 1 << " with cum_difficulty " << m_db->get_block_cumulative_difficulty(m_db->height() - 1) << std::endl
-														 << " alternative blockchain size: " << alt_chain.size() << " with cum_difficulty " << bei.cumulative_difficulty);
+			GULPS_GLOBALF_INFO_CLR(gulps::COLOR_GREEN, "###### REORGANIZE on height: {} of {} with cum_difficulty {} \nalternative blockchain size: {} with cum_difficulty {}", alt_chain.front()->second.height , m_db->height() - 1 , m_db->get_block_cumulative_difficulty(m_db->height() - 1) , alt_chain.size() ,bei.cumulative_difficulty);
 
 			bool r = switch_to_alternative_blockchain(alt_chain, false);
 			if(r)
@@ -1675,10 +1673,7 @@ bool Blockchain::handle_alternative_block(const block &b, const crypto::hash &id
 		}
 		else
 		{
-			MGINFO_BLUE("----- BLOCK ADDED AS ALTERNATIVE ON HEIGHT " << bei.height << std::endl
-																	  << "id:\t" << id << std::endl
-																	  << "PoW:\t" << proof_of_work << std::endl
-																	  << "difficulty:\t" << current_diff);
+			GULPS_GLOBALF_INFO_CLR(gulps::COLOR_BLUE, "----- BLOCK ADDED AS ALTERNATIVE ON HEIGHT {}\nid:\t{}\nPoW:\t{}\ndifficulty:\t{}", bei.height , id , proof_of_work , current_diff);
 			return true;
 		}
 	}
@@ -1697,7 +1692,7 @@ bool Blockchain::handle_alternative_block(const block &b, const crypto::hash &id
 //------------------------------------------------------------------
 bool Blockchain::get_blocks(uint64_t start_offset, size_t count, std::list<std::pair<cryptonote::blobdata, block>> &blocks, std::list<cryptonote::blobdata> &txs) const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 	if(start_offset >= m_db->height())
 		return false;
@@ -1719,7 +1714,7 @@ bool Blockchain::get_blocks(uint64_t start_offset, size_t count, std::list<std::
 //------------------------------------------------------------------
 bool Blockchain::get_blocks(uint64_t start_offset, size_t count, std::list<std::pair<cryptonote::blobdata, block>> &blocks) const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 	if(start_offset >= m_db->height())
 		return false;
@@ -1729,7 +1724,7 @@ bool Blockchain::get_blocks(uint64_t start_offset, size_t count, std::list<std::
 		blocks.push_back(std::make_pair(m_db->get_block_blob_from_height(i), block()));
 		if(!parse_and_validate_block_from_blob(blocks.back().first, blocks.back().second))
 		{
-			LOG_ERROR("Invalid block");
+			GULPS_LOG_ERROR("Invalid block");
 			return false;
 		}
 	}
@@ -1745,7 +1740,7 @@ bool Blockchain::get_blocks(uint64_t start_offset, size_t count, std::list<std::
 //       are missing.
 bool Blockchain::handle_get_objects(NOTIFY_REQUEST_GET_OBJECTS::request &arg, NOTIFY_RESPONSE_GET_OBJECTS::request &rsp)
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 	m_db->block_txn_start(true);
 	rsp.current_blockchain_height = get_current_blockchain_height();
@@ -1763,9 +1758,7 @@ bool Blockchain::handle_get_objects(NOTIFY_REQUEST_GET_OBJECTS::request &arg, NO
 
 		if(missed_tx_ids.size() != 0)
 		{
-			LOG_ERROR("Error retrieving blocks, missed " << missed_tx_ids.size()
-														 << " transactions for block with hash: " << get_block_hash(bl.second)
-														 << std::endl);
+		GULPS_LOGF_ERROR("Error retrieving blocks, missed {} transactions for block with hash: {}", missed_tx_ids.size() , get_block_hash(bl.second));
 
 			// append missed transaction hashes to response missed_ids field,
 			// as done below if any standalone transactions were requested
@@ -1796,7 +1789,7 @@ bool Blockchain::handle_get_objects(NOTIFY_REQUEST_GET_OBJECTS::request &arg, NO
 //------------------------------------------------------------------
 bool Blockchain::get_alternative_blocks(std::list<block> &blocks) const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 
 	for(const auto &alt_bl : m_alternative_chains)
@@ -1808,7 +1801,7 @@ bool Blockchain::get_alternative_blocks(std::list<block> &blocks) const
 //------------------------------------------------------------------
 size_t Blockchain::get_alternative_blocks_count() const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 	return m_alternative_chains.size();
 }
@@ -1817,7 +1810,7 @@ size_t Blockchain::get_alternative_blocks_count() const
 // unlocked and other such checks should be done by here.
 void Blockchain::add_out_to_get_random_outs(COMMAND_RPC_GET_RANDOM_OUTPUTS_FOR_AMOUNTS::outs_for_amount &result_outs, uint64_t amount, size_t i) const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 
 	COMMAND_RPC_GET_RANDOM_OUTPUTS_FOR_AMOUNTS::out_entry &oen = *result_outs.outs.insert(result_outs.outs.end(), COMMAND_RPC_GET_RANDOM_OUTPUTS_FOR_AMOUNTS::out_entry());
@@ -1924,7 +1917,7 @@ crypto::public_key Blockchain::get_output_key(uint64_t amount, uint64_t global_i
 // in some cases
 bool Blockchain::get_random_outs_for_amounts(const COMMAND_RPC_GET_RANDOM_OUTPUTS_FOR_AMOUNTS::request &req, COMMAND_RPC_GET_RANDOM_OUTPUTS_FOR_AMOUNTS::response &res) const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 
 	// for each amount that we need to get mixins for, get <n> random outputs
@@ -1952,7 +1945,7 @@ bool Blockchain::get_random_outs_for_amounts(const COMMAND_RPC_GET_RANDOM_OUTPUT
 // unlocked and other such checks should be done by here.
 void Blockchain::add_out_to_get_rct_random_outs(std::list<COMMAND_RPC_GET_RANDOM_RCT_OUTPUTS::out_entry> &outs, uint64_t amount, size_t i) const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 
 	COMMAND_RPC_GET_RANDOM_RCT_OUTPUTS::out_entry &oen = *outs.insert(outs.end(), COMMAND_RPC_GET_RANDOM_RCT_OUTPUTS::out_entry());
@@ -1969,7 +1962,7 @@ void Blockchain::add_out_to_get_rct_random_outs(std::list<COMMAND_RPC_GET_RANDOM
 // in some cases
 bool Blockchain::get_random_rct_outs(const COMMAND_RPC_GET_RANDOM_RCT_OUTPUTS::request &req, COMMAND_RPC_GET_RANDOM_RCT_OUTPUTS::response &res) const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 
 	// for each amount that we need to get mixins for, get <n> random outputs
@@ -2052,7 +2045,7 @@ bool Blockchain::get_random_rct_outs(const COMMAND_RPC_GET_RANDOM_RCT_OUTPUTS::r
   // which will have a zero mask
   if (res.outs.size() < req.outs_count)
   {
-    LOG_PRINT_L0("Out of RCT inputs (" << res.outs.size() << "/" << req.outs_count << "), using regular ones");
+    GULPS_PRINTF("Out of RCT inputs ({}/{}), using regular ones", res.outs.size(), req.outs_count);
 
     // TODO: arbitrary selection, needs better
     COMMAND_RPC_GET_RANDOM_OUTPUTS_FOR_AMOUNTS::request req2 = AUTO_VAL_INIT(req2);
@@ -2083,7 +2076,7 @@ bool Blockchain::get_random_rct_outs(const COMMAND_RPC_GET_RANDOM_RCT_OUTPUTS::r
 //------------------------------------------------------------------
 bool Blockchain::get_outs(const COMMAND_RPC_GET_OUTPUTS_BIN::request &req, COMMAND_RPC_GET_OUTPUTS_BIN::response &res) const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 
 	res.outs.clear();
@@ -2126,14 +2119,14 @@ bool Blockchain::get_output_distribution(uint64_t amount, uint64_t from_height, 
 // This is used to see what to send another node that needs to sync.
 bool Blockchain::find_blockchain_supplement(const std::list<crypto::hash> &qblock_ids, uint64_t &starter_offset) const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 
 	// make sure the request includes at least the genesis block, otherwise
 	// how can we expect to sync from the client that the block list came from?
 	if(!qblock_ids.size() /*|| !req.m_total_height*/)
 	{
-		MCERROR("net.p2p", "Client sent wrong NOTIFY_REQUEST_CHAIN: m_block_ids.size()=" << qblock_ids.size() << /*", m_height=" << req.m_total_height <<*/ ", dropping connection");
+		GULPS_CAT_ERRORF("net.p2p", "Client sent wrong NOTIFY_REQUEST_CHAIN: m_block_ids.size()={}, dropping connection", qblock_ids.size()/*", m_height=" << req.m_total_height <<*/);
 		return false;
 	}
 
@@ -2143,10 +2136,8 @@ bool Blockchain::find_blockchain_supplement(const std::list<crypto::hash> &qbloc
 	auto gen_hash = m_db->get_block_hash_from_height(0);
 	if(qblock_ids.back() != gen_hash)
 	{
-		MCERROR("net.p2p", "Client sent wrong NOTIFY_REQUEST_CHAIN: genesis block mismatch: " << std::endl
-																							  << "id: " << qblock_ids.back() << ", " << std::endl
-																							  << "expected: " << gen_hash << "," << std::endl
-																							  << " dropping connection");
+		GULPS_CAT_ERRORF("net.p2p", "Client sent wrong NOTIFY_REQUEST_CHAIN: genesis block mismatch: \nid: {}, \nexpected: {}, \n dropping connection",
+										  qblock_ids.back(), gen_hash);
 		m_db->block_txn_abort();
 		return false;
 	}
@@ -2164,7 +2155,7 @@ bool Blockchain::find_blockchain_supplement(const std::list<crypto::hash> &qbloc
 		}
 		catch(const std::exception &e)
 		{
-			MWARNING("Non-critical error trying to find block by hash in BlockchainDB, hash: " << *bl_it);
+			GULPS_WARNF("Non-critical error trying to find block by hash in BlockchainDB, hash: {}", *bl_it);
 			m_db->block_txn_abort();
 			return false;
 		}
@@ -2186,7 +2177,7 @@ bool Blockchain::find_blockchain_supplement(const std::list<crypto::hash> &qbloc
 //------------------------------------------------------------------
 uint64_t Blockchain::block_difficulty(uint64_t i) const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	// WARNING: this function does not take m_blockchain_lock, and thus should only call read only
 	// m_db functions which do not depend on one another (ie, no getheight + gethash(height-1), as
 	// well as not accessing class members, even read only (ie, m_invalid_blocks). The caller must
@@ -2207,7 +2198,7 @@ uint64_t Blockchain::block_difficulty(uint64_t i) const
 template <class t_ids_container, class t_blocks_container, class t_missed_container>
 bool Blockchain::get_blocks(const t_ids_container &block_ids, t_blocks_container &blocks, t_missed_container &missed_bs) const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 
 	for(const auto &block_hash : block_ids)
@@ -2217,7 +2208,7 @@ bool Blockchain::get_blocks(const t_ids_container &block_ids, t_blocks_container
 			blocks.push_back(std::make_pair(m_db->get_block_blob(block_hash), block()));
 			if(!parse_and_validate_block_from_blob(blocks.back().first, blocks.back().second))
 			{
-				LOG_ERROR("Invalid block");
+				GULPS_LOG_ERROR("Invalid block");
 				return false;
 			}
 		}
@@ -2238,7 +2229,7 @@ bool Blockchain::get_blocks(const t_ids_container &block_ids, t_blocks_container
 template <class t_ids_container, class t_tx_container, class t_missed_container>
 bool Blockchain::get_transactions_blobs(const t_ids_container &txs_ids, t_tx_container &txs, t_missed_container &missed_txs) const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 
 	for(const auto &tx_hash : txs_ids)
@@ -2262,7 +2253,7 @@ bool Blockchain::get_transactions_blobs(const t_ids_container &txs_ids, t_tx_con
 template <class t_ids_container, class t_tx_container, class t_missed_container>
 bool Blockchain::get_transactions(const t_ids_container &txs_ids, t_tx_container &txs, t_missed_container &missed_txs) const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 
 	for(const auto &tx_hash : txs_ids)
@@ -2275,7 +2266,7 @@ bool Blockchain::get_transactions(const t_ids_container &txs_ids, t_tx_container
 				txs.push_back(transaction());
 				if(!parse_and_validate_tx_from_blob(tx, txs.back()))
 				{
-					LOG_ERROR("Invalid transaction");
+					GULPS_LOG_ERROR("Invalid transaction");
 					return false;
 				}
 			}
@@ -2295,7 +2286,7 @@ bool Blockchain::get_transactions(const t_ids_container &txs_ids, t_tx_container
 // BLOCKS_IDS_SYNCHRONIZING_DEFAULT_COUNT additional (more recent) hashes.
 bool Blockchain::find_blockchain_supplement(const std::list<crypto::hash> &qblock_ids, std::list<crypto::hash> &hashes, uint64_t &start_height, uint64_t &current_height) const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 
 	// if we can't find the split point, return false
@@ -2318,7 +2309,7 @@ bool Blockchain::find_blockchain_supplement(const std::list<crypto::hash> &qbloc
 
 bool Blockchain::find_blockchain_supplement(const std::list<crypto::hash> &qblock_ids, NOTIFY_RESPONSE_CHAIN_ENTRY::request &resp) const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 
 	bool result = find_blockchain_supplement(qblock_ids, resp.m_block_ids, resp.start_height, resp.total_height);
@@ -2334,7 +2325,7 @@ bool Blockchain::find_blockchain_supplement(const std::list<crypto::hash> &qbloc
 // blocks by reference.
 bool Blockchain::find_blockchain_supplement(const uint64_t req_start_block, const std::list<crypto::hash> &qblock_ids, std::list<std::pair<cryptonote::blobdata, std::list<cryptonote::blobdata>>> &blocks, uint64_t &total_height, uint64_t &start_height, size_t max_count) const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 
 	// if a specific start height has been requested
@@ -2377,7 +2368,7 @@ bool Blockchain::find_blockchain_supplement(const uint64_t req_start_block, cons
 //------------------------------------------------------------------
 bool Blockchain::add_block_as_invalid(const block &bl, const crypto::hash &h)
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	block_extended_info bei = AUTO_VAL_INIT(bei);
 	bei.bl = bl;
 	return add_block_as_invalid(bei, h);
@@ -2385,35 +2376,34 @@ bool Blockchain::add_block_as_invalid(const block &bl, const crypto::hash &h)
 //------------------------------------------------------------------
 bool Blockchain::add_block_as_invalid(const block_extended_info &bei, const crypto::hash &h)
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 	auto i_res = m_invalid_blocks.insert(std::map<crypto::hash, block_extended_info>::value_type(h, bei));
 	CHECK_AND_ASSERT_MES(i_res.second, false, "at insertion invalid by tx returned status existed");
-	MINFO("BLOCK ADDED AS INVALID: " << h << std::endl
-									 << ", prev_id=" << bei.bl.prev_id << ", m_invalid_blocks count=" << m_invalid_blocks.size());
+	GULPS_INFOF("BLOCK ADDED AS INVALID: {}\n, prev_id={}, m_invalid_blocks count={}", h , bei.bl.prev_id , m_invalid_blocks.size());
 	return true;
 }
 //------------------------------------------------------------------
 bool Blockchain::have_block(const crypto::hash &id) const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 
 	if(m_db->block_exists(id))
 	{
-		LOG_PRINT_L3("block exists in main chain");
+		GULPS_LOG_L3("block exists in main chain");
 		return true;
 	}
 
 	if(m_alternative_chains.count(id))
 	{
-		LOG_PRINT_L3("block found in m_alternative_chains");
+		GULPS_LOG_L3("block found in m_alternative_chains");
 		return true;
 	}
 
 	if(m_invalid_blocks.count(id))
 	{
-		LOG_PRINT_L3("block found in m_invalid_blocks");
+		GULPS_LOG_L3("block found in m_invalid_blocks");
 		return true;
 	}
 
@@ -2422,14 +2412,14 @@ bool Blockchain::have_block(const crypto::hash &id) const
 //------------------------------------------------------------------
 bool Blockchain::handle_block_to_main_chain(const block &bl, block_verification_context &bvc)
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	crypto::hash id = get_block_hash(bl);
 	return handle_block_to_main_chain(bl, id, bvc);
 }
 //------------------------------------------------------------------
 size_t Blockchain::get_total_transactions() const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	// WARNING: this function does not take m_blockchain_lock, and thus should only call read only
 	// m_db functions which do not depend on one another (ie, no getheight + gethash(height-1), as
 	// well as not accessing class members, even read only (ie, m_invalid_blocks). The caller must
@@ -2445,7 +2435,7 @@ size_t Blockchain::get_total_transactions() const
 // remove them later if the block fails validation.
 bool Blockchain::check_for_double_spend(const transaction &tx, key_images_container &keys_this_block) const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 	struct add_transaction_input_visitor : public boost::static_visitor<bool>
 	{
@@ -2494,7 +2484,7 @@ bool Blockchain::check_for_double_spend(const transaction &tx, key_images_contai
 	{
 		if(!boost::apply_visitor(add_transaction_input_visitor(keys_this_block, m_db), in))
 		{
-			LOG_ERROR("Double spend detected!");
+			GULPS_LOG_ERROR("Double spend detected!");
 			return false;
 		}
 	}
@@ -2504,7 +2494,7 @@ bool Blockchain::check_for_double_spend(const transaction &tx, key_images_contai
 //------------------------------------------------------------------
 bool Blockchain::get_tx_outputs_gindexs(const crypto::hash &tx_id, std::vector<uint64_t> &indexs) const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 	uint64_t tx_index;
 	if(!m_db->tx_exists(tx_id, tx_index))
@@ -2537,9 +2527,7 @@ void Blockchain::on_new_tx_from_block(const cryptonote::transaction &tx)
 		if(m_show_time_stats)
 		{
 			size_t ring_size = !tx.vin.empty() && tx.vin[0].type() == typeid(txin_to_key) ? boost::get<txin_to_key>(tx.vin[0]).key_offsets.size() : 0;
-			MINFO("HASH: "
-				  << "-"
-				  << " I/M/O: " << tx.vin.size() << "/" << ring_size << "/" << tx.vout.size() << " H: " << 0 << " chcktx: " << a);
+			GULPS_INFOF("HASH: - I/M/O: {}/{}/{} H: {} chcktx: {}", tx.vin.size() , ring_size , tx.vout.size() , 0 ,a);
 		}
 	}
 #endif
@@ -2555,7 +2543,7 @@ void Blockchain::on_new_tx_from_block(const cryptonote::transaction &tx)
 // as a return-by-reference.
 bool Blockchain::check_tx_inputs(transaction &tx, uint64_t &max_used_block_height, crypto::hash &max_used_block_id, tx_verification_context &tvc, bool kept_by_block)
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 
 #if defined(PER_BLOCK_CHECKPOINT)
@@ -2574,7 +2562,7 @@ bool Blockchain::check_tx_inputs(transaction &tx, uint64_t &max_used_block_heigh
 	if(m_show_time_stats)
 	{
 		size_t ring_size = !tx.vin.empty() && tx.vin[0].type() == typeid(txin_to_key) ? boost::get<txin_to_key>(tx.vin[0]).key_offsets.size() : 0;
-		MINFO("HASH: " << get_transaction_hash(tx) << " I/M/O: " << tx.vin.size() << "/" << ring_size << "/" << tx.vout.size() << " H: " << max_used_block_height << " ms: " << a + m_fake_scan_time << " B: " << get_object_blobsize(tx));
+		GULPS_INFOF("HASH: {} I/M/O: {}/{}/{} H: {} ms: {} B: {}", get_transaction_hash(tx), tx.vin.size(), ring_size, tx.vout.size(), max_used_block_height, a + m_fake_scan_time, get_object_blobsize(tx));
 	}
 	if(!res)
 		return false;
@@ -2586,7 +2574,7 @@ bool Blockchain::check_tx_inputs(transaction &tx, uint64_t &max_used_block_heigh
 //------------------------------------------------------------------
 bool Blockchain::check_tx_outputs(const transaction &tx, tx_verification_context &tvc)
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 
 	for(auto &o : tx.vout)
@@ -2627,7 +2615,7 @@ bool Blockchain::check_tx_outputs(const transaction &tx, tx_verification_context
 //------------------------------------------------------------------
 bool Blockchain::have_tx_keyimges_as_spent(const transaction &tx) const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	for(const txin_v &in : tx.vin)
 	{
 		CHECKED_GET_SPECIFIC_VARIANT(in, const txin_to_key, in_to_key, true);
@@ -2715,7 +2703,7 @@ bool Blockchain::expand_transaction_2(transaction &tx, const crypto::hash &tx_pr
 bool Blockchain::check_tx_inputs(transaction &tx, tx_verification_context &tvc, uint64_t *pmax_used_block_height)
 {
 	PERF_TIMER(check_tx_inputs);
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	size_t sig_index = 0;
 	if(pmax_used_block_height)
 		*pmax_used_block_height = 0;
@@ -3099,7 +3087,7 @@ bool Blockchain::check_fee(const transaction &tx, size_t blob_size, uint64_t fee
 			return false;
 		fee_per_kb = get_dynamic_per_kb_fee(base_reward, median);
 
-		LOG_PRINT_L2("Using " << print_money(fee) << "/kB fee");
+		GULPS_LOGF_L2("Using {}/kB fee", print_money(fee) );
 
 		//WHO THOUGHT THAT FLOATS IN CONSENSUS CODE ARE A GOOD IDEA?????
 		float kB = (blob_size - CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE) * 1.0f / 1024;
@@ -3107,14 +3095,14 @@ bool Blockchain::check_fee(const transaction &tx, size_t blob_size, uint64_t fee
 
 		if(fee < needed_fee)
 		{
-			GULPS_VERIFYF_ERR_TX("transaction fee is not enough: {}, minimum fee: {}", fee, needed_fee);
+			GULPS_VERIFYF_ERR_TX("transaction fee is not enough: {}, minimum fee: {}", print_money(fee), print_money(needed_fee));
 			return false;
 		}
 	}
 
 	if(fee < needed_fee)
 	{
-		GULPS_VERIFYF_ERR_TX("transaction fee is not enough: {}, minimum fee: {}", fee, needed_fee);
+		GULPS_VERIFYF_ERR_TX("transaction fee is not enough: {}, minimum fee: {}", print_money(fee), print_money(needed_fee));
 		return false;
 	}
 	return true;
@@ -3125,7 +3113,7 @@ bool Blockchain::check_fee(const transaction &tx, size_t blob_size, uint64_t fee
 // a block index or a unix time.
 bool Blockchain::is_tx_spendtime_unlocked(uint64_t unlock_time) const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	// ND: Instead of calling get_current_blockchain_height(), call m_db->height()
 	//    directly as get_current_blockchain_height() locks the recursive mutex.
 	return m_db->height() - 1 + CRYPTONOTE_LOCKED_TX_ALLOWED_DELTA_BLOCKS >= unlock_time;
@@ -3136,7 +3124,7 @@ bool Blockchain::is_tx_spendtime_unlocked(uint64_t unlock_time) const
 // signature for each input.
 bool Blockchain::check_tx_input(size_t tx_version, const txin_to_key &txin, const crypto::hash &tx_prefix_hash, const std::vector<crypto::signature> &sig, const rct::rctSig &rct_signatures, std::vector<rct::ctkey> &output_keys, uint64_t *pmax_related_block_height)
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 
 	// ND:
 	// 1. Disable locking and make method private.
@@ -3174,13 +3162,13 @@ bool Blockchain::check_tx_input(size_t tx_version, const txin_to_key &txin, cons
 	outputs_visitor vi(output_keys, *this);
 	if(!scan_outputkeys_for_indexes(tx_version, txin, vi, tx_prefix_hash, pmax_related_block_height))
 	{
-		GULPS_VERIFYF_ERR_TX("Failed to get output keys for tx with amount = {} and count indexes {}", txin.amount , txin.key_offsets.size());
+		GULPS_VERIFYF_ERR_TX("Failed to get output keys for tx with amount = {} and count indexes {}", print_money(txin.amount), txin.key_offsets.size());
 		return false;
 	}
 
 	if(txin.key_offsets.size() != output_keys.size())
 	{
-		GULPS_VERIFYF_ERR_TX("Output keys for tx with amount = {} and count indexes {} returned wrong keys count {}", txin.amount , txin.key_offsets.size() , output_keys.size());
+		GULPS_VERIFYF_ERR_TX("Output keys for tx with amount = {} and count indexes {} returned wrong keys count {}", print_money(txin.amount), txin.key_offsets.size() , output_keys.size());
 		return false;
 	}
 	if(tx_version == 1)
@@ -3194,7 +3182,7 @@ bool Blockchain::check_tx_input(size_t tx_version, const txin_to_key &txin, cons
 //TODO: Is this intended to do something else?  Need to look into the todo there.
 uint64_t Blockchain::get_adjusted_time() const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	//TODO: add collecting median time
 	return time(NULL);
 }
@@ -3202,7 +3190,7 @@ uint64_t Blockchain::get_adjusted_time() const
 //TODO: revisit, has changed a bit on upstream
 bool Blockchain::check_block_timestamp(std::vector<uint64_t> &timestamps, const block &b, uint64_t &median_ts) const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	median_ts = epee::misc_utils::median(timestamps);
 
 	if(b.timestamp < median_ts)
@@ -3223,7 +3211,7 @@ bool Blockchain::check_block_timestamp(std::vector<uint64_t> &timestamps, const 
 //   false otherwise
 bool Blockchain::check_block_timestamp(const block &b, uint64_t &median_ts) const
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 
 	uint64_t block_future_time_limit = check_hard_fork_feature(FORK_V3_DIFFICULTY) ? common_config::BLOCK_FUTURE_TIME_LIMIT_V3 : common_config::BLOCK_FUTURE_TIME_LIMIT_V2;
 
@@ -3289,7 +3277,7 @@ bool Blockchain::flush_txes_from_pool(const std::list<crypto::hash> &txids)
 		size_t blob_size;
 		uint64_t fee;
 		bool relayed, do_not_relay, double_spend_seen;
-		MINFO("Removing txid " << txid << " from the pool");
+		GULPS_INFOF("Removing txid {} from the pool", txid );
 		if(m_tx_pool.have_tx(txid) && !m_tx_pool.take_tx(txid, tx, blob_size, fee, relayed, do_not_relay, double_spend_seen))
 		{
 			GULPS_ERRORF("Failed to remove txid {} from the pool",  txid );
@@ -3304,7 +3292,7 @@ bool Blockchain::flush_txes_from_pool(const std::list<crypto::hash> &txids)
 //      m_db->add_block()
 bool Blockchain::handle_block_to_main_chain(const block &bl, const crypto::hash &id, block_verification_context &bvc)
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 
 	TIME_MEASURE_START(block_processing_time);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
@@ -3325,12 +3313,11 @@ bool Blockchain::handle_block_to_main_chain(const block &bl, const crypto::hash 
 	if(!seen_future_version && bl.major_version > m_hardfork->get_ideal_version())
 	{
 		seen_future_version = true;
-		const el::Level level = el::Level::Warning;
-		MCLOG_RED(level, "global", "**********************************************************************");
-		MCLOG_RED(level, "global", "A block was seen on the network with a version higher than the last");
-		MCLOG_RED(level, "global", "known one. This may be an old version of the daemon, and a software");
-		MCLOG_RED(level, "global", "update may be required to sync further. Try running: update check");
-		MCLOG_RED(level, "global", "**********************************************************************");
+		GULPS_CAT_LOG_WARN("global", "**********************************************************************");
+		GULPS_CAT_LOG_WARN("global", "A block was seen on the network with a version higher than the last");
+		GULPS_CAT_LOG_WARN("global", "known one. This may be an old version of the daemon, and a software");
+		GULPS_CAT_LOG_WARN("global", "update may be required to sync further. Try running: update check");
+		GULPS_CAT_LOG_WARN("global", "**********************************************************************");
 	}
 
 	// this is a cheap test
@@ -3399,7 +3386,7 @@ bool Blockchain::handle_block_to_main_chain(const block &bl, const crypto::hash 
 		}
 		else
 		{
-			MCINFO("verify", "No pre-validated hash at height " << m_db->height() << ", verifying fully");
+			GULPS_CATF_PRINT("verify", "No pre-validated hash at height {}, verifying fully", m_db->height());
 		}
 	}
 	else
@@ -3431,7 +3418,7 @@ bool Blockchain::handle_block_to_main_chain(const block &bl, const crypto::hash 
 	{
 		if(!m_checkpoints.check_block(get_current_blockchain_height(), id))
 		{
-			LOG_ERROR("CHECKPOINT VALIDATION FAILED");
+			GULPS_LOG_ERROR("CHECKPOINT VALIDATION FAILED");
 			bvc.m_verifivation_failed = true;
 			goto leave;
 		}
@@ -3481,7 +3468,7 @@ bool Blockchain::handle_block_to_main_chain(const block &bl, const crypto::hash 
 		// XXX old code does not check whether tx exists
 		if(m_db->tx_exists(tx_id))
 		{
-			MERROR("Block with id: " << id << " attempting to add transaction already in blockchain with id: " << tx_id);
+			GULPS_ERRORF("Block with id: {} attempting to add transaction already in blockchain with id: {}", id , tx_id);
 			bvc.m_verifivation_failed = true;
 			return_tx_to_pool(txs);
 			goto leave;
@@ -3516,7 +3503,7 @@ bool Blockchain::handle_block_to_main_chain(const block &bl, const crypto::hash 
 		// ND: this is not needed, db->add_block() checks for duplicate k_images and fails accordingly.
 		// if (!check_for_double_spend(tx, keys))
 		// {
-		//     LOG_PRINT_L0("Double spend detected in transaction (id: " << tx_id);
+		//     GULPS_VERIFYF_ERR_BLK("Double spend detected in transaction (id: " << tx_id);
 		//     bvc.m_verifivation_failed = true;
 		//     break;
 		// }
@@ -3622,7 +3609,7 @@ bool Blockchain::handle_block_to_main_chain(const block &bl, const crypto::hash 
 		}
 		catch(const KEY_IMAGE_EXISTS &e)
 		{
-			LOG_ERROR("Error adding block with hash: " << id << " to blockchain, what = " << e.what());
+		GULPS_LOGF_ERROR("Error adding block with hash: {} to blockchain, what = {}", id , e.what());
 			bvc.m_verifivation_failed = true;
 			return_tx_to_pool(txs);
 			return false;
@@ -3630,14 +3617,14 @@ bool Blockchain::handle_block_to_main_chain(const block &bl, const crypto::hash 
 		catch(const std::exception &e)
 		{
 			//TODO: figure out the best way to deal with this failure
-			LOG_ERROR("Error adding block with hash: " << id << " to blockchain, what = " << e.what());
+		GULPS_LOGF_ERROR("Error adding block with hash: {} to blockchain, what = {}", id , e.what());
 			return_tx_to_pool(txs);
 			return false;
 		}
 	}
 	else
 	{
-		LOG_ERROR("Blocks that failed verification should not reach here");
+		GULPS_LOG_ERROR("Blocks that failed verification should not reach here");
 	}
 
 	TIME_MEASURE_FINISH(addblock);
@@ -3645,18 +3632,17 @@ bool Blockchain::handle_block_to_main_chain(const block &bl, const crypto::hash 
 	// do this after updating the hard fork state since the size limit may change due to fork
 	update_next_cumulative_size_limit();
 
-	MINFO("+++++ BLOCK SUCCESSFULLY ADDED" << std::endl
-										   << "id:\t" << id << std::endl
-										   << "PoW:\t" << proof_of_work << std::endl
-										   << "HEIGHT " << new_height - 1 << ", difficulty:\t" << current_diffic << std::endl
-										   << "block reward: " << print_money(fee_summary + base_reward) << "(" << print_money(base_reward) << " + " << print_money(fee_summary) << "), coinbase_blob_size: " << coinbase_blob_size << ", cumulative size: " << cumulative_block_size << ", " << block_processing_time << "(" << target_calculating_time << "/" << longhash_calculating_time << ")ms");
+	GULPS_INFOF("+++++ BLOCK SUCCESSFULLY ADDED\nid:\t{}\nPoW:\t{}\nHEIGHT {}, difficulty:\t{}\nblock reward: {}({}+{}), coinbase_blob_size: {} , cumulative size: {}, {}({}/{})ms", 
+										  id, proof_of_work, new_height - 1, current_diffic, 
+										  print_money(fee_summary + base_reward), print_money(base_reward), print_money(fee_summary),
+										  coinbase_blob_size, cumulative_block_size, block_processing_time, target_calculating_time, longhash_calculating_time);
 	if(m_show_time_stats)
 	{
-		MINFO("Height: " << new_height << " blob: " << coinbase_blob_size << " cumm: "
-						 << cumulative_block_size << " p/t: " << block_processing_time << " ("
-						 << target_calculating_time << "/" << longhash_calculating_time << "/"
-						 << t1 << "/" << t2 << "/" << t3 << "/" << t_exists << "/" << t_pool
-						 << "/" << t_checktx << "/" << t_dblspnd << "/" << vmt << "/" << addblock << ")ms");
+		GULPS_INFOF("Height: {} blob: {} cumm: {} p/t: {} ({}/{}/{}/{}/{}/{}/{}/{}/{}/{}/{})ms", 
+						 new_height, coinbase_blob_size, cumulative_block_size, block_processing_time,
+						 target_calculating_time , longhash_calculating_time,
+						 t1, t2, t3, t_exists, t_pool,
+						 t_checktx, t_dblspnd, vmt, addblock);
 	}
 
 	bvc.m_added_to_main_chain = true;
@@ -3672,7 +3658,7 @@ bool Blockchain::update_next_cumulative_size_limit()
 {
 	uint64_t full_reward_zone = get_min_block_size();
 
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	std::vector<size_t> sz;
 	get_last_n_blocks_sizes(sz, CRYPTONOTE_REWARD_BLOCKS_WINDOW);
 
@@ -3687,7 +3673,7 @@ bool Blockchain::update_next_cumulative_size_limit()
 //------------------------------------------------------------------
 bool Blockchain::add_new_block(const block &bl_, block_verification_context &bvc)
 {
-	LOG_PRINT_L3("Blockchain::" << __func__);
+	GULPS_LOG_L3("Blockchain::", __func__);
 	//copy block here to let modify block.target
 	block bl = bl_;
 	crypto::hash id = get_block_hash(bl);
@@ -3696,7 +3682,7 @@ bool Blockchain::add_new_block(const block &bl_, block_verification_context &bvc
 	m_db->block_txn_start(true);
 	if(have_block(id))
 	{
-		LOG_PRINT_L3("block with id = " << id << " already exists");
+		GULPS_LOGF_L3("block with id = {} already exists", id );
 		bvc.m_already_exists = true;
 		m_db->block_txn_stop();
 		m_blocks_txs_check.clear();
@@ -3741,13 +3727,13 @@ void Blockchain::check_against_checkpoints(const checkpoints &points, bool enfor
 			// if asked to enforce checkpoints, roll back to a couple of blocks before the checkpoint
 			if(enforce)
 			{
-				LOG_ERROR("Local blockchain failed to pass a checkpoint, rolling back!");
+				GULPS_LOG_ERROR("Local blockchain failed to pass a checkpoint, rolling back!");
 				std::list<block> empty;
 				rollback_blockchain_switching(empty, pt.first - 2);
 			}
 			else
 			{
-				LOG_ERROR("WARNING: local blockchain failed to pass a MoneroPulse checkpoint, and you could be on a fork. You should either sync up from scratch, OR download a fresh blockchain bootstrap, OR enable checkpoint enforcing with the --enforce-dns-checkpointing command-line option");
+				GULPS_LOG_ERROR("WARNING: local blockchain failed to pass a MoneroPulse checkpoint, and you could be on a fork. You should either sync up from scratch, OR download a fresh blockchain bootstrap, OR enable checkpoint enforcing with the --enforce-dns-checkpointing command-line option");
 			}
 		}
 	}
@@ -3821,7 +3807,7 @@ bool Blockchain::cleanup_handle_incoming_blocks(bool force_sync)
 {
 	bool success = false;
 
-	MTRACE("Blockchain::" << __func__);
+	GULPS_LOGF_L2("Blockchain::", __func__);
 	CRITICAL_REGION_BEGIN(m_blockchain_lock);
 	TIME_MEASURE_START(t1);
 
@@ -3832,7 +3818,7 @@ bool Blockchain::cleanup_handle_incoming_blocks(bool force_sync)
 	}
 	catch(const std::exception &e)
 	{
-		MERROR("Exception in cleanup_handle_incoming_blocks: " << e.what());
+		GULPS_ERRORF("Exception in cleanup_handle_incoming_blocks: {}", e.what());
 	}
 
 	if(success && m_sync_counter > 0)
@@ -3870,7 +3856,7 @@ bool Blockchain::cleanup_handle_incoming_blocks(bool force_sync)
 	// when we're well clear of the precomputed hashes, free the memory
 	if(!m_blocks_hash_check.empty() && m_db->height() > m_blocks_hash_check.size() + 4096)
 	{
-		MINFO("Dumping block hashes, we're now 4k past " << m_blocks_hash_check.size());
+		GULPS_INFOF("Dumping block hashes, we're now 4k past {}", m_blocks_hash_check.size());
 		m_blocks_hash_check.clear();
 		m_blocks_hash_check.shrink_to_fit();
 	}
@@ -4003,7 +3989,7 @@ uint64_t Blockchain::prevalidate_block_hashes(uint64_t height, const std::list<c
 //    keys.
 bool Blockchain::prepare_handle_incoming_blocks(const std::list<block_complete_entry> &blocks_entry)
 {
-	MTRACE("Blockchain::" << __func__);
+	GULPS_LOGF_L2("Blockchain::", __func__);
 	TIME_MEASURE_START(prepare);
 	bool stop_batch;
 	uint64_t bytes = 0;
@@ -4475,7 +4461,7 @@ void Blockchain::load_compiled_in_block_hashes()
 	const bool stagenet = m_nettype == STAGENET;
 	if(m_fast_sync && get_blocks_dat_start(testnet, stagenet) != nullptr && get_blocks_dat_size(testnet, stagenet) > 0)
 	{
-		MINFO("Loading precomputed blocks (" << get_blocks_dat_size(testnet, stagenet) << " bytes)");
+		GULPS_INFOF("Loading precomputed blocks ({} bytes)", get_blocks_dat_size(testnet, stagenet) );
 
 		if(m_nettype == MAINNET)
 		{
@@ -4486,7 +4472,7 @@ void Blockchain::load_compiled_in_block_hashes()
 				GULPS_ERROR("Failed to hash precomputed blocks data");
 				return;
 			}
-			MINFO("precomputed blocks hash: " << hash << ", expected " << expected_block_hashes_hash);
+			GULPS_INFOF("precomputed blocks hash: {}, expected {}", hash , expected_block_hashes_hash);
 			cryptonote::blobdata expected_hash_data;
 			if(!epee::string_tools::parse_hexstr_to_binbuff(std::string(expected_block_hashes_hash), expected_hash_data) || expected_hash_data.size() != sizeof(crypto::hash))
 			{
@@ -4523,7 +4509,7 @@ void Blockchain::load_compiled_in_block_hashes()
 					m_blocks_hash_of_hashes.push_back(hash);
 				}
 				m_blocks_hash_check.resize(m_blocks_hash_of_hashes.size() * HASH_OF_HASHES_STEP, crypto::null_hash);
-				MINFO(nblocks << " block hashes loaded");
+				GULPS_INFOF("{} block hashes loaded", nblocks);
 
 				// FIXME: clear tx_pool because the process might have been
 				// terminated and caused it to store txs kept by blocks.

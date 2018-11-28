@@ -665,6 +665,8 @@ public:
 #define GULPS_ERROR(...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_ERROR, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_BOLD_RED, __VA_ARGS__)
 #define GULPS_WARN(...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_WARN, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_BOLD_YELLOW, __VA_ARGS__)
 #define GULPS_INFO(...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_INFO, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_INFO_CLR(clr, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_INFO,  GULPS_CAT_MAJOR, GULPS_CAT_MINOR, clr, __VA_ARGS__)
+
 
 #define GULPS_DEBUG_PRINT(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_PRINT, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
 #define GULPS_LOG_ERROR(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_ERROR, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
@@ -687,12 +689,12 @@ public:
 #define GULPS_LOGF_L2(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_TRACE, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
 #define GULPS_LOGF_L3(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_TRACE2, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
 
-//TODO CHECK IF THESEARE OKAY, DO WE NEED FMT VERSION OF THOSE?
 #define GULPS_CAT_PRINT(min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_PRINT, GULPS_CAT_MAJOR, min, gulps::COLOR_WHITE, __VA_ARGS__)
 #define GULPS_CAT_PRINT_CLR(clr, min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_PRINT,  GULPS_CAT_MAJOR, min, clr, __VA_ARGS__)
 #define GULPS_CAT_ERROR(min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_ERROR, GULPS_CAT_MAJOR, min, gulps::COLOR_BOLD_RED, __VA_ARGS__)
 #define GULPS_CAT_WARN(min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_WARN, GULPS_CAT_MAJOR, min, gulps::COLOR_BOLD_YELLOW, __VA_ARGS__)
 #define GULPS_CAT_INFO(min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_INFO, GULPS_CAT_MAJOR, min, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_CAT_INFO_CLR(clr, min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_INFO, GULPS_CAT_MAJOR, min, clr, __VA_ARGS__)
 
 #define GULPS_CAT_DEBUG_PRINT(min, ...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_PRINT, GULPS_CAT_MAJOR, min, gulps::COLOR_WHITE, __VA_ARGS__)
 #define GULPS_CAT_LOG_ERROR(min, ...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_ERROR, GULPS_CAT_MAJOR, min, gulps::COLOR_WHITE, __VA_ARGS__)
@@ -702,7 +704,15 @@ public:
 #define GULPS_CAT_LOG_L2(min, ...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_TRACE, GULPS_CAT_MAJOR, min, gulps::COLOR_WHITE, __VA_ARGS__)
 #define GULPS_CAT_LOG_L3(min, ...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_TRACE2, GULPS_CAT_MAJOR, min, gulps::COLOR_WHITE, __VA_ARGS__)
 
-//CAT2 BEACUSE WE OVERRIDE 2 CATEGORIES HERE MAJ AND MIN
+#define GULPS_CATF_PRINT(min, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_PRINT, GULPS_CAT_MAJOR, min, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_CATF_PRINT_CLR(clr, min, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_PRINT, GULPS_CAT_MAJOR, min, clr, __VA_ARGS__)
+#define GULPS_CATF_WARN(min, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_WARN, GULPS_CAT_MAJOR, min, gulps::COLOR_BOLD_YELLOW, __VA_ARGS__)
+#define GULPS_CATF_INFO(min, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_INFO, GULPS_CAT_MAJOR, min, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_CATF_INFO_CLR(clr, min, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_INFO, GULPS_CAT_MAJOR, min, clr, __VA_ARGS__)
+
+#define GULPS_CATF_LOG_L1(min, ...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_DEBUG, GULPS_CAT_MAJOR, min, gulps::COLOR_WHITE, __VA_ARGS__)
+
+
 #define GULPS_CAT2_PRINT(maj, min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_PRINT, maj, min, gulps::COLOR_WHITE, __VA_ARGS__)
 #define GULPS_CAT2_PRINT_CLR(clr, maj, min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_PRINT,  maj, min, clr, __VA_ARGS__)
 #define GULPS_CAT2_ERROR(maj, min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_ERROR, maj, min, gulps::COLOR_BOLD_RED, __VA_ARGS__)
@@ -724,6 +734,12 @@ public:
 
 #define GULPS_VERIFYF_ERR_TX(...) GULPS_CAT_ERRORF("verify - tx", __VA_ARGS__)
 #define GULPS_VERIFYF_ERR_BLK(...) GULPS_CAT_ERRORF("verify - block", __VA_ARGS__)
+
+#define GULPS_GLOBAL_INFO(...) GULPS_CAT_INFO("global", __VA_ARGS__)
+#define GULPS_GLOBAL_INFO_CLR(clr, ...) GULPS_CAT_INFO_CLR(clr, "global", __VA_ARGS__)
+
+#define GULPS_GLOBALF_INFO(...) GULPS_CATF_INFO("global", __VA_ARGS__)
+#define GULPS_GLOBALF_INFO_CLR(clr, ...) GULPS_CATF_INFO_CLR(clr, "global", __VA_ARGS__)
 /*
 #define GULPS_ERROR(...) GULPS_OUTPUT(gulps::LEVEL_ERROR, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, fmt::color::red, __VA_ARGS__)
 #define GULPS_WARN(fstr, ...) GULPS_OUTPUT(gulps::LEVEL_WARN, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, fmt::color::orange, fstr, __VA_ARGS__)
