@@ -41,12 +41,18 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#ifdef GULPS_CAT_MAJOR
+    #undef GULPS_CAT_MAJOR
+#define GULPS_CAT_MAJOR "scpd_msg_wtr"
+#endif
 
 #pragma once
 
 #include "misc_log_ex.h"
 #include "readline_buffer.h"
 #include <iostream>
+
+#include "common/gulps.hpp"
 
 namespace tools
 {
@@ -104,20 +110,19 @@ class scoped_message_writer
 		{
 			m_flush = false;
 
-			MCLOG_FILE(m_log_level, "msgwriter", m_oss.str());
+			//TODO SHOULD WE LOG BASED ON GIVEN LEVEL?
+			GULPS_CAT_LOG_L0("msgwriter", m_oss.str());
 
 			if(epee::console_color_default == m_color)
 			{
-				std::cout << m_oss.str();
+				GULPS_PRINT(m_oss.str());
 			}
 			else
 			{
 				PAUSE_READLINE();
-				set_console_color(m_color, m_bright);
-				std::cout << m_oss.str();
-				epee::reset_console_color();
+			//TODO m_color
+				GULPS_PRINT_CLR(/*m_color*/ gulps::COLOR_WHITE, m_oss.str());
 			}
-			std::cout << std::endl;
 		}
 	}
 };

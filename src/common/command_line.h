@@ -43,6 +43,10 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
+#ifdef GULPS_CAT_MAJOR
+    #undef GULPS_CAT_MAJOR
+    #define GULPS_CAT_MAJOR "cmd_line"
+#endif
 
 #pragma once
 
@@ -56,6 +60,9 @@
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
 #include <boost/program_options/variables_map.hpp>
+
+#include "common/gulps.hpp"
+
 
 namespace command_line
 {
@@ -259,14 +266,14 @@ bool handle_error_helper(const boost::program_options::options_description &desc
 	}
 	catch(const std::exception &e)
 	{
-		std::cerr << "Failed to parse arguments: " << e.what() << std::endl;
-		std::cerr << desc << std::endl;
+		GULPS_ERRORF( "Failed to parse arguments: {}", e.what());
+		GULPS_ERROR(desc);
 		return false;
 	}
 	catch(...)
 	{
-		std::cerr << "Failed to parse arguments: unknown exception" << std::endl;
-		std::cerr << desc << std::endl;
+		GULPS_ERRORF( "Failed to parse arguments: unknown exception");
+		GULPS_ERROR(desc);
 		return false;
 	}
 }

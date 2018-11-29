@@ -41,6 +41,7 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#define GULPS_CAT_MAJOR "dns_utils"
 
 #include "common/dns_utils.h"
 // check local first (in the event of static or in-source compilation of libunbound)
@@ -55,6 +56,8 @@
 #include <stdlib.h>
 using namespace epee;
 namespace bf = boost::filesystem;
+
+#include "common/gulps.hpp"
 
 //#undef RYO_DEFAULT_LOG_CATEGORY
 //#define RYO_DEFAULT_LOG_CATEGORY "net.dns"
@@ -236,12 +239,12 @@ DNSResolver::DNSResolver() : m_data(new DNSResolverData())
 		dns_public_addr = tools::dns_utils::parse_dns_public(res);
 		if(!dns_public_addr.empty())
 		{
-			MGINFO("Using public DNS server(s): " << boost::join(dns_public_addr, ", ") << " (TCP)");
+			GULPS_INFOF("Using public DNS server(s): {} (TCP)", boost::join(dns_public_addr, ", "));
 			use_dns_public = 1;
 		}
 		else
 		{
-			MERROR("Failed to parse DNS_PUBLIC");
+			GULPS_ERROR("Failed to parse DNS_PUBLIC");
 		}
 	}
 
@@ -265,7 +268,7 @@ DNSResolver::DNSResolver() : m_data(new DNSResolverData())
 	const char * const *ds = ::get_builtin_ds();
 	while (*ds)
 	{
-		MINFO("adding trust anchor: " << *ds);
+		GULPS_INFOF("adding trust anchor: {}", *ds);
 		ub_ctx_add_ta(m_data->m_ub_context, string_copy(*ds++));
 	}
 }
@@ -426,12 +429,12 @@ bool load_txt_records_from_dns(std::vector<std::string> &good_records, const std
 		if(!avail[cur_index])
 		{
 			records[cur_index].clear();
-			LOG_PRINT_L2("DNSSEC not available for checkpoint update at URL: " << url << ", skipping.");
+			GULPS_LOGF_L2("DNSSEC not available for checkpoint update at URL: {}, skipping.", url);
 		}
 		if(!valid[cur_index])
 		{
 			records[cur_index].clear();
-			LOG_PRINT_L2("DNSSEC validation failed for checkpoint update at URL: " << url << ", skipping.");
+			GULPS_LOGF_L2("DNSSEC validation failed for checkpoint update at URL: {}, skipping.", url);
 		}
 
 		cur_index++;
@@ -453,7 +456,7 @@ bool load_txt_records_from_dns(std::vector<std::string> &good_records, const std
 
 	if(num_valid_records < 2)
 	{
-		//LOG_PRINT_L0("WARNING: no two valid MoneroPulse DNS checkpoint records were received");
+		//GULPS_LOG_L0("WARNING: no two valid MoneroPulse DNS checkpoint records were received");
 		return false;
 	}
 
@@ -477,7 +480,7 @@ bool load_txt_records_from_dns(std::vector<std::string> &good_records, const std
 
 	if(good_records_index < 0)
 	{
-		//LOG_PRINT_L0("WARNING: no two MoneroPulse DNS checkpoint records matched");
+		//GULPS_LOG_L0("WARNING: no two MoneroPulse DNS checkpoint records matched");
 		return false;
 	}
 
@@ -494,13 +497,13 @@ std::vector<std::string> parse_dns_public(const char *s)
 	{
 		for(size_t i = 0; i < sizeof(DEFAULT_DNS_PUBLIC_ADDR) / sizeof(DEFAULT_DNS_PUBLIC_ADDR[0]); ++i)
 			dns_public_addr.push_back(DEFAULT_DNS_PUBLIC_ADDR[i]);
-		LOG_PRINT_L0("Using default public DNS server(s): " << boost::join(dns_public_addr, ", ") << " (TCP)");
+			GULPS_LOGF_L0("Using default public DNS server(s):{}  (TCP)", boost::join(dns_public_addr, ", "));
 	}
 	else if(sscanf(s, "tcp://%u.%u.%u.%u%c", &ip0, &ip1, &ip2, &ip3, &c) == 4)
 	{
 		if(ip0 > 255 || ip1 > 255 || ip2 > 255 || ip3 > 255)
 		{
-			MERROR("Invalid IP: " << s << ", using default");
+			GULPS_ERRORF("Invalid IP: {}, using default", s);
 		}
 		else
 		{
@@ -509,7 +512,7 @@ std::vector<std::string> parse_dns_public(const char *s)
 	}
 	else
 	{
-		MERROR("Invalid DNS_PUBLIC contents, ignored");
+		GULPS_ERROR("Invalid DNS_PUBLIC contents, ignored");
 	}
 	return dns_public_addr;
 }

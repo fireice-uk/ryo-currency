@@ -43,7 +43,10 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-#define GULPS_CAT_MAJOR "blockchain"
+#ifdef GULPS_CAT_MAJOR
+    #undef GULPS_CAT_MAJOR
+    #define GULPS_CAT_MAJOR "blockchain"
+#endif
 
 #include <algorithm>
 #include <boost/filesystem.hpp>
@@ -2126,7 +2129,7 @@ bool Blockchain::find_blockchain_supplement(const std::list<crypto::hash> &qbloc
 	// how can we expect to sync from the client that the block list came from?
 	if(!qblock_ids.size() /*|| !req.m_total_height*/)
 	{
-		GULPS_CAT_ERRORF("net.p2p", "Client sent wrong NOTIFY_REQUEST_CHAIN: m_block_ids.size()={}, dropping connection", qblock_ids.size()/*", m_height=" << req.m_total_height <<*/);
+		GULPS_CATF_ERROR("net.p2p", "Client sent wrong NOTIFY_REQUEST_CHAIN: m_block_ids.size()={}, dropping connection", qblock_ids.size()/*", m_height=" << req.m_total_height <<*/);
 		return false;
 	}
 
@@ -2136,7 +2139,7 @@ bool Blockchain::find_blockchain_supplement(const std::list<crypto::hash> &qbloc
 	auto gen_hash = m_db->get_block_hash_from_height(0);
 	if(qblock_ids.back() != gen_hash)
 	{
-		GULPS_CAT_ERRORF("net.p2p", "Client sent wrong NOTIFY_REQUEST_CHAIN: genesis block mismatch: \nid: {}, \nexpected: {}, \n dropping connection",
+		GULPS_CATF_ERROR("net.p2p", "Client sent wrong NOTIFY_REQUEST_CHAIN: genesis block mismatch: \nid: {}, \nexpected: {}, \n dropping connection",
 										  qblock_ids.back(), gen_hash);
 		m_db->block_txn_abort();
 		return false;

@@ -43,6 +43,10 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
+#ifdef GULPS_CAT_MAJOR
+    #undef GULPS_CAT_MAJOR
+    #define GULPS_CAT_MAJOR "cmn_util"
+#endif
 
 #pragma once
 
@@ -61,6 +65,8 @@
 #endif
 
 #include "crypto/hash.h"
+
+#include "common/gulps.hpp"
 
 /*! \brief Various Tools
  *
@@ -194,7 +200,7 @@ class signal_handler
 		}
 		else
 		{
-			MGINFO_RED("Got control signal " << type << ". Exiting without saving...");
+			GULPS_GLOBALF_INFO_CLR(gulps::COLOR_RED, "Got control signal {}. Exiting without saving...", type);
 			return FALSE;
 		}
 		return TRUE;

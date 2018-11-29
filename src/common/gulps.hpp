@@ -706,6 +706,7 @@ public:
 
 #define GULPS_CATF_PRINT(min, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_PRINT, GULPS_CAT_MAJOR, min, gulps::COLOR_WHITE, __VA_ARGS__)
 #define GULPS_CATF_PRINT_CLR(clr, min, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_PRINT, GULPS_CAT_MAJOR, min, clr, __VA_ARGS__)
+#define GULPS_CATF_ERROR(min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_ERROR, GULPS_CAT_MAJOR, min, gulps::COLOR_BOLD_RED, __VA_ARGS__)
 #define GULPS_CATF_WARN(min, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_WARN, GULPS_CAT_MAJOR, min, gulps::COLOR_BOLD_YELLOW, __VA_ARGS__)
 #define GULPS_CATF_INFO(min, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_INFO, GULPS_CAT_MAJOR, min, gulps::COLOR_WHITE, __VA_ARGS__)
 #define GULPS_CATF_INFO_CLR(clr, min, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_INFO, GULPS_CAT_MAJOR, min, clr, __VA_ARGS__)
@@ -727,13 +728,13 @@ public:
 #define GULPS_CAT2_LOG_L2(maj, min, ...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_TRACE, maj, min, gulps::COLOR_WHITE, __VA_ARGS__)
 #define GULPS_CAT2_LOG_L3(maj, min, ...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_TRACE2, maj, min, gulps::COLOR_WHITE, __VA_ARGS__)
 
-#define GULPS_CAT_ERRORF(min, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_ERROR, GULPS_CAT_MAJOR, min, gulps::COLOR_BOLD_RED, __VA_ARGS__)
+#define GULPS_CAT2_ERRORF(maj, min, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_ERROR, maj, min, gulps::COLOR_BOLD_RED, __VA_ARGS__)
 
-#define GULPS_VERIFY_ERR_TX(...) GULPS_CAT_ERROR("verify - tx", __VA_ARGS__)
-#define GULPS_VERIFY_ERR_BLK(...) GULPS_CAT_ERROR("verify - block", __VA_ARGS__)
+#define GULPS_VERIFY_ERR_TX(...) GULPS_CAT2_ERROR("verify", "tx", __VA_ARGS__)
+#define GULPS_VERIFY_ERR_BLK(...) GULPS_CAT2_ERROR("verify", "block", __VA_ARGS__)
 
-#define GULPS_VERIFYF_ERR_TX(...) GULPS_CAT_ERRORF("verify - tx", __VA_ARGS__)
-#define GULPS_VERIFYF_ERR_BLK(...) GULPS_CAT_ERRORF("verify - block", __VA_ARGS__)
+#define GULPS_VERIFYF_ERR_TX(...) GULPS_CAT2_ERRORF("verify", "x", __VA_ARGS__)
+#define GULPS_VERIFYF_ERR_BLK(...) GULPS_CAT2_ERRORF("verify", "block", __VA_ARGS__)
 
 #define GULPS_GLOBAL_INFO(...) GULPS_CAT_INFO("global", __VA_ARGS__)
 #define GULPS_GLOBAL_INFO_CLR(clr, ...) GULPS_CAT_INFO_CLR(clr, "global", __VA_ARGS__)

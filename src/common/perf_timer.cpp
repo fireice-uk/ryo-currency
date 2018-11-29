@@ -41,10 +41,15 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#define GULPS_CAT_MAJOR "perf_timer"
+
 
 #include "perf_timer.h"
 #include "misc_os_dependent.h"
 #include <vector>
+
+#include "common/gulps.hpp"
+
 
 //#undef RYO_DEFAULT_LOG_CATEGORY
 //#define RYO_DEFAULT_LOG_CATEGORY "perf"
@@ -107,7 +112,7 @@ void set_performance_timer_log_level(el::Level level)
 {
 	if(level != el::Level::Debug && level != el::Level::Trace && level != el::Level::Info && level != el::Level::Warning && level != el::Level::Error && level != el::Level::Fatal)
 	{
-		MERROR("Wrong log level: " << el::LevelHelper::convertToString(level) << ", using Debug");
+		GULPS_ERRORF("Wrong log level: {}, using Debug", el::LevelHelper::convertToString(level));
 		level = el::Level::Debug;
 	}
 	performance_timer_log_level = level;
@@ -117,8 +122,9 @@ PerformanceTimer::PerformanceTimer(const std::string &s, uint64_t unit, el::Leve
 {
 	ticks = get_tick_count();
 	if(!performance_timers)
-	{
-		MLOG(level, "PERF             ----------");
+	{	
+		//TODO SHOULD WE LOG BASED ON GIVEN LEVEL?
+		GULPS_LOG_L1("PERF             ----------");
 		performance_timers = new std::vector<PerformanceTimer *>();
 	}
 	else
@@ -130,7 +136,8 @@ PerformanceTimer::PerformanceTimer(const std::string &s, uint64_t unit, el::Leve
 			for(const auto *tmp : *performance_timers)
 				if(!tmp->paused)
 					++size;
-			MLOG(pt->level, "PERF           " << std::string((size - 1) * 2, ' ') << "  " << pt->name);
+			//TODO SHOULD WE LOG BASED ON GIVEN LEVEL?
+			GULPS_LOGF_L1("PERF           {} {}", std::string((size - 1) * 2, ' '), pt->name);
 			pt->started = true;
 		}
 	}
@@ -143,12 +150,13 @@ PerformanceTimer::~PerformanceTimer()
 	if(!paused)
 		ticks = get_tick_count() - ticks;
 	char s[12];
-	snprintf(s, sizeof(s), "%8llu  ", (unsigned long long)(ticks_to_ns(ticks) / (1000000000 / unit)));
+	GULPS_PRINTF("{}{}{}{}",s , sizeof(s), "%8llu  ", (unsigned long long)(ticks_to_ns(ticks) / (1000000000 / unit)));
 	size_t size = 0;
 	for(const auto *tmp : *performance_timers)
 		if(!tmp->paused || tmp == this)
 			++size;
-	MLOG(level, "PERF " << s << std::string(size * 2, ' ') << "  " << name);
+	//TODO SHOULD WE LOG BASED ON GIVEN LEVEL?
+	GULPS_LOGF_L1("PERF {}{} {}", s, std::string(size * 2, ' '), name);
 	if(performance_timers->empty())
 	{
 		delete performance_timers;

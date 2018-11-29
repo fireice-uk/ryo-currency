@@ -250,7 +250,7 @@ bool tx_memory_pool::add_tx(transaction &tx, /*const crypto::hash& tx_prefix_has
 			}
 			catch(const std::exception &e)
 			{
-				GULPS_ERRORF("transaction already exists at inserting in memory pool: " , e.what());
+				GULPS_ERRORF("transaction already exists at inserting in memory pool: {}" , e.what());
 				return false;
 			}
 			tvc.m_verifivation_impossible = true;
@@ -293,7 +293,7 @@ bool tx_memory_pool::add_tx(transaction &tx, /*const crypto::hash& tx_prefix_has
 		}
 		catch(const std::exception &e)
 		{
-			GULPS_ERRORF("internal error: transaction already exists at inserting in memory pool: " , e.what());
+			GULPS_ERRORF("internal error: transaction already exists at inserting in memory pool: {}" , e.what());
 			return false;
 		}
 		tvc.m_added_to_pool = true;
@@ -379,7 +379,7 @@ void tx_memory_pool::prune(size_t bytes)
 		}
 		catch(const std::exception &e)
 		{
-			GULPS_ERRORF("Error while pruning txpool: " , e.what());
+			GULPS_ERRORF("Error while pruning txpool: {}" , e.what());
 			return;
 		}
 	}
@@ -473,7 +473,7 @@ bool tx_memory_pool::take_tx(const crypto::hash &id, transaction &tx, size_t &bl
 	}
 	catch(const std::exception &e)
 	{
-		GULPS_ERRORF("Failed to remove tx from txpool: " , e.what());
+		GULPS_ERRORF("Failed to remove tx from txpool: {}" , e.what());
 		return false;
 	}
 
@@ -608,7 +608,7 @@ void tx_memory_pool::set_relayed(const std::list<std::pair<crypto::hash, crypton
 		}
 		catch(const std::exception &e)
 		{
-			GULPS_ERRORF("Failed to update txpool transaction metadata: " , e.what());
+			GULPS_ERRORF("Failed to update txpool transaction metadata: {}" , e.what());
 			// continue
 		}
 	}
@@ -802,7 +802,7 @@ bool tx_memory_pool::get_transactions_and_spent_keys_info(std::vector<tx_info> &
 				}
 				catch(const std::exception &e)
 				{
-					GULPS_ERRORF("Failed to get tx meta from txpool: " , e.what());
+					GULPS_ERRORF("Failed to get tx meta from txpool: {}" , e.what());
 					return false;
 				}
 			}
@@ -1037,7 +1037,7 @@ void tx_memory_pool::mark_double_spend(const transaction &tx)
 					}
 					catch(const std::exception &e)
 					{
-						GULPS_ERRORF("Failed to update tx meta: " , e.what());
+						GULPS_ERRORF("Failed to update tx meta: {}" , e.what());
 						// continue, not fatal
 					}
 				}
@@ -1155,7 +1155,7 @@ bool tx_memory_pool::fill_block_template(block &bl, size_t median_size, uint64_t
 			}
 			catch(const std::exception &e)
 			{
-				GULPS_ERRORF("Failed to update tx meta: " , e.what());
+				GULPS_ERRORF("Failed to update tx meta: {}" , e.what());
 				// continue, not fatal
 			}
 		}

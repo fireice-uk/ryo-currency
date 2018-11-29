@@ -230,7 +230,7 @@ bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std
 			crypto::hash8 payment_id = null_hash8;
 			if(get_encrypted_payment_id_from_tx_extra_nonce(extra_nonce.nonce, payment_id))
 			{
-				GULPS_LOGF_L2("Encrypting payment id " , payment_id.data);
+				GULPS_LOGF_L2("Encrypting payment id {}" , payment_id.data);
 				crypto::public_key view_key_pub = get_destination_view_key_pub(destinations, change_addr);
 				if(view_key_pub == null_pkey)
 				{
@@ -252,7 +252,7 @@ bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std
 					GULPS_LOG_ERROR("Failed to add encrypted payment id to tx extra");
 					return false;
 				}
-				GULPS_LOGF_L1("Encrypted payment ID: " , payment_id.data);
+				GULPS_LOGF_L1("Encrypted payment ID: {}" , payment_id.data);
 			}
 		}
 	}
@@ -423,7 +423,7 @@ bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std
 
 	remove_field_from_tx_extra(tx.extra, typeid(tx_extra_additional_pub_keys));
 
-	GULPS_LOGF_L2("tx pubkey: " , txkey_pub);
+	GULPS_LOGF_L2("tx pubkey: {}" , txkey_pub);
 	if(need_additional_txkeys)
 	{
 		GULPS_LOG_L2("additional tx pubkeys: ");

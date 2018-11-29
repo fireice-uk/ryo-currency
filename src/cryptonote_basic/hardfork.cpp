@@ -41,6 +41,7 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#define GULPS_CAT_MAJOR "crybas_hfork"
 
 #include <algorithm>
 #include <cstdio>
@@ -49,7 +50,7 @@
 #include "cryptonote_basic/cryptonote_basic.h"
 #include "hardfork.h"
 
-#define GULPS_CAT_MAJOR "crybas_hfork"
+
 #include "common/gulps.hpp"
 
 //#undef RYO_DEFAULT_LOG_CATEGORY

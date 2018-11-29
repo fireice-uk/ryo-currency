@@ -41,6 +41,11 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#ifdef GULPS_CAT_MAJOR
+    #undef GULPS_CAT_MAJOR
+    #define GULPS_CAT_MAJOR "i18n"
+#endif
+
 
 #include "common/i18n.h"
 #include "common/util.h"
@@ -53,6 +58,8 @@
 #include <string.h>
 #include <string>
 
+#include "common/gulps.hpp"
+
 //#undef RYO_DEFAULT_LOG_CATEGORY
 //#define RYO_DEFAULT_LOG_CATEGORY "i18n"
 
@@ -62,7 +69,7 @@ static std::map<std::string, std::string> i18n_entries;
 
 /* Logging isn't initialized yet when this is run */
 /* add std::flush, because std::endl doesn't seem to flush, contrary to expected */
-// #define i18n_log(x) do { std::cout << __FILE__ << ":" << __LINE__ << ": " << x << std::endl; std::cout << std::flush; } while(0)
+// #define i18n_log(x) do { GULPS_LOGF_0("{}:{}:{}", __FILE__, __LINE__, x); } while(0)
 #define i18n_log(x) ((void)0)
 
 std::string i18n_get_language()

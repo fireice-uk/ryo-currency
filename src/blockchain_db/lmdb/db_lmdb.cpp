@@ -46,7 +46,6 @@
 
 #include <boost/current_function.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/format.hpp>
 #include <cstring> // memcpy
 #include <memory>  // std::unique_ptr
 #include <random>
@@ -556,10 +555,10 @@ bool BlockchainLMDB::need_resize(uint64_t threshold_size) const
 	// additional size needed.
 	uint64_t size_used = mst.ms_psize * mei.me_last_pgno;
 
-	GULPS_LOGF_L1("DB map size:     ", mei.me_mapsize);
-	GULPS_LOGF_L1("Space used:      ", size_used);
-	GULPS_LOGF_L1("Space remaining: ", mei.me_mapsize - size_used);
-	GULPS_LOGF_L1("Size threshold:  ", threshold_size);
+	GULPS_LOGF_L1("DB map size:     {}", mei.me_mapsize);
+	GULPS_LOGF_L1("Space used:      {}", size_used);
+	GULPS_LOGF_L1("Space remaining: {}", mei.me_mapsize - size_used);
+	GULPS_LOGF_L1("Size threshold:  {}", threshold_size);
 	float resize_percent_old = RESIZE_PERCENT;
 	GULPS_LOGF_L1("Percent used: {}.04f  Percent threshold: {}.04f", ((double)size_used / mei.me_mapsize), resize_percent_old);
 
@@ -599,7 +598,7 @@ void BlockchainLMDB::check_and_resize_for_batch(uint64_t batch_num_blocks, uint6
 	if(batch_num_blocks > 0)
 	{
 		threshold_size = get_estimated_batch_size(batch_num_blocks, batch_bytes);
-		GULPS_LOGF_L1("calculated batch size: " , threshold_size);
+		GULPS_LOGF_L1("calculated batch size: {}" , threshold_size);
 
 		// The increased DB size could be a multiple of threshold_size, a fixed
 		// size increase (> threshold_size), or other variations.
@@ -608,7 +607,7 @@ void BlockchainLMDB::check_and_resize_for_batch(uint64_t batch_num_blocks, uint6
 		// minimum size increase is used to avoid frequent resizes when the batch
 		// size is set to a very small numbers of blocks.
 		increase_size = (threshold_size > min_increase_size) ? threshold_size : min_increase_size;
-		GULPS_LOGF_L1("increase size: " , increase_size);
+		GULPS_LOGF_L1("increase size: {}" , increase_size);
 	}
 
 	// if threshold_size is 0 (i.e. number of blocks for batch not passed in), it
@@ -684,7 +683,7 @@ uint64_t BlockchainLMDB::get_estimated_batch_size(uint64_t batch_num_blocks, uin
 estim:
 	if(avg_block_size < min_block_size)
 		avg_block_size = min_block_size;
-	GULPS_LOGF_L1("estimated average block size for batch: " , avg_block_size);
+	GULPS_LOGF_L1("estimated average block size for batch: {}" , avg_block_size);
 
 	// bigger safety margin on smaller block sizes
 	if(batch_fudge_factor < 5000.0)
@@ -713,8 +712,8 @@ void BlockchainLMDB::add_block(const block &blk, const size_t &block_size, const
 		int result = mdb_cursor_get(m_cur_block_heights, (MDB_val *)&zerokval, &parent_key, MDB_GET_BOTH);
 		if(result)
 		{
-			GULPS_LOGF_L3("m_height: ", m_height);
-			GULPS_LOGF_L3("parent_key: ", blk.prev_id);
+			GULPS_LOGF_L3("m_height: {}", m_height);
+			GULPS_LOGF_L3("parent_key: {}", blk.prev_id);
 			throw0(DB_ERROR(lmdb_error("Failed to get top block hash to check for new block's parent: ", result).c_str()));
 		}
 		blk_height *prev = (blk_height *)parent_key.mv_data;
@@ -873,7 +872,7 @@ void BlockchainLMDB::remove_transaction_data(const crypto::hash &tx_hash, const 
 
 	result = mdb_cursor_get(m_cur_tx_outputs, &val_tx_id, NULL, MDB_SET);
 	if(result == MDB_NOTFOUND)
-		GULPS_LOGF_L1("tx has no outputs to remove: ", tx_hash);
+		GULPS_LOGF_L1("tx has no outputs to remove: {}", tx_hash);
 	else if(result)
 		throw1(DB_ERROR(lmdb_error("Failed to locate tx outputs for removal: ", result).c_str()));
 	if(!result)
@@ -965,7 +964,7 @@ void BlockchainLMDB::add_tx_amount_output_indices(const uint64_t tx_id, const st
 	MDB_val v;
 	v.mv_data = (void *)amount_output_indices.data();
 	v.mv_size = sizeof(uint64_t) * num_outputs;
-	// GULPS_LOGF_L1("tx_outputs[tx_hash] size: ", v.mv_size);
+	// GULPS_LOGF_L1("tx_outputs[tx_hash] size: {}", v.mv_size);
 
 	result = mdb_cursor_put(m_cur_tx_outputs, &k_tx_id, &v, MDB_APPEND);
 	if(result)
@@ -1203,7 +1202,7 @@ void BlockchainLMDB::open(const std::string &filename, const int db_flags)
 			throw0(DB_ERROR(lmdb_error("Failed to set max memory map size: ", result).c_str()));
 		mdb_env_info(m_env, &mei);
 		cur_mapsize = (double)mei.me_mapsize;
-		GULPS_LOGF_L1("LMDB memory map size: ", cur_mapsize);
+		GULPS_LOGF_L1("LMDB memory map size: {}", cur_mapsize);
 	}
 
 	if(need_resize())
@@ -1272,7 +1271,7 @@ void BlockchainLMDB::open(const std::string &filename, const int db_flags)
 	MDB_stat db_stats;
 	if((result = mdb_stat(txn, m_blocks, &db_stats)))
 		throw0(DB_ERROR(lmdb_error("Failed to query m_blocks: ", result).c_str()));
-	GULPS_LOGF_L2("Setting m_height to: ", db_stats.ms_entries);
+	GULPS_LOGF_L2("Setting m_height to: {}", db_stats.ms_entries);
 	uint64_t m_height = db_stats.ms_entries;
 
 	bool compatible = true;
@@ -1376,7 +1375,7 @@ void BlockchainLMDB::sync()
 
 void BlockchainLMDB::safesyncmode(const bool onoff)
 {
-	GULPS_INFOF("switching safe mode ", (onoff ? "on" : "off"));
+	GULPS_INFOF("switching safe mode {}", (onoff ? "on" :"off"));
 	mdb_env_set_flags(m_env, MDB_NOSYNC | MDB_MAPASYNC, !onoff);
 }
 
@@ -3098,7 +3097,7 @@ void BlockchainLMDB::get_output_key(const uint64_t &amount, const std::vector<ui
 	TXN_POSTFIX_RDONLY();
 
 	TIME_MEASURE_FINISH(db3);
-	GULPS_LOGF_L3("db3: ", db3);
+	GULPS_LOGF_L3("db3: {}", db3);
 }
 
 void BlockchainLMDB::get_output_tx_and_index(const uint64_t &amount, const std::vector<uint64_t> &offsets, std::vector<tx_out_index> &indices) const
@@ -3133,7 +3132,7 @@ void BlockchainLMDB::get_output_tx_and_index(const uint64_t &amount, const std::
 		get_output_tx_and_index_from_global(tx_indices, indices);
 	}
 	TIME_MEASURE_FINISH(db3);
-	GULPS_LOGF_L3("db3: ", db3);
+	GULPS_LOGF_L3("db3: {}", db3);
 }
 
 std::map<uint64_t, std::tuple<uint64_t, uint64_t, uint64_t>> BlockchainLMDB::get_output_histogram(const std::vector<uint64_t> &amounts, bool unlocked, uint64_t recent_cutoff, uint64_t min_count) const
@@ -3389,7 +3388,7 @@ void BlockchainLMDB::migrate_0_1()
 		if((result = mdb_stat(txn, m_blocks, &db_stats)))
 			throw0(DB_ERROR(lmdb_error("Failed to query m_blocks: ", result).c_str()));
 		m_height = db_stats.ms_entries;
-		GULPS_INFOF("Total number of blocks: ", m_height);
+		GULPS_INFOF("Total number of blocks: {}", m_height);
 		GULPS_INFO("block migration will update block_heights, block_info, and hf_versions...");
 
 		GULPS_INFO("migrating block_heights:");
@@ -3740,7 +3739,7 @@ void BlockchainLMDB::migrate_0_1()
 #define DELETE_DB(x)                                                                                     \
 	do                                                                                                   \
 	{                                                                                                    \
-		GULPS_LOGF_L1("  ", x, ":");                                                                        \
+		GULPS_LOGF_L1("  {}:", x);                                                                        \
 		result = mdb_txn_begin(m_env, NULL, 0, txn);                                                     \
 		if(result)                                                                                       \
 			throw0(DB_ERROR(lmdb_error("Failed to create a transaction for the db: ", result).c_str())); \
@@ -3752,7 +3751,7 @@ void BlockchainLMDB::migrate_0_1()
 				throw0(DB_ERROR(lmdb_error("Failed to delete " x ": ", result).c_str()));                \
 			txn.commit();                                                                                \
 		}                                                                                                \
-	} while(0)
+	} while(0);
 
 		DELETE_DB("tx_heights");
 		DELETE_DB("output_txs");
