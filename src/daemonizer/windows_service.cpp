@@ -41,6 +41,7 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#define GULPS_CAT_MAJOR "win_ser"
 
 #include <boost/chrono/chrono.hpp>
 #include <boost/thread/thread.hpp>
@@ -58,6 +59,13 @@
 #include <thread>
 #include <utility>
 #include <windows.h>
+
+#include "common/gulps.hpp"
+
+
+#define GULPS_PRINT_FAIL(...) GULPS_ERROR(tr("Error: "), __VA_ARGS__)
+#define GULPS_PRINT_OK(...) GULPS_PRINT(__VA_ARGS__)
+
 
 namespace windows
 {
@@ -96,7 +104,7 @@ bool relaunch_as_admin(
 	info.nShow = SW_SHOWNORMAL;
 	if(!ShellExecuteEx(&info))
 	{
-		tools::fail_msg_writer() << "Admin relaunch failed: " << get_last_error();
+		GULPS_PRINT_FAIL("Admin relaunch failed: ", get_last_error());
 		return false;
 	}
 	else
@@ -124,14 +132,14 @@ bool check_admin(bool &result)
 	if(!AllocateAndInitializeSid(
 		   &nt_authority, 2, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0, &p_administrators_group))
 	{
-		tools::fail_msg_writer() << "Security Identifier creation failed: " << get_last_error();
+		GULPS_PRINT_FAIL("Security Identifier creation failed: ", get_last_error());
 		return false;
 	}
 
 	if(!CheckTokenMembership(
 		   nullptr, p_administrators_group, &is_admin))
 	{
-		tools::fail_msg_writer() << "Permissions check failed: " << get_last_error();
+		GULPS_PRINT_FAIL("Permissions check failed: ", get_last_error());
 		return false;
 	}
 
@@ -174,7 +182,7 @@ bool install_service(
 		&::CloseServiceHandle};
 	if(p_manager == nullptr)
 	{
-		tools::fail_msg_writer() << "Couldn't connect to service manager: " << get_last_error();
+		GULPS_PRINT_FAIL("Couldn't connect to service manager: ", get_last_error());
 		return false;
 	}
 
@@ -192,11 +200,11 @@ bool install_service(
 		&::CloseServiceHandle};
 	if(p_service == nullptr)
 	{
-		tools::fail_msg_writer() << "Couldn't create service: " << get_last_error();
+		GULPS_PRINT_FAIL("Couldn't create service: ", get_last_error());
 		return false;
 	}
 
-	tools::success_msg_writer() << "Service installed";
+	GULPS_PRINT_FAIL("Service installed", get_last_error());
 
 	pause_to_display_admin_window_messages();
 
@@ -217,7 +225,7 @@ bool start_service(
 		&::CloseServiceHandle};
 	if(p_manager == nullptr)
 	{
-		tools::fail_msg_writer() << "Couldn't connect to service manager: " << get_last_error();
+		GULPS_PRINT_FAIL("Couldn't connect to service manager: ", get_last_error());
 		return false;
 	}
 
@@ -230,18 +238,18 @@ bool start_service(
 		&::CloseServiceHandle};
 	if(p_service == nullptr)
 	{
-		tools::fail_msg_writer() << "Couldn't find service: " << get_last_error();
+		GULPS_PRINT_FAIL("Couldn't find service: ", get_last_error());
 		return false;
 	}
 
 	if(!StartService(
 		   p_service.get(), 0, nullptr))
 	{
-		tools::fail_msg_writer() << "Service start request failed: " << get_last_error();
+		GULPS_PRINT_FAIL("Service start request failed: ", get_last_error());
 		return false;
 	}
 
-	tools::success_msg_writer() << "Service started";
+	GULPS_PRINT_FAIL("Service started", get_last_error());
 
 	pause_to_display_admin_window_messages();
 
@@ -259,7 +267,7 @@ bool stop_service(
 		&::CloseServiceHandle};
 	if(p_manager == nullptr)
 	{
-		tools::fail_msg_writer() << "Couldn't connect to service manager: " << get_last_error();
+		GULPS_PRINT_FAIL("Couldn't connect to service manager: ", get_last_error());
 		return false;
 	}
 
@@ -269,18 +277,18 @@ bool stop_service(
 		&::CloseServiceHandle};
 	if(p_service == nullptr)
 	{
-		tools::fail_msg_writer() << "Couldn't find service: " << get_last_error();
+		GULPS_PRINT_FAIL("Couldn't find service: ", get_last_error());
 		return false;
 	}
 
 	SERVICE_STATUS status = {};
 	if(!ControlService(p_service.get(), SERVICE_CONTROL_STOP, &status))
 	{
-		tools::fail_msg_writer() << "Couldn't request service stop: " << get_last_error();
+		GULPS_PRINT_FAIL("Couldn't request service stop: ", get_last_error());
 		return false;
 	}
 
-	tools::success_msg_writer() << "Service stopped";
+	GULPS_PRINT_FAIL("Service stopped", get_last_error());
 
 	pause_to_display_admin_window_messages();
 
@@ -296,7 +304,7 @@ bool uninstall_service(
 		&::CloseServiceHandle};
 	if(p_manager == nullptr)
 	{
-		tools::fail_msg_writer() << "Couldn't connect to service manager: " << get_last_error();
+		GULPS_PRINT_FAIL("Couldn't connect to service manager: ", get_last_error());
 		return false;
 	}
 
@@ -306,18 +314,18 @@ bool uninstall_service(
 		&::CloseServiceHandle};
 	if(p_service == nullptr)
 	{
-		tools::fail_msg_writer() << "Couldn't find service: " << get_last_error();
+		GULPS_PRINT_FAIL("Couldn't find service: ", get_last_error());
 		return false;
 	}
 
 	SERVICE_STATUS status = {};
 	if(!DeleteService(p_service.get()))
 	{
-		tools::fail_msg_writer() << "Couldn't uninstall service: " << get_last_error();
+		GULPS_PRINT_FAIL("Couldn't uninstall service: ", get_last_error());
 		return false;
 	}
 
-	tools::success_msg_writer() << "Service uninstalled";
+	GULPS_PRINT_FAIL("Service uninstalled", get_last_error());
 
 	pause_to_display_admin_window_messages();
 

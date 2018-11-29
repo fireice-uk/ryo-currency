@@ -3,6 +3,7 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
+#define GULPS_CAT_MAJOR "posix_fork"
 
 #include "daemonizer/posix_fork.h"
 #include "misc_log_ex.h"
@@ -18,6 +19,9 @@
 #define TMPDIR "/tmp"
 #endif
 
+#include "common/gulps.hpp"
+
+
 namespace posix
 {
 
@@ -25,7 +29,7 @@ namespace
 {
 void quit(const std::string &message)
 {
-	LOG_ERROR(message);
+	GULPS_ERROR(message);
 	throw std::runtime_error(message);
 }
 }

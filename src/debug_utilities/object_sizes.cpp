@@ -41,6 +41,7 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#define GULPS_CAT_MAJOR "obj_sizes"
 
 #include "blockchain_db/lmdb/db_lmdb.h"
 #include "cryptonote_basic/cryptonote_basic.h"
@@ -59,6 +60,8 @@
 #include "wallet/wallet2.h"
 #include <map>
 
+#include "common/gulps.hpp"
+
 //#undef RYO_DEFAULT_LOG_CATEGORY
 //#define RYO_DEFAULT_LOG_CATEGORY "debugtools.objectsizes"
 
@@ -68,7 +71,7 @@ class size_logger
 	~size_logger()
 	{
 		for(const auto &i : types)
-			std::cout << std::to_string(i.first) << "\t" << i.second << std::endl;
+		GULPS_PRINTF("{}\t{}"i.first, i.second);
 	}
 	void add(const char *type, size_t size) { types.insert(std::make_pair(size, type)); }
   private:

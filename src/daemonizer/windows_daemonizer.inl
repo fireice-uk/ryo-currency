@@ -41,6 +41,10 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#ifdef GULPS_CAT_MAJOR
+	#undef GULPS_CAT_MAJOR
+	#define GULPS_CAT_MAJOR "win_dmnzer"
+#endif
 
 #pragma once
 
@@ -51,6 +55,8 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 #include <shlobj.h>
+
+#define GULPS_PRINT_OK(...) GULPS_PRINT(__VA_ARGS__)
 
 namespace daemonizer
 {
@@ -66,6 +72,12 @@ const command_line::arg_descriptor<bool> arg_stop_service = {
 	"stop-service", "Stop Windows service"};
 const command_line::arg_descriptor<bool> arg_is_service = {
 	"run-as-service", "Hidden -- true if running as windows service"};
+	const command_line::arg_descriptor<std::string> arg_log_level = {
+	"log-level", "Screen log level, 0-4 or categories", "0"};
+const command_line::arg_descriptor<std::string> arg_file_level = {
+	"log-file-level", "File log level, 0-4 or categories", "0"};
+const command_line::arg_descriptor<std::string> arg_log_file = {
+	"log-file", /*TODO tr?*/"Specify log file", /*TODO default_log_name*/ "deamonizer_log.txt"};
 
 std::string get_argument_string(int argc, char* argv[])
 {
@@ -127,6 +139,7 @@ inline boost::filesystem::path get_relative_path_base(
 	}
 }
 
+gulps_log_level log_scr, log_dsk;
 template <typename T_executor>
 inline bool daemonize(
 	int argc, char* argv[], T_executor &&executor // universal ref
@@ -135,6 +148,52 @@ inline bool daemonize(
 {
 	std::string arguments = get_argument_string(argc, argv);
 
+	std::unique_ptr<gulps::gulps_output> file_out;
+	if(!log_scr.parse_cat_string(command_line::get_arg(vm, arg_log_level).c_str()))
+	{
+		GULPS_ERROR("Failed to parse filter string ". command_line::get_arg(vm, arg_log_level).c_str());
+		return false;
+	}
+
+	if(!log_dsk.parse_cat_string(command_line::get_arg(vm, arg_file_level).c_str()))
+	{
+		GULPS_ERROR("Failed to parse filter string ", command_line::get_arg(vm, arg_file_level).c_str());
+		return false;
+	}
+	
+	try
+	{
+		file_out = std::unique_ptr<gulps::gulps_output>(new gulps::gulps_async_file_output(command_line::get_arg(vm, arg_log_file)));
+	}
+	catch(const std::exception& ex)
+	{
+		GULPS_ERROR("Could not open file '", command_line::get_arg(vm, arg_log_file), "' error: ", ex.what());
+		return false;
+	}
+	
+	if(log_scr.is_active())
+	{
+		std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(false, gulps::COLOR_WHITE));
+		out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { 
+				if(msg.out != gulps::OUT_LOG_0 && msg.out != gulps::OUT_USER_0)
+					return false;
+				if(printed)
+					return false;
+				return log_scr.match_msg(msg);
+				});
+		gulps::inst().add_output(std::move(out));
+	}
+
+	if(log_dsk.is_active())
+	{
+		file_out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { 
+				if(msg.out != gulps::OUT_LOG_0 && msg.out != gulps::OUT_USER_0)
+					return false;
+				return log_dsk.match_msg(msg);
+				});
+		gulps::inst().add_output(std::move(file_out));
+	}
+	
 	if(command_line::has_arg(vm, arg_is_service))
 	{
 		// TODO - Set the service status here for return codes
@@ -173,7 +232,7 @@ inline bool daemonize(
 	}
 	else // interactive
 	{
-		//LOG_PRINT_L0("Ryo '" << RYO_RELEASE_NAME << "' (" << RYO_VERSION_FULL);
+		//GULPS_PRINT("Ryo '" << RYO_RELEASE_NAME << "' (" << RYO_VERSION_FULL);
 		return executor.run_interactive(vm);
 	}
 
