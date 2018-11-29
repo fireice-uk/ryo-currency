@@ -82,7 +82,6 @@ static void print_extra_fields(const std::vector<cryptonote::tx_extra_field> &fi
 	}
 }
 
-gulps_log_level log_scr;uihyghjghjgj
 int main(int argc, char *argv[])
 {
 	uint32_t log_level = 0;
@@ -95,7 +94,7 @@ int main(int argc, char *argv[])
 	po::options_description desc_cmd_only("Command line options");
 	po::options_description desc_cmd_sett("Command line options and settings options");
 	const command_line::arg_descriptor<std::string> arg_output_file = {"output-file", "Specify output file", "", true};
-	const command_line::arg_descriptor<uint32_t> arg_log_level = {"log-level", "Screen log level, 0-4 or categories", log_level};
+	const command_line::arg_descriptor<uint32_t> arg_log_level = {"log-level", "", log_level};
 	const command_line::arg_descriptor<std::string> arg_input = {"input", "Specify input has a hexadecimal string", ""};
 
 	command_line::add_arg(desc_cmd_sett, arg_output_file);
@@ -116,25 +115,13 @@ int main(int argc, char *argv[])
 	if(!r)
 		return 1;
 	
-	std::unique_ptr<gulps::gulps_output> file_out;
-	if(!log_scr.parse_cat_string(command_line::get_arg(vm, arg_log_level).c_str()))
-	{
-		GULPS_ERROR("Failed to parse filter string ". command_line::get_arg(vm, arg_log_level).c_str());
-		return false;
-	}
-
-	if(log_scr.is_active())
-	{
 		std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(false, gulps::COLOR_WHITE));
 		out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { 
-				if(msg.out != gulps::OUT_LOG_0 && msg.out != gulps::OUT_USER_0)
-					return false;
-				if(printed)
-					return false;
-				return log_scr.match_msg(msg);
+				if(msg.level >= LEVEL_PRINT)
+				return true;
+				return false;
 				});
 		gulps::inst().add_output(std::move(out));
-	}
 
 	if(command_line::get_arg(vm, command_line::arg_help))
 	{

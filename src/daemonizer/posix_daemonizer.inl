@@ -59,6 +59,7 @@
 
 namespace daemonizer
 {
+extern gulps_log_level log_scr, log_dsk;
 namespace
 {
 const command_line::arg_descriptor<bool> arg_detach = {
@@ -67,14 +68,7 @@ const command_line::arg_descriptor<std::string> arg_pidfile = {
 	"pidfile", "File path to write the daemon's PID to (optional, requires --detach)"};
 const command_line::arg_descriptor<bool> arg_non_interactive = {
 	"non-interactive", "Run non-interactive"};
-const command_line::arg_descriptor<std::string> arg_log_level = {
-	"log-level", "Screen log level, 0-4 or categories", "0"};
-const command_line::arg_descriptor<std::string> arg_file_level = {
-	"log-file-level", "File log level, 0-4 or categories", "0"};
-const command_line::arg_descriptor<std::string> arg_log_file = {
-	"log-file", /*TODO tr?*/"Specify log file", /*TODO default_log_name*/ "deamonizer_log.txt"};
 }
-
 
 inline void init_options(
 	boost::program_options::options_description &hidden_options, boost::program_options::options_description &normal_options)
@@ -82,9 +76,6 @@ inline void init_options(
 	command_line::add_arg(normal_options, arg_detach);
 	command_line::add_arg(normal_options, arg_pidfile);
 	command_line::add_arg(normal_options, arg_non_interactive);
-	command_line::add_arg(normal_options, arg_log_level);
-	command_line::add_arg(normal_options, arg_file_level);
-	command_line::add_arg(normal_options, arg_log_file);
 }
 
 inline boost::filesystem::path get_default_data_dir()
@@ -97,59 +88,13 @@ inline boost::filesystem::path get_relative_path_base(
 {
 	return boost::filesystem::current_path();
 }
-//gulps_log_level log_scr, log_dsk; COMMENTED OUT BEACAUSE WE GOT "MULTIPLE DEFINITIONS OF" BOTH ERROR 
+
 template <typename T_executor>
 inline bool daemonize(
 	int argc, char* argv[], T_executor &&executor // universal ref
 	,
 	boost::program_options::variables_map const &vm)
 {	
-	
-	std::unique_ptr<gulps::gulps_output> file_out;
-	/*if(!log_scr1.parse_cat_string(command_line::get_arg(vm, arg_log_level).c_str()))
-	{
-		GULPS_ERROR("Failed to parse filter string ", command_line::get_arg(vm, arg_log_level).c_str());
-		return false;
-	}
-
-	if(!log_dsk1.parse_cat_string(command_line::get_arg(vm, arg_file_level).c_str()))
-	{
-		GULPS_ERROR("Failed to parse filter string ", command_line::get_arg(vm, arg_file_level).c_str());
-		return false;
-	}
-	
-	try
-	{
-		file_out = std::unique_ptr<gulps::gulps_output>(new gulps::gulps_async_file_output(command_line::get_arg(vm, arg_log_file)));
-	}
-	catch(const std::exception& ex)
-	{
-		GULPS_ERROR("Could not open file '", command_line::get_arg(vm, arg_log_file), "' error: ", ex.what());
-		return false;
-	}
-	
-	if(log_scr.is_active())
-	{
-		std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(false, gulps::COLOR_WHITE));
-		out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { 
-				if(msg.out != gulps::OUT_LOG_0 && msg.out != gulps::OUT_USER_0)
-					return false;
-				if(printed)
-					return false;
-				return log_scr.match_msg(msg);
-				});
-		gulps::inst().add_output(std::move(out));
-	}
-
-	if(log_dsk.is_active())
-	{
-		file_out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { 
-				if(msg.out != gulps::OUT_LOG_0 && msg.out != gulps::OUT_USER_0)
-					return false;
-				return log_dsk.match_msg(msg);
-				});
-		gulps::inst().add_output(std::move(file_out));
-	}*/
 	
 	if(command_line::has_arg(vm, arg_detach))
 	{

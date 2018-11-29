@@ -70,6 +70,8 @@ using namespace epee;
 //#undef RYO_DEFAULT_LOG_CATEGORY
 //#define RYO_DEFAULT_LOG_CATEGORY "daemon"
 
+gulps_log_level log_scr, log_dsk;
+
 namespace daemonize
 {
 

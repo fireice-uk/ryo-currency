@@ -55,7 +55,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 
-#include "common/gulps.hpp"
+#include "common/gulps.hpp"	
 
 //#undef RYO_DEFAULT_LOG_CATEGORY
 //#define RYO_DEFAULT_LOG_CATEGORY "bcutil"

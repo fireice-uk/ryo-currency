@@ -87,6 +87,11 @@ int main(int argc, char *argv[])
 
 	mlog_configure("", true);
 
+	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(false, gulps::COLOR_WHITE));
+	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { 
+		return true;
+	});
+
 	SL(boost::thread);
 	SL(boost::asio::io_service);
 	SL(boost::asio::io_service::work);
