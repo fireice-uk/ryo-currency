@@ -45,6 +45,7 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#define GULPS_CAT_MAJOR "cnt_pct_hand_base"
 
 #include <atomic>
 #include <boost/asio.hpp>
@@ -88,6 +89,8 @@
 #include "net/network_throttle.hpp"
 
 #include "cryptonote_core/cryptonote_core.h" // e.g. for the send_stop_signal()
+
+#include "common/gulps.hpp"	
 
 //#undef RYO_DEFAULT_LOG_CATEGORY
 //#define RYO_DEFAULT_LOG_CATEGORY "net.cn"
@@ -151,16 +154,16 @@ void cryptonote_protocol_handler_base::handler_response_blocks_now(size_t packet
 {
 	using namespace epee::net_utils;
 	double delay = 0; // will be calculated
-	MDEBUG("Packet size: " << packet_size);
+	GULPS_LOGF_L1("Packet size: {}", packet_size);
 	do
 	{ // rate limiting
 		//XXX
 		/*if (::cryptonote::core::get_is_stopping()) { 
-			MDEBUG("We are stopping - so abort sleep");
+			GULPS_LOGF_L1("We are stopping - so abort sleep");
 			return;
 		}*/
 		/*if (m_was_shutdown) { 
-			MDEBUG("m_was_shutdown - so abort sleep");
+			GULPS_LOGF_L1("m_was_shutdown - so abort sleep");
 			return;
 		}*/
 
@@ -175,7 +178,7 @@ void cryptonote_protocol_handler_base::handler_response_blocks_now(size_t packet
 		{
 			//delay += rand2*0.1;
 			long int ms = (long int)(delay * 1000);
-			MDEBUG("Sleeping for " << ms << " ms before packet_size=" << packet_size); // XXX debug sleep
+			GULPS_LOGF_L1("Sleeping for {} ms before packet_size=", ms, packet_size); // XXX debug sleep
 			boost::this_thread::sleep(boost::posix_time::milliseconds(ms));			   // TODO randomize sleeps
 		}
 	} while(delay > 0);

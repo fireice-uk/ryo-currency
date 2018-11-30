@@ -733,7 +733,7 @@ public:
 #define GULPS_VERIFY_ERR_TX(...) GULPS_CAT2_ERROR("verify", "tx", __VA_ARGS__)
 #define GULPS_VERIFY_ERR_BLK(...) GULPS_CAT2_ERROR("verify", "block", __VA_ARGS__)
 
-#define GULPS_VERIFYF_ERR_TX(...) GULPS_CAT2_ERRORF("verify", "x", __VA_ARGS__)
+#define GULPS_VERIFYF_ERR_TX(...) GULPS_CAT2_ERRORF("verify", "tx", __VA_ARGS__)
 #define GULPS_VERIFYF_ERR_BLK(...) GULPS_CAT2_ERRORF("verify", "block", __VA_ARGS__)
 
 #define GULPS_GLOBAL_INFO(...) GULPS_CAT_INFO("global", __VA_ARGS__)
