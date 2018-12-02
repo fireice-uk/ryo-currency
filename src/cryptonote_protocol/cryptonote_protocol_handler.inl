@@ -70,7 +70,7 @@
 //#define RYO_DEFAULT_LOG_CATEGORY "net.cn"
 
 #define GULPS_P2P_MESSAGE(...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_INFO, "p2p", GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__) 
-
+//IGNORE
 #define BLOCK_QUEUE_NBLOCKS_THRESHOLD 10					// chunks of N blocks
 #define BLOCK_QUEUE_SIZE_THRESHOLD (100 * 1024 * 1024)		// MB
 #define REQUEST_NEXT_SCHEDULED_SPAN_THRESHOLD (5 * 1000000) // microseconds
