@@ -43,8 +43,8 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifdef GULPS_CAT_MAJOR
     #undef GULPS_CAT_MAJOR
-#define GULPS_CAT_MAJOR "scpd_msg_wtr"
 #endif
+#define GULPS_CAT_MAJOR "scpd_msg_wtr"
 
 #pragma once
 

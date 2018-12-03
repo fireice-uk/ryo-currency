@@ -45,8 +45,8 @@
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
 #ifdef GULPS_CAT_MAJOR
     #undef GULPS_CAT_MAJOR
-    #define GULPS_CAT_MAJOR "blockchain"
 #endif
+#define GULPS_CAT_MAJOR "blockchain"
 
 #include <algorithm>
 #include <boost/filesystem.hpp>

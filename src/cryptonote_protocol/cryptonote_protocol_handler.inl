@@ -51,9 +51,10 @@
 // (may contain code and/or modifications by other developers)
 // developer rfree: this code is caller of our new network code, and is modded; e.g. for rate limiting
 #ifdef GULPS_CAT_MAJOR
-#undef GULPS_CAT_MAJOR
-#define GULPS_CAT_MAJOR "cn_pcl_hand"
+	#undef GULPS_CAT_MAJOR
 #endif
+#define GULPS_CAT_MAJOR "cn_pcl_hand"
+
 //IGNORE
 #include <boost/interprocess/detail/atomic.hpp>
 #include <ctime>

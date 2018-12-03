@@ -48,9 +48,9 @@
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
 #ifdef GULPS_CAT_MAJOR
-#undef GULPS_CAT_MAJOR
-#define GULPS_CAT_MAJOR "cn_pcl_hand"
+	#undef GULPS_CAT_MAJOR
 #endif
+#define GULPS_CAT_MAJOR "cn_pcl_hand"
 
 #pragma once
 

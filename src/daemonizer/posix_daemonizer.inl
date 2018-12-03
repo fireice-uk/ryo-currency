@@ -43,8 +43,8 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifdef GULPS_CAT_MAJOR
 	#undef GULPS_CAT_MAJOR
-	#define GULPS_CAT_MAJOR "posix_dmnzer"
 #endif
+#define GULPS_CAT_MAJOR "posix_dmnzer"
 
 #pragma once
 
