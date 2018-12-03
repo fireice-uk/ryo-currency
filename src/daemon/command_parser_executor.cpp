@@ -41,10 +41,13 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#define GULPS_CAT_MAJOR "cmd_pars_exe"
 
 #include "daemon/command_parser_executor.h"
 #include "common/dns_utils.h"
 #include "version.h"
+
+#include "common/gulps.hpp"	
 
 //#undef RYO_DEFAULT_LOG_CATEGORY
 //#define RYO_DEFAULT_LOG_CATEGORY "daemon"
@@ -126,19 +129,19 @@ bool t_command_parser_executor::print_blockchain_info(const std::vector<std::str
 {
 	if(!args.size())
 	{
-		std::cout << "need block index parameter" << std::endl;
+		GULPS_PRINT("need block index parameter");
 		return false;
 	}
 	uint64_t start_index = 0;
 	uint64_t end_index = 0;
 	if(!epee::string_tools::get_xtype_from_string(start_index, args[0]))
 	{
-		std::cout << "wrong starter block index parameter" << std::endl;
+		GULPS_PRINT("wrong starter block index parameter");
 		return false;
 	}
 	if(args.size() > 1 && !epee::string_tools::get_xtype_from_string(end_index, args[1]))
 	{
-		std::cout << "wrong end block index parameter" << std::endl;
+		GULPS_PRINT("wrong end block index parameter");
 		return false;
 	}
 
@@ -149,7 +152,7 @@ bool t_command_parser_executor::set_log_level(const std::vector<std::string> &ar
 {
 	if(args.size() > 1)
 	{
-		std::cout << "use: set_log [<log_level_number_0-4> | <categories>]" << std::endl;
+		GULPS_PRINT("use: set_log [<log_level_number_0-4> | <categories>]");
 		return true;
 	}
 
@@ -163,7 +166,7 @@ bool t_command_parser_executor::set_log_level(const std::vector<std::string> &ar
 	{
 		if(4 < l)
 		{
-			std::cout << "wrong number range, use: set_log <log_level_number_0-4>" << std::endl;
+			GULPS_PRINT("wrong number range, use: set_log <log_level_number_0-4>");
 			return true;
 		}
 		return m_executor.set_log_level(l);
@@ -186,7 +189,7 @@ bool t_command_parser_executor::print_block(const std::vector<std::string> &args
 {
 	if(args.empty())
 	{
-		std::cout << "expected: print_block (<block_hash> | <block_height>)" << std::endl;
+		GULPS_PRINT("expected: print_block (<block_hash> | <block_height>)");
 		return false;
 	}
 
@@ -222,13 +225,13 @@ bool t_command_parser_executor::print_transaction(const std::vector<std::string>
 			include_json = true;
 		else
 		{
-			std::cout << "unexpected argument: " << args[i] << std::endl;
+			GULPS_PRINTF("unexpected argument: {}", args[i]);
 			return true;
 		}
 	}
 	if(args.empty())
 	{
-		std::cout << "expected: print_tx <transaction_hash> [+hex] [+json]" << std::endl;
+		GULPS_PRINT("expected: print_tx <transaction_hash> [+hex] [+json]");
 		return true;
 	}
 
@@ -246,7 +249,7 @@ bool t_command_parser_executor::is_key_image_spent(const std::vector<std::string
 {
 	if(args.empty())
 	{
-		std::cout << "expected: is_key_image_spent <key_image>" << std::endl;
+		GULPS_PRINT("expected: is_key_image_spent <key_image>");
 		return true;
 	}
 
@@ -290,7 +293,7 @@ bool t_command_parser_executor::start_mining(const std::vector<std::string> &arg
 {
 	if(!args.size())
 	{
-		std::cout << "Please specify a wallet address to mine for: start_mining <addr> [<threads>]" << std::endl;
+		GULPS_PRINT("Please specify a wallet address to mine for: start_mining <addr> [<threads>]");
 		return true;
 	}
 
@@ -302,7 +305,7 @@ bool t_command_parser_executor::start_mining(const std::vector<std::string> &arg
 		{
 			if(!cryptonote::get_account_address_from_str(cryptonote::STAGENET, info, args.front()))
 			{
-				std::cout << "target account address has wrong format" << std::endl;
+				GULPS_PRINT("target account address has wrong format");
 				return true;
 			}
 			else
@@ -329,7 +332,7 @@ bool t_command_parser_executor::start_mining(const std::vector<std::string> &arg
 	}
 
 	if(nettype != cryptonote::MAINNET)
-		std::cout << "Mining to a " << (nettype == cryptonote::TESTNET ? "testnet" : "stagenet") << "address, make sure this is intentional!" << std::endl;
+		GULPS_PRINTF("Mining to a {} address, make sure this is intentional!", (nettype == cryptonote::TESTNET ? "testnet" : "stagenet"));
 	uint64_t threads_count = 1;
 	bool do_background_mining = false;
 	bool ignore_battery = false;
@@ -398,7 +401,7 @@ bool t_command_parser_executor::set_limit(const std::vector<std::string> &args)
 	}
 	catch(const std::exception &ex)
 	{
-		std::cout << "failed to parse argument" << std::endl;
+		GULPS_PRINT("failed to parse argument");
 		return false;
 	}
 
@@ -420,7 +423,7 @@ bool t_command_parser_executor::set_limit_up(const std::vector<std::string> &arg
 	}
 	catch(const std::exception &ex)
 	{
-		std::cout << "failed to parse argument" << std::endl;
+		GULPS_PRINT("failed to parse argument");
 		return false;
 	}
 
@@ -442,7 +445,7 @@ bool t_command_parser_executor::set_limit_down(const std::vector<std::string> &a
 	}
 	catch(const std::exception &ex)
 	{
-		std::cout << "failed to parse argument" << std::endl;
+		GULPS_PRINT("failed to parse argument");
 		return false;
 	}
 
@@ -566,7 +569,7 @@ bool t_command_parser_executor::flush_txpool(const std::vector<std::string> &arg
 		crypto::hash hash;
 		if(!parse_hash256(args[0], hash))
 		{
-			std::cout << "failed to parse tx id" << std::endl;
+			GULPS_PRINT("failed to parse tx id");
 			return true;
 		}
 		txid = args[0];
@@ -599,7 +602,7 @@ bool t_command_parser_executor::output_histogram(const std::vector<std::string> 
 		}
 		else
 		{
-			std::cout << "Invalid syntax: more than two non-amount parameters" << std::endl;
+			GULPS_PRINT("Invalid syntax: more than two non-amount parameters");
 			return true;
 		}
 	}
@@ -610,19 +613,19 @@ bool t_command_parser_executor::print_coinbase_tx_sum(const std::vector<std::str
 {
 	if(!args.size())
 	{
-		std::cout << "need block height parameter" << std::endl;
+		GULPS_PRINT("need block height parameter");
 		return false;
 	}
 	uint64_t height = 0;
 	uint64_t count = 0;
 	if(!epee::string_tools::get_xtype_from_string(height, args[0]))
 	{
-		std::cout << "wrong starter block height parameter" << std::endl;
+		GULPS_PRINT("wrong starter block height parameter");
 		return false;
 	}
 	if(args.size() > 1 && !epee::string_tools::get_xtype_from_string(count, args[1]))
 	{
-		std::cout << "wrong count parameter" << std::endl;
+		GULPS_PRINT("wrong count parameter");
 		return false;
 	}
 
@@ -633,7 +636,7 @@ bool t_command_parser_executor::alt_chain_info(const std::vector<std::string> &a
 {
 	if(args.size())
 	{
-		std::cout << "No parameters allowed" << std::endl;
+		GULPS_PRINT("No parameters allowed");
 		return false;
 	}
 
@@ -644,14 +647,14 @@ bool t_command_parser_executor::print_blockchain_dynamic_stats(const std::vector
 {
 	if(args.size() != 1)
 	{
-		std::cout << "Exactly one parameter is needed" << std::endl;
+		GULPS_PRINT("Exactly one parameter is needed");
 		return false;
 	}
 
 	uint64_t nblocks = 0;
 	if(!epee::string_tools::get_xtype_from_string(nblocks, args[0]) || nblocks == 0)
 	{
-		std::cout << "wrong number of blocks" << std::endl;
+		GULPS_PRINT("wrong number of blocks");
 		return false;
 	}
 
@@ -662,7 +665,7 @@ bool t_command_parser_executor::update(const std::vector<std::string> &args)
 {
 	if(args.size() != 1)
 	{
-		std::cout << "Exactly one parameter is needed: check, download, or update" << std::endl;
+		GULPS_PRINT("Exactly one parameter is needed: check, download, or update");
 		return false;
 	}
 
@@ -678,7 +681,7 @@ bool t_command_parser_executor::relay_tx(const std::vector<std::string> &args)
 	crypto::hash hash;
 	if(!parse_hash256(args[0], hash))
 	{
-		std::cout << "failed to parse tx id" << std::endl;
+		GULPS_PRINT("failed to parse tx id");
 		return true;
 	}
 	txid = args[0];
@@ -695,7 +698,7 @@ bool t_command_parser_executor::sync_info(const std::vector<std::string> &args)
 
 bool t_command_parser_executor::version(const std::vector<std::string> &args)
 {
-	std::cout << "Ryo '" << RYO_RELEASE_NAME << "' (" << RYO_VERSION_FULL << ")" << std::endl;
+	GULPS_PRINTF("Ryo '{}' ({})", RYO_RELEASE_NAME, RYO_VERSION_FULL);
 	return true;
 }
 

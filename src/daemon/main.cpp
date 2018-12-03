@@ -43,6 +43,7 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
+#define GULPS_CAT_MAJOR "main_daemon"
 
 #include "blockchain_db/db_types.h"
 #include "common/command_line.h"
@@ -65,6 +66,8 @@
 #ifdef STACK_TRACE
 #include "common/stack_trace.h"
 #endif // STACK_TRACE
+
+#include "common/gulps.hpp"	
 
 //#undef RYO_DEFAULT_LOG_CATEGORY
 //#define RYO_DEFAULT_LOG_CATEGORY "daemon"
@@ -145,24 +148,23 @@ int main(int argc, char* argv[])
 
 		if(command_line::get_arg(vm, command_line::arg_help))
 		{
-			std::cout << "Ryo '" << RYO_RELEASE_NAME << "' (" << RYO_VERSION_FULL << ")" << ENDL << ENDL;
-			std::cout << "Usage: " + std::string{argv[0]} + " [options|settings] [daemon_command...]" << std::endl
-					  << std::endl;
-			std::cout << visible_options << std::endl;
+			GULPS_PRINTF("Ryo '{}' ({})\n", RYO_RELEASE_NAME , RYO_VERSION_FULL );
+			GULPS_PRINTF("Usage: {} [options|settings] [daemon_command...]\n\n\n", std::string{argv[0]});
+			GULPS_PRINT(visible_options);
 			return 0;
 		}
 
 		// Monero Version
 		if(command_line::get_arg(vm, command_line::arg_version))
 		{
-			std::cout << "Ryo '" << RYO_RELEASE_NAME << "' (" << RYO_VERSION_FULL << ")" << ENDL;
+			GULPS_PRINTF("Ryo '{}' ({})\n", RYO_RELEASE_NAME , RYO_VERSION_FULL );
 			return 0;
 		}
 
 		// OS
 		if(command_line::get_arg(vm, daemon_args::arg_os_version))
 		{
-			std::cout << "OS: " << tools::get_os_version_string() << ENDL;
+			GULPS_PRINT("OS: ", tools::get_os_version_string());
 			return 0;
 		}
 
@@ -178,13 +180,13 @@ int main(int argc, char* argv[])
 			catch(const std::exception &e)
 			{
 				// log system isn't initialized yet
-				std::cerr << "Error parsing config file: " << e.what() << std::endl;
+				GULPS_ERRORF("Error parsing config file: {}", e.what());
 				throw;
 			}
 		}
 		else if(!command_line::is_arg_defaulted(vm, daemon_args::arg_config_file))
 		{
-			std::cerr << "Can't find config file " << config << std::endl;
+			GULPS_ERROR("Can't find config file ", config);
 			return 1;
 		}
 
@@ -192,7 +194,7 @@ int main(int argc, char* argv[])
 		const bool stagenet = command_line::get_arg(vm, cryptonote::arg_stagenet_on);
 		if(testnet && stagenet)
 		{
-			std::cerr << "Can't specify more than one of --tesnet and --stagenet" << ENDL;
+			GULPS_ERROR("Can't specify more than one of --tesnet and --stagenet");
 			return 1;
 		}
 
@@ -201,7 +203,7 @@ int main(int argc, char* argv[])
 		// verify that blockchaindb type is valid
 		if(!cryptonote::blockchain_valid_db_type(db_type))
 		{
-			std::cout << "Invalid database type (" << db_type << "), available types are: " << cryptonote::blockchain_db_types(", ") << std::endl;
+			GULPS_PRINTF("Invalid database type ({}), available types are: {}", db_type, cryptonote::blockchain_db_types(", "));
 			return 0;
 		}
 
@@ -254,12 +256,12 @@ int main(int argc, char* argv[])
 				uint16_t rpc_port;
 				if(!epee::string_tools::get_ip_int32_from_string(rpc_ip, rpc_ip_str))
 				{
-					std::cerr << "Invalid IP: " << rpc_ip_str << std::endl;
+					GULPS_ERROR("Invalid IP: ", rpc_ip_str);
 					return 1;
 				}
 				if(!epee::string_tools::get_xtype_from_string(rpc_port, rpc_port_str))
 				{
-					std::cerr << "Invalid port: " << rpc_port_str << std::endl;
+					GULPS_ERROR("Invalid port: ", rpc_port_str);
 					return 1;
 				}
 
@@ -275,7 +277,7 @@ int main(int argc, char* argv[])
 						});
 					if(!login)
 					{
-						std::cerr << "Failed to obtain password" << std::endl;
+						GULPS_ERROR("Failed to obtain password");
 						return 1;
 					}
 				}
@@ -287,7 +289,7 @@ int main(int argc, char* argv[])
 				}
 				else
 				{
-					std::cerr << "Unknown command: " << command.front() << std::endl;
+					GULPS_ERRORF("Unknown command: {}", command.front());
 					return 1;
 				}
 			}
@@ -301,19 +303,19 @@ int main(int argc, char* argv[])
 			tools::set_max_concurrency(command_line::get_arg(vm, daemon_args::arg_max_concurrency));
 
 		// logging is now set up
-		MGINFO("Ryo '" << RYO_RELEASE_NAME << "' (" << RYO_VERSION_FULL << ")");
+		GULPS_GLOABALF_INFO("Ryo '{}' ({})", RYO_RELEASE_NAME, RYO_VERSION_FULL);
 
-		MINFO("Moving from main() into the daemonize now.");
+		GULPS_INFO("Moving from main() into the daemonize now.");
 
 		return daemonizer::daemonize(argc, argv, daemonize::t_executor{}, vm) ? 0 : 1;
 	}
 	catch(std::exception const &ex)
 	{
-		LOG_ERROR("Exception in main! " << ex.what());
+		GULPS_LOGF_ERROR("Exception in main! {}", ex.what());
 	}
 	catch(...)
 	{
-		LOG_ERROR("Exception in main!");
+		GULPS_LOG_ERROR("Exception in main!");
 	}
 	return 1;
 }

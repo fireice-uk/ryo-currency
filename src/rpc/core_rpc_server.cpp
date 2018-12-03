@@ -43,6 +43,7 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
+#define GULPS_CAT_MAJOR "c_rpc_serv"
 
 #include "include_base_utils.h"
 #include "string_tools.h"
@@ -65,6 +66,8 @@ using namespace epee;
 #include "rpc/rpc_args.h"
 #include "storages/http_abstract_invoke.h"
 #include "version.h"
+
+#include "common/gulps.hpp"	
 
 //#undef RYO_DEFAULT_LOG_CATEGORY
 //#define RYO_DEFAULT_LOG_CATEGORY "daemon.rpc"
@@ -244,7 +247,7 @@ static cryptonote::blobdata get_pruned_tx_blob(const cryptonote::blobdata &blobd
 
 	if(!cryptonote::parse_and_validate_tx_from_blob(blobdata, tx))
 	{
-		MERROR("Failed to parse and validate tx from blob");
+		GULPS_ERROR("Failed to parse and validate tx from blob");
 		return cryptonote::blobdata();
 	}
 	return get_pruned_tx_blob(tx);
@@ -309,7 +312,7 @@ bool core_rpc_server::on_get_blocks(const COMMAND_RPC_GET_BLOCKS_FAST::request &
 		}
 	}
 
-	MDEBUG("on_get_blocks: " << bs.size() << " blocks, " << ntxes << " txes, pruned size " << pruned_size << ", unpruned size " << unpruned_size);
+	GULPS_LOGF_L1("on_get_blocks: {} blocks, {} txes, pruned size {}, unpruned size {}", bs.size() , ntxes , pruned_size , unpruned_size);
 	res.status = CORE_RPC_STATUS_OK;
 	return true;
 }
@@ -335,7 +338,7 @@ bool core_rpc_server::on_get_alt_blocks_hashes(const COMMAND_RPC_GET_ALT_BLOCKS_
 		res.blks_hashes.push_back(epee::string_tools::pod_to_hex(get_block_hash(blk)));
 	}
 
-	MDEBUG("on_get_alt_blocks_hashes: " << blks.size() << " blocks ");
+	GULPS_LOGF_L1("on_get_alt_blocks_hashes: {} blocks ", blks.size() );
 	res.status = CORE_RPC_STATUS_OK;
 	return true;
 }
@@ -433,7 +436,7 @@ bool core_rpc_server::on_get_random_outs(const COMMAND_RPC_GET_RANDOM_OUTPUTS_FO
 		ss << ENDL;
 	});
 	std::string s = ss.str();
-	LOG_PRINT_L2("COMMAND_RPC_GET_RANDOM_OUTPUTS_FOR_AMOUNTS: " << ENDL << s);
+	GULPS_LOGF_L2("COMMAND_RPC_GET_RANDOM_OUTPUTS_FOR_AMOUNTS: \n{}", s);
 	res.status = CORE_RPC_STATUS_OK;
 	return true;
 }
@@ -529,7 +532,7 @@ bool core_rpc_server::on_get_random_rct_outs(const COMMAND_RPC_GET_RANDOM_RCT_OU
 	});
 	ss << ENDL;
 	std::string s = ss.str();
-	LOG_PRINT_L2("COMMAND_RPC_GET_RANDOM_RCT_OUTPUTS: " << ENDL << s);
+	GULPS_LOGF_L2("COMMAND_RPC_GET_RANDOM_RCT_OUTPUTS: \n{}", s);
 	res.status = CORE_RPC_STATUS_OK;
 	return true;
 }
@@ -548,7 +551,7 @@ bool core_rpc_server::on_get_indexes(const COMMAND_RPC_GET_TX_GLOBAL_OUTPUTS_IND
 		return true;
 	}
 	res.status = CORE_RPC_STATUS_OK;
-	LOG_PRINT_L2("COMMAND_RPC_GET_TX_GLOBAL_OUTPUTS_INDEXES: [" << res.o_indexes.size() << "]");
+	GULPS_LOGF_L2("COMMAND_RPC_GET_TX_GLOBAL_OUTPUTS_INDEXES: [{}]", res.o_indexes.size() );
 	return true;
 }
 //------------------------------------------------------------------------------------------------------------------------------
@@ -583,7 +586,7 @@ bool core_rpc_server::on_get_transactions(const COMMAND_RPC_GET_TRANSACTIONS::re
 		res.status = "Failed";
 		return true;
 	}
-	LOG_PRINT_L2("Found " << txs.size() << "/" << vh.size() << " transactions on the blockchain");
+	GULPS_LOGF_L2("Found {}/{} transactions on the blockchain", txs.size() , vh.size() );
 
 	// try the pool for any missing txes
 	size_t found_in_pool = 0;
@@ -642,7 +645,7 @@ bool core_rpc_server::on_get_transactions(const COMMAND_RPC_GET_TRANSACTIONS::re
 			}
 			txs = sorted_txs;
 		}
-		LOG_PRINT_L2("Found " << found_in_pool << "/" << vh.size() << " transactions in the pool");
+		GULPS_LOGF_L2("Found {}/{} transactions in the pool", found_in_pool , vh.size() );
 	}
 
 	std::list<std::string>::const_iterator txhi = req.txs_hashes.begin();
@@ -668,7 +671,7 @@ bool core_rpc_server::on_get_transactions(const COMMAND_RPC_GET_TRANSACTIONS::re
 			}
 			else
 			{
-				MERROR("Failed to determine double spend status for " << tx_hash);
+				GULPS_ERROR("Failed to determine double spend status for {}", tx_hash);
 				e.double_spend_seen = false;
 			}
 		}
@@ -701,7 +704,7 @@ bool core_rpc_server::on_get_transactions(const COMMAND_RPC_GET_TRANSACTIONS::re
 		res.missed_tx.push_back(string_tools::pod_to_hex(miss_tx));
 	}
 
-	LOG_PRINT_L2(res.txs.size() << " transactions found, " << res.missed_tx.size() << " not found");
+	GULPS_LOGF_L2("{} transactions found, {} not found", res.txs.size(), res.missed_tx.size());
 	res.status = CORE_RPC_STATUS_OK;
 	return true;
 }
@@ -785,7 +788,7 @@ bool core_rpc_server::on_send_raw_tx(const COMMAND_RPC_SEND_RAW_TX::request &req
 	std::string tx_blob;
 	if(!string_tools::parse_hexstr_to_binbuff(req.tx_as_hex, tx_blob))
 	{
-		LOG_PRINT_L0("[on_send_raw_tx]: Failed to parse tx from hexbuff: " << req.tx_as_hex);
+		GULPS_PRINTF("[on_send_raw_tx]: Failed to parse tx from hexbuff: {}", req.tx_as_hex);
 		res.status = "Failed";
 		return true;
 	}
@@ -815,18 +818,18 @@ bool core_rpc_server::on_send_raw_tx(const COMMAND_RPC_SEND_RAW_TX::request &req
 		const std::string punctuation = res.reason.empty() ? "" : ": ";
 		if(tvc.m_verifivation_failed)
 		{
-			LOG_PRINT_L0("[on_send_raw_tx]: tx verification failed" << punctuation << res.reason);
+			GULPS_PRINTF("[on_send_raw_tx]: tx verification failed{} {}", punctuation, res.reason);
 		}
 		else
 		{
-			LOG_PRINT_L0("[on_send_raw_tx]: Failed to process tx" << punctuation << res.reason);
+			GULPS_PRINTF("[on_send_raw_tx]: Failed to process tx {} {}", punctuation, res.reason);
 		}
 		return true;
 	}
 
 	if(!tvc.m_should_be_relayed)
 	{
-		LOG_PRINT_L0("[on_send_raw_tx]: tx accepted, but not relayed");
+		GULPS_PRINT("[on_send_raw_tx]: tx accepted, but not relayed");
 		res.reason = "Not relayed";
 		res.not_relayed = true;
 		res.status = CORE_RPC_STATUS_OK;
@@ -849,7 +852,7 @@ bool core_rpc_server::on_start_mining(const COMMAND_RPC_START_MINING::request &r
 	if(!get_account_address_from_str(m_nettype, info, req.miner_address))
 	{
 		res.status = "Failed, wrong address";
-		LOG_PRINT_L0(res.status);
+		GULPS_PRINT(res.status);
 		return true;
 	}
 
@@ -857,14 +860,14 @@ bool core_rpc_server::on_start_mining(const COMMAND_RPC_START_MINING::request &r
 	{ 
 		res.status = "Dev fund address is not mineable. If you would like to support the dev team please mine to "; 
 		res.status += common_config::RYO_DONATION_ADDR; 
-		LOG_PRINT_L0(res.status);
+		GULPS_PRINT(res.status);
 		return true; 
 	}
 
 	if(info.is_subaddress)
 	{
 		res.status = "Mining to subaddress isn't supported yet";
-		LOG_PRINT_L0(res.status);
+		GULPS_PRINT(res.status);
 		return true;
 	}
 
@@ -881,7 +884,7 @@ bool core_rpc_server::on_start_mining(const COMMAND_RPC_START_MINING::request &r
 	if(req.threads_count > concurrency_count)
 	{
 		res.status = "Failed, too many threads relative to CPU cores.";
-		LOG_PRINT_L0(res.status);
+		GULPS_PRINT(res.status);
 		return true;
 	}
 
@@ -891,7 +894,7 @@ bool core_rpc_server::on_start_mining(const COMMAND_RPC_START_MINING::request &r
 	if(!m_core.get_miner().start(info.address, static_cast<size_t>(req.threads_count), attrs, req.do_background_mining, req.ignore_battery))
 	{
 		res.status = "Failed, mining not started";
-		LOG_PRINT_L0(res.status);
+		GULPS_PRINT(res.status);
 		return true;
 	}
 	res.status = CORE_RPC_STATUS_OK;
@@ -904,7 +907,7 @@ bool core_rpc_server::on_stop_mining(const COMMAND_RPC_STOP_MINING::request &req
 	if(!m_core.get_miner().stop())
 	{
 		res.status = "Failed, mining not stopped";
-		LOG_PRINT_L0(res.status);
+		GULPS_PRINT(res.status);
 		return true;
 	}
 	res.status = CORE_RPC_STATUS_OK;
@@ -1167,7 +1170,7 @@ bool core_rpc_server::on_getblocktemplate(const COMMAND_RPC_GETBLOCKTEMPLATE::re
 	{
 		error_resp.code = CORE_RPC_ERROR_CODE_INTERNAL_ERROR;
 		error_resp.message = "Internal error: failed to create block template";
-		LOG_ERROR("Failed to create block template");
+		GULPS_LOG_ERROR("Failed to create block template");
 		return false;
 	}
 	blobdata block_blob = t_serializable_object_to_blob(b);
@@ -1176,7 +1179,7 @@ bool core_rpc_server::on_getblocktemplate(const COMMAND_RPC_GETBLOCKTEMPLATE::re
 	{
 		error_resp.code = CORE_RPC_ERROR_CODE_INTERNAL_ERROR;
 		error_resp.message = "Internal error: failed to create block template";
-		LOG_ERROR("Failed to  tx pub key in coinbase extra");
+		GULPS_LOG_ERROR("Failed to  tx pub key in coinbase extra");
 		return false;
 	}
 	res.reserved_offset = slow_memmem((void *)block_blob.data(), block_blob.size(), &tx_pub_key, sizeof(tx_pub_key));
@@ -1184,7 +1187,7 @@ bool core_rpc_server::on_getblocktemplate(const COMMAND_RPC_GETBLOCKTEMPLATE::re
 	{
 		error_resp.code = CORE_RPC_ERROR_CODE_INTERNAL_ERROR;
 		error_resp.message = "Internal error: failed to create block template";
-		LOG_ERROR("Failed to find tx pub key in blockblob");
+		GULPS_LOG_ERROR("Failed to find tx pub key in blockblob");
 		return false;
 	}
 	res.reserved_offset += sizeof(tx_pub_key) + 2; //2 bytes: tag for TX_EXTRA_NONCE(1 byte), counter in TX_EXTRA_NONCE(1 byte)
@@ -1192,7 +1195,7 @@ bool core_rpc_server::on_getblocktemplate(const COMMAND_RPC_GETBLOCKTEMPLATE::re
 	{
 		error_resp.code = CORE_RPC_ERROR_CODE_INTERNAL_ERROR;
 		error_resp.message = "Internal error: failed to create block template";
-		LOG_ERROR("Failed to calculate offset for ");
+		GULPS_LOG_ERROR("Failed to calculate offset for ");
 		return false;
 	}
 	blobdata hashing_blob = get_block_hashing_blob(b);
@@ -1297,7 +1300,7 @@ bool core_rpc_server::use_bootstrap_daemon_if_necessary(const invoke_http_mode &
 	boost::unique_lock<boost::shared_mutex> lock(m_bootstrap_daemon_mutex);
 	if(!m_should_use_bootstrap_daemon)
 	{
-		MINFO("The local daemon is fully synced. Not switching back to the bootstrap daemon");
+		GULPS_INFO("The local daemon is fully synced. Not switching back to the bootstrap daemon");
 		return false;
 	}
 
@@ -1318,7 +1321,7 @@ bool core_rpc_server::use_bootstrap_daemon_if_necessary(const invoke_http_mode &
 		ok = ok && getheight_res.status == CORE_RPC_STATUS_OK;
 
 		m_should_use_bootstrap_daemon = ok && top_height + 10 < getheight_res.height;
-		MINFO((m_should_use_bootstrap_daemon ? "Using" : "Not using") << " the bootstrap daemon (our height: " << top_height << ", bootstrap daemon's height: " << getheight_res.height << ")");
+		GULPS_INFOF("{} the bootstrap daemon (our height: {} , bootstrap daemon's height: {})", (m_should_use_bootstrap_daemon ? "Using" : "Not using"), top_height, getheight_res.height);
 	}
 	if(!m_should_use_bootstrap_daemon)
 		return false;
@@ -1345,7 +1348,7 @@ bool core_rpc_server::use_bootstrap_daemon_if_necessary(const invoke_http_mode &
 	}
 	else
 	{
-		MERROR("Unknown invoke_http_mode: " << mode);
+		GULPS_ERROR("Unknown invoke_http_mode: {}", mode);
 		return false;
 	}
 	m_was_bootstrap_ever_used = true;
@@ -1969,27 +1972,27 @@ bool core_rpc_server::on_update(const COMMAND_RPC_UPDATE::request &req, COMMAND_
     crypto::hash file_hash;
     if (!tools::sha256sum(path.string(), file_hash) || (hash != epee::string_tools::pod_to_hex(file_hash)))
     {
-      MDEBUG("We don't have that file already, downloading");
+      GULPS_LOG_L1("We don't have that file already, downloading");
       if (!tools::download(path.string(), res.auto_uri))
       {
-        MERROR("Failed to download " << res.auto_uri);
+        GULPS_ERROR("Failed to download {}", res.auto_uri);
         return false;
       }
       if (!tools::sha256sum(path.string(), file_hash))
       {
-        MERROR("Failed to hash " << path);
+        GULPS_ERROR("Failed to hash {}", path);
         return false;
       }
       if (hash != epee::string_tools::pod_to_hex(file_hash))
       {
-        MERROR("Download from " << res.auto_uri << " does not match the expected hash");
+        GULPS_ERROR("Download from {} does not match the expected hash", res.auto_uri );
         return false;
       }
-      MINFO("New version downloaded to " << path);
+      GULPS_INFOF("New version downloaded to {}", path);
     }
     else
     {
-      MDEBUG("We already have " << path << " with expected hash");
+      GULPS_LOGF_L1("We already have {} with expected hash", path );
     }
     res.path = path.string();
 

@@ -43,10 +43,13 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
+#define GULPS_CAT_MAJOR "daemon_rpc"
 
 #pragma once
 
 #include "rpc/core_rpc_server.h"
+
+#include "common/gulps.hpp"	
 
 //#undef RYO_DEFAULT_LOG_CATEGORY
 //#define RYO_DEFAULT_LOG_CATEGORY "daemon"
@@ -71,28 +74,28 @@ class t_rpc final
 		boost::program_options::variables_map const &vm, t_core &core, t_p2p &p2p, const bool restricted, const cryptonote::network_type nettype, const std::string &port, const std::string &description)
 		: m_server{core.get(), p2p.get()}, m_description{description}
 	{
-		MGINFO("Initializing " << m_description << " RPC server...");
+		GULPS_GLOBALF_INFO("Initializing {} RPC server...", m_description);
 
 		if(!m_server.init(vm, restricted, nettype, port))
 		{
 			throw std::runtime_error("Failed to initialize " + m_description + " RPC server.");
 		}
-		MGINFO(m_description << " RPC server initialized OK on port: " << m_server.get_binded_port());
+		GULPS_GLOBALF_INFO("{} RPC server initialized OK on port: {}", m_description, m_server.get_binded_port());
 	}
 
 	void run()
 	{
-		MGINFO("Starting " << m_description << " RPC server...");
+		GULPS_GLOBALF_INFO("Starting {} RPC server...",m_description);
 		if(!m_server.run(2, false))
 		{
 			throw std::runtime_error("Failed to start " + m_description + " RPC server.");
 		}
-		MGINFO(m_description << " RPC server started ok");
+		GULPS_GLOBALF_INFO("{} RPC server started ok", m_description);
 	}
 
 	void stop()
 	{
-		MGINFO("Stopping " << m_description << " RPC server...");
+		GULPS_GLOBALF_INFO("Stopping {} RPC server...", m_description);
 		m_server.send_stop_signal();
 		m_server.timed_wait_server_stop(5000);
 	}
@@ -104,14 +107,14 @@ class t_rpc final
 
 	~t_rpc()
 	{
-		MGINFO("Deinitializing " << m_description << " RPC server...");
+		GULPS_GLOBALF_INFO("Deinitializing {} RPC server...", m_description);
 		try
 		{
 			m_server.deinit();
 		}
 		catch(...)
 		{
-			MERROR("Failed to deinitialize " << m_description << " RPC server...");
+			GULPS_ERRORF("Failed to deinitialize {} RPC server...", m_description);
 		}
 	}
 };

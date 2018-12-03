@@ -43,8 +43,11 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
+#define GULPS_CAT_MAJOR "daemon_proto"
 
 #pragma once
+
+#include "common/gulps.hpp"	
 
 //#undef RYO_DEFAULT_LOG_CATEGORY
 //#define RYO_DEFAULT_LOG_CATEGORY "daemon"
@@ -65,12 +68,12 @@ class t_protocol final
 		boost::program_options::variables_map const &vm, t_core &core, bool offline = false)
 		: m_protocol{core.get(), nullptr, offline}
 	{
-		MGINFO("Initializing cryptonote protocol...");
+		GULPS_GLOBAL_INFO("Initializing cryptonote protocol...");
 		if(!m_protocol.init(vm))
 		{
 			throw std::runtime_error("Failed to initialize cryptonote protocol.");
 		}
-		MGINFO("Cryptonote protocol initialized OK");
+		GULPS_GLOBAL_INFO("Cryptonote protocol initialized OK");
 	}
 
 	t_protocol_raw &get()
@@ -86,16 +89,16 @@ class t_protocol final
 
 	~t_protocol()
 	{
-		MGINFO("Stopping cryptonote protocol...");
+		GULPS_GLOBAL_INFO("Stopping cryptonote protocol...");
 		try
 		{
 			m_protocol.deinit();
 			m_protocol.set_p2p_endpoint(nullptr);
-			MGINFO("Cryptonote protocol stopped successfully");
+			GULPS_GLOBAL_INFO("Cryptonote protocol stopped successfully");
 		}
 		catch(...)
 		{
-			LOG_ERROR("Failed to stop cryptonote protocol!");
+			GULPS_ERROR("Failed to stop cryptonote protocol!");
 		}
 	}
 };

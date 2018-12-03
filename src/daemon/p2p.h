@@ -43,12 +43,15 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
+#define GULPS_CAT_MAJOR "daemon_p2p"
 
 #pragma once
 
 #include "cryptonote_protocol/cryptonote_protocol_handler.h"
 #include "daemon/protocol.h"
 #include "p2p/net_node.h"
+
+#include "common/gulps.hpp"	
 
 //#undef RYO_DEFAULT_LOG_CATEGORY
 //#define RYO_DEFAULT_LOG_CATEGORY "daemon"
@@ -77,12 +80,12 @@ class t_p2p final
 		: m_server{protocol.get()}
 	{
 		//initialize objects
-		MGINFO("Initializing p2p server...");
+		GULPS_GLOBAL_INFO("Initializing p2p server...");
 		if(!m_server.init(vm))
 		{
 			throw std::runtime_error("Failed to initialize p2p server.");
 		}
-		MGINFO("p2p server initialized OK");
+		GULPS_GLOBAL_INFO("p2p server initialized OK");
 	}
 
 	t_node_server &get()
@@ -92,9 +95,9 @@ class t_p2p final
 
 	void run()
 	{
-		MGINFO("Starting p2p net loop...");
+		GULPS_GLOBAL_INFO("Starting p2p net loop...");
 		m_server.run();
-		MGINFO("p2p net loop stopped");
+		GULPS_GLOBAL_INFO("p2p net loop stopped");
 	}
 
 	void stop()
@@ -104,14 +107,14 @@ class t_p2p final
 
 	~t_p2p()
 	{
-		MGINFO("Deinitializing p2p...");
+		GULPS_GLOBAL_INFO("Deinitializing p2p...");
 		try
 		{
 			m_server.deinit();
 		}
 		catch(...)
 		{
-			MERROR("Failed to deinitialize p2p...");
+			GULPS_ERROR("Failed to deinitialize p2p...");
 		}
 	}
 };
