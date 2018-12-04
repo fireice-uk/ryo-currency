@@ -471,40 +471,23 @@ bool t_rpc_command_executor::show_status()
 		}
 	}
 	
-	tools::success_msg_writer() << boost::format("Height: %llu/%llu (%.1f%%) on %s%s, %s, net hash %s, v%u%s, %s, %u(out)+%u(in) connections, uptime %ud %uh %um %us") % (unsigned long long)ires.height % (unsigned long long)net_height % get_sync_percentage(ires) % (ires.testnet ? "testnet" : ires.stagenet ? "stagenet" : "mainnet") % bootstrap_msg % (!has_mining_info ? "mining info unavailable" : mining_busy ? "syncing" : mres.active ? ((mres.is_background_mining_enabled ? "smart " : "") + std::string("mining at ") + get_mining_speed(mres.speed)) : "not mining") % get_mining_speed(ires.difficulty / ires.target) % (unsigned)hfres.version % get_fork_extra_info(hfres.earliest_height, net_height, ires.target) % (hfres.state == cryptonote::HardFork::Ready ? "up to date" : hfres.state == cryptonote::HardFork::UpdateNeeded ? "update needed" : "out of date, likely forked") % (unsigned)ires.outgoing_connections_count % (unsigned)ires.incoming_connections_count % (unsigned int)floor(uptime / 60.0 / 60.0 / 24.0) % (unsigned int)floor(fmod((uptime / 60.0 / 60.0), 24.0)) % (unsigned int)floor(fmod((uptime / 60.0), 60.0)) % (unsigned int)fmod(uptime, 60.0);
-
-/*	GULPS_INFOF_CLR("Height: {}/{} ({:.1f}) on {}{}, {}, net hash {}, v{}{}, {}, {}(out)+{}(in) connections, uptime {} {} {} {}", 
+	GULPS_PRINTF_SUCCESS("Height: {}/{} ({:.1f}) on {}{}, {}, net hash {}, v{}{}, {}, {}(out)+{}(in) connections, uptime {} {} {} {}", 
 								(unsigned long long)ires.height, 
-								
 								(unsigned long long)net_height, 
-								
 								get_sync_percentage(ires), 
-								
 								(ires.testnet ? "testnet" : ires.stagenet ? "stagenet" : "mainnet"), 
-								
 								bootstrap_msg, 
-								
 								(!has_mining_info ? "mining info unavailable" : mining_busy ? "syncing" : mres.active ? ((mres.is_background_mining_enabled ? "smart " : "") + std::string("mining at ") + get_mining_speed(mres.speed)) : "not mining"), 
-								
 								get_mining_speed(ires.difficulty / ires.target), 
-								
 								(unsigned)hfres.version,
-								
 								get_fork_extra_info(hfres.earliest_height, net_height, ires.target), 
-								
 								(hfres.state == cryptonote::HardFork::Ready ? "up to date" : hfres.state == cryptonote::HardFork::UpdateNeeded ? "update needed" : "out of date, likely forked"), 
-								
 								(unsigned)ires.outgoing_connections_count, 
-								
 								(unsigned)ires.incoming_connections_count, 
-								
 								(unsigned int)floor(uptime / 60.0 / 60.0 / 24.0), 
-								
 								(unsigned int)floor(fmod((uptime / 60.0 / 60.0), 24.0)), 
-								
 								(unsigned int)floor(fmod((uptime / 60.0), 60.0)), 
-								
-								(unsigned int)fmod(uptime, 60.0));*/
+								(unsigned int)fmod(uptime, 60.0));
 
 	return true;
 }
