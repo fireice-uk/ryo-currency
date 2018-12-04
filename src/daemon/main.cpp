@@ -75,6 +75,8 @@
 namespace po = boost::program_options;
 namespace bf = boost::filesystem;
 
+gulps_log_level log_scr, log_dsk;
+
 int main(int argc, char* argv[])
 {
 #ifdef WIN32
@@ -86,6 +88,13 @@ int main(int argc, char* argv[])
 		argv = argptrs.data();
 	}
 #endif
+
+	gulps::inst().set_thread_tag("RYOD_MAIN");
+
+	// Temporary output
+	std::unique_ptr<gulps::gulps_output> gout_ptr(new gulps::gulps_print_output(true, gulps::COLOR_WHITE));
+	gout_ptr->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return !printed; });
+	uint64_t temp_out_id = gulps::inst().add_output(std::move(gout_ptr));
 
 	try
 	{
@@ -111,8 +120,8 @@ int main(int argc, char* argv[])
 
 			// Settings
 			command_line::add_arg(core_settings, daemon_args::arg_log_file);
+			command_line::add_arg(core_settings, daemon_args::arg_log_file_level);
 			command_line::add_arg(core_settings, daemon_args::arg_log_level);
-			command_line::add_arg(core_settings, daemon_args::arg_max_log_file_size);
 			command_line::add_arg(core_settings, daemon_args::arg_max_concurrency);
 			command_line::add_arg(core_settings, daemon_args::arg_zmq_rpc_bind_ip);
 			command_line::add_arg(core_settings, daemon_args::arg_zmq_rpc_bind_port);
@@ -231,16 +240,30 @@ int main(int argc, char* argv[])
 		if(!command_line::is_arg_defaulted(vm, daemon_args::arg_log_file))
 			log_file_path = command_line::get_arg(vm, daemon_args::arg_log_file);
 		log_file_path = bf::absolute(log_file_path, relative_path_base);
-		mlog_configure(log_file_path.string(), true, command_line::get_arg(vm, daemon_args::arg_max_log_file_size));
 
-		// Set log level
+		tools::create_directories_if_necessary(data_dir.string());
+
 		if(!command_line::is_arg_defaulted(vm, daemon_args::arg_log_level))
 		{
-			mlog_set_log(command_line::get_arg(vm, daemon_args::arg_log_level).c_str());
+			if(!log_scr.parse_cat_string(command_line::get_arg(vm, daemon_args::arg_log_level).c_str()))
+			{
+				{
+					GULPS_ERROR("Failed to parse filter string ", command_line::get_arg(vm, daemon_args::arg_log_level).c_str());
+					return false;
+				}
+			}
 		}
+		else
+			log_scr.parse_cat_string("");
 
-		// after logs initialized
-		tools::create_directories_if_necessary(data_dir.string());
+		if(!command_line::is_arg_defaulted(vm, daemon_args::arg_log_file_level))
+		{
+			if(!log_dsk.parse_cat_string(command_line::get_arg(vm, daemon_args::arg_log_file_level).c_str()))
+			{
+				GULPS_ERROR("Failed to parse filter string ", command_line::get_arg(vm, daemon_args::arg_log_file_level).c_str());
+				return false;
+			}
+		}
 
 		// If there are positional options, we're running a daemon command
 		{
@@ -301,6 +324,18 @@ int main(int argc, char* argv[])
 
 		if(!command_line::is_arg_defaulted(vm, daemon_args::arg_max_concurrency))
 			tools::set_max_concurrency(command_line::get_arg(vm, daemon_args::arg_max_concurrency));
+
+		gout_ptr.reset(new gulps::gulps_print_output(true, gulps::COLOR_WHITE));
+		gout_ptr->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return log_scr.match_msg(msg); }); 
+		gulps::inst().add_output(std::move(gout_ptr));
+
+		if(log_dsk.is_active())
+		{
+			gout_ptr.reset(new gulps::gulps_async_file_output(log_file_path.string()));
+			gout_ptr->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return log_dsk.match_msg(msg); });
+			gulps::inst().add_output(std::move(gout_ptr));
+		}	
+		gulps::inst().remove_output(temp_out_id);
 
 		// logging is now set up
 		GULPS_GLOBAL_INFO("Ryo '{}' ({})", RYO_RELEASE_NAME, RYO_VERSION_FULL);

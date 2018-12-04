@@ -998,17 +998,15 @@ bool core_rpc_server::on_set_log_level(const COMMAND_RPC_SET_LOG_LEVEL::request 
 		res.status = "Error: log level not valid";
 		return true;
 	}
-	mlog_set_log_level(req.level);
-	res.status = CORE_RPC_STATUS_OK;
+	
+	res.status = "Error: not implemented"; //\todo 
 	return true;
 }
 //------------------------------------------------------------------------------------------------------------------------------
 bool core_rpc_server::on_set_log_categories(const COMMAND_RPC_SET_LOG_CATEGORIES::request &req, COMMAND_RPC_SET_LOG_CATEGORIES::response &res)
 {
 	PERF_TIMER(on_set_log_categories);
-	mlog_set_log(req.categories.c_str());
-	res.categories = mlog_get_categories();
-	res.status = CORE_RPC_STATUS_OK;
+	res.status =  "Error: not implemented"; //\todo 
 	return true;
 }
 //------------------------------------------------------------------------------------------------------------------------------

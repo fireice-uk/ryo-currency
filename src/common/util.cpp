@@ -626,8 +626,6 @@ static void setup_crash_dump()
 
 bool on_startup()
 {
-	mlog_configure("", true);
-
 	setup_crash_dump();
 
 	sanitize_locale();

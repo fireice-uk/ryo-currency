@@ -243,12 +243,9 @@ int main(int argc, char *argv[])
 	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(false, gulps::COLOR_WHITE));
 	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return msg.lvl >= gulps::LEVEL_ERROR; });
 	auto temp_handle = gulps::inst().add_output(std::move(out));
-	
-	mlog_configure(mlog_get_default_log_path("ryo-blockchain-blackball.log"), true);
+
 	if(!command_line::is_arg_defaulted(vm, arg_log_level))
 	{
-		mlog_set_log(command_line::get_arg(vm, arg_log_level).c_str());
-		
 		if(!log_scr.parse_cat_string(command_line::get_arg(vm, arg_log_level).c_str()))
 		{	
 			//TODO ERROR MESSAGE
@@ -258,8 +255,6 @@ int main(int argc, char *argv[])
 	}
 	else
 	{	
-		mlog_set_log(std::string(std::to_string(log_level) + ",bcutil:INFO").c_str());
-		
 		if(!log_scr.parse_cat_string(std::to_string(log_level).c_str()))
 		{	
 			//TODO ERROR MESSAGE

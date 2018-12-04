@@ -117,9 +117,7 @@ int main(int argc, char *argv[])
 	
 		std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(false, gulps::COLOR_WHITE));
 		out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { 
-				if(msg.level >= LEVEL_PRINT)
-				return true;
-				return false;
+				return msg.lvl >= gulps::LEVEL_PRINT;
 				});
 		gulps::inst().add_output(std::move(out));
 
@@ -137,8 +135,6 @@ int main(int argc, char *argv[])
 		GULPS_ERROR("--input is mandatory");
 		return 1;
 	}
-
-	mlog_configure("", true);
 
 	std::string m_config_folder;
 
