@@ -356,12 +356,12 @@ bool t_rpc_command_executor::show_difficulty()
 static std::string get_mining_speed(uint64_t hr)
 {
 	if(hr > 1e9)
-		return (boost::format("%.2f GH/s") % (hr / 1e9)).str();
+		return fmt::format("{:.2f} GH/s", (hr / 1e9));
 	if(hr > 1e6)
-		return (boost::format("%.2f MH/s") % (hr / 1e6)).str();
+		return fmt::format("{:.2f} MH/s", (hr / 1e6));
 	if(hr > 1e3)
-		return (boost::format("%.2f kH/s") % (hr / 1e3)).str();
-	return (boost::format("%.0f H/s") % hr).str();
+		return fmt::format("{:.2f} kH/s", (hr / 1e3));
+	return fmt::format("{:.0f} H/s", hr);
 }
 
 static std::string get_fork_extra_info(uint64_t t, uint64_t now, uint64_t block_time)
@@ -375,11 +375,11 @@ static std::string get_fork_extra_info(uint64_t t, uint64_t now, uint64_t block_
 	{
 		uint64_t dblocks = t - now;
 		if(dblocks <= 30)
-			return (boost::format(" (next fork in %u blocks)") % (unsigned)dblocks).str();
+			return fmt::format(" (next fork in {} blocks)", (unsigned)dblocks);
 		if(dblocks <= blocks_per_day / 2)
-			return (boost::format(" (next fork in %.1f hours)") % (dblocks / (float)(blocks_per_day / 24))).str();
+			return fmt::format(" (next fork in {:.1f) hours)", (dblocks / (float)(blocks_per_day / 24)));
 		if(dblocks <= blocks_per_day * 30)
-			return (boost::format(" (next fork in %.1f days)") % (dblocks / (float)blocks_per_day)).str();
+			return fmt::format(" (next fork in {:.1f} days)", (dblocks / (float)blocks_per_day));
 		return "";
 	}
 	return "";
@@ -463,7 +463,7 @@ bool t_rpc_command_executor::show_status()
 		bootstrap_msg = ", bootstrapping from " + ires.bootstrap_daemon_address;
 		if(ires.untrusted)
 		{
-			bootstrap_msg += (boost::format(", local height: %llu (%.1f%%)") % ires.height_without_bootstrap % get_sync_percentage(ires.height_without_bootstrap, net_height)).str();
+			bootstrap_msg += fmt::format(", local height: {} ({:.1f}%)", ires.height_without_bootstrap, get_sync_percentage(ires.height_without_bootstrap, net_height));
 		}
 		else
 		{
@@ -548,7 +548,7 @@ GULPS_PRINTF_OK("{:<30}{:<20}{:<20}{:<30}{:<25}{:<20}{:<12}{:<14}{:<10}{:<13}",
 
 			(info.localhost ? "[LOCALHOST]" : ""),
 			(info.local_ip ? "[LAN]" : ""));
-		//GULPS_PRINTF_OK( boost::format("%-25s peer_id: %-25s %s") % address % info.peer_id % in_out);
+		//GULPS_PRINTF_OK("{}-25s peer_id: {}-25s {}", address, info.peer_id, in_out);
 	}
 
 	return true;
@@ -1041,7 +1041,7 @@ bool t_rpc_command_executor::print_transaction_pool_stats()
 	else
 	{
 		uint64_t backlog = (res.pool_stats.bytes_total + full_reward_zone - 1) / full_reward_zone;
-		backlog_message = (boost::format("estimated %u block (%u minutes) backlog") % backlog % (backlog * cryptonote::common_config::DIFFICULTY_TARGET / 60)).str();
+		backlog_message = fmt::format("estimated {} block ({} minutes) backlog", backlog, (backlog * cryptonote::common_config::DIFFICULTY_TARGET / 60));
 	}
 
 	GULPS_PRINTF_OK("{} tx(es), {} bytes total (min {}, max {}, avg {}, median {})\nfees {} (avg {} per tx, {} per byte)\n{} double spends, {} not relayed, {} failing, {} older than 10 minutes (oldest {}), {}",
