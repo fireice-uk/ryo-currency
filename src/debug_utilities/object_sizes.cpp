@@ -71,7 +71,7 @@ class size_logger
 	~size_logger()
 	{
 		for(const auto &i : types)
-		GULPS_PRINTF("{}\t{}"i.first, i.second);
+			GULPS_PRINTF("{}\t{}",i.first, i.second);
 	}
 	void add(const char *type, size_t size) { types.insert(std::make_pair(size, type)); }
   private:
@@ -84,8 +84,6 @@ int main(int argc, char *argv[])
 	size_logger sl;
 
 	tools::on_startup();
-
-	mlog_configure("", true);
 
 	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(false, gulps::COLOR_WHITE));
 	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { 

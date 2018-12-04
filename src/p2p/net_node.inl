@@ -969,7 +969,7 @@ bool node_server<t_payload_net_handler>::check_connection_and_handshake_with_pee
 	if(!res)
 	{
 		bool is_priority = is_priority_node(na);
-		GULPS_INFO("{} {} Connect failed to {}", contextx_str(con), priority_str(is_priority), na.str());
+		GULPS_INFOF("{} {} Connect failed to {}", contextx_str(con), priority_str(is_priority), na.str());
 		return false;
 	}
 
@@ -980,7 +980,7 @@ bool node_server<t_payload_net_handler>::check_connection_and_handshake_with_pee
 	{
 		bool is_priority = is_priority_node(na);
 
-		GULPS_INFO("{} {} Failed to HANDSHAKE with peer {}", contextx_str(con), priority_str(is_priority), na.str());
+		GULPS_INFOF("{} {} Failed to HANDSHAKE with peer {}", contextx_str(con), priority_str(is_priority), na.str());
 		return false;
 	}
 

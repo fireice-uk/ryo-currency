@@ -149,14 +149,13 @@ PerformanceTimer::~PerformanceTimer()
 	performance_timers->pop_back();
 	if(!paused)
 		ticks = get_tick_count() - ticks;
-	char s[12];
-	GULPS_PRINTF("{} {} {}",s , sizeof(s), (unsigned long long)(ticks_to_ns(ticks) / (1000000000 / unit)));
+
 	size_t size = 0;
 	for(const auto *tmp : *performance_timers)
 		if(!tmp->paused || tmp == this)
 			++size;
 	//TODO SHOULD WE LOG BASED ON GIVEN LEVEL?
-	GULPS_LOGF_L1("PERF {}{} {}", s, std::string(size * 2, ' '), name);
+	GULPS_LOGF_L1("PERF {}{} {}", ticks_to_ns(ticks) / (1000000000 / unit), std::string(size * 2, ' '), name);
 	if(performance_timers->empty())
 	{
 		delete performance_timers;

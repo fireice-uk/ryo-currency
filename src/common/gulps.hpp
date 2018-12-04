@@ -577,15 +577,33 @@ private:
 		gulps::level level;
 	};
 
+	std::mutex cat_mutex;
 	std::vector<cat_pair> log_cats;
 	gulps::level wildcard_level;
+	std::string current_cat_str;
 	bool active = false;
 
 public:
 	gulps_log_level() {}
+	
+	static const char* get_default_log_level()
+	{
+		return "*:WARN";
+	}
+	
+	const std::string& get_current_cat_str() const
+	{
+		return current_cat_str;
+	}
 
 	bool parse_cat_string(const char* str)
 	{
+		std::unique_lock<std::mutex> lck(cat_mutex);
+	
+		if(strlen(str) == 0)
+			str = get_default_log_level();
+		current_cat_str = str;
+
 		static const std::unordered_map<std::string, gulps::level> str_to_level = {
 			{"PRINT", gulps::LEVEL_PRINT},
 			{"ERROR", gulps::LEVEL_ERROR},
@@ -637,8 +655,10 @@ public:
 
 	bool is_active() const { return active; }
 
-	bool match_msg(const gulps::message& msg) const 
+	bool match_msg(const gulps::message& msg) 
 	{
+		std::unique_lock<std::mutex> lck(cat_mutex);
+
 		for(const cat_pair& p : log_cats)
 		{
 			if(msg.cat_minor == p.cat || msg.cat_major == p.cat)
