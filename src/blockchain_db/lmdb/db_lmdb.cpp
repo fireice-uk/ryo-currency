@@ -560,7 +560,7 @@ bool BlockchainLMDB::need_resize(uint64_t threshold_size) const
 	GULPS_LOGF_L1("Space remaining: {}", mei.me_mapsize - size_used);
 	GULPS_LOGF_L1("Size threshold:  {}", threshold_size);
 	float resize_percent_old = RESIZE_PERCENT;
-	GULPS_LOGF_L1("Percent used: {}.04f  Percent threshold: {}.04f", ((double)size_used / mei.me_mapsize), resize_percent_old);
+	GULPS_LOGF_L1("Percent used: {:.04f}  Percent threshold: {:.04f}", ((double)size_used / mei.me_mapsize), resize_percent_old);
 
 	if(threshold_size > 0)
 	{

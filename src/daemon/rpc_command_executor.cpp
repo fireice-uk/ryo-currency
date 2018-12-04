@@ -43,6 +43,7 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
+
 #define GULPS_CAT_MAJOR "rpc_cmd_exe"
 
 #include "daemon/rpc_command_executor.h"
@@ -88,7 +89,7 @@ void print_peer(std::string const &prefix, cryptonote::peer const &peer)
 	peer_id_str >> id_str;
 	epee::string_tools::xtype_to_string(peer.port, port_str);
 	std::string addr_str = ip_str + ":" + port_str;
-	GULPS_PRINTF_OK("{}-10s {}-25s {}-25s {}s", prefix, id_str, addr_stR, elapsed);
+	GULPS_PRINTF_OK("{}-10s {}-25s {}-25s {}s", prefix, id_str, addr_str, elapsed);
 }
 
 void print_block_header(cryptonote::block_header_response const &header)
@@ -346,7 +347,7 @@ bool t_rpc_command_executor::show_difficulty()
 
 	GULPS_PRINTF_SUCCESS("BH: {}, TH: {}, DIFF: {}, HR: {} H/s", res.height,
 								res.top_block_hash,
-								res.difficulty
+								res.difficulty,
 								res.difficulty / res.target);
 
 	return true;
@@ -469,8 +470,41 @@ bool t_rpc_command_executor::show_status()
 			bootstrap_msg += " was used before";
 		}
 	}
+	
+	tools::success_msg_writer() << boost::format("Height: %llu/%llu (%.1f%%) on %s%s, %s, net hash %s, v%u%s, %s, %u(out)+%u(in) connections, uptime %ud %uh %um %us") % (unsigned long long)ires.height % (unsigned long long)net_height % get_sync_percentage(ires) % (ires.testnet ? "testnet" : ires.stagenet ? "stagenet" : "mainnet") % bootstrap_msg % (!has_mining_info ? "mining info unavailable" : mining_busy ? "syncing" : mres.active ? ((mres.is_background_mining_enabled ? "smart " : "") + std::string("mining at ") + get_mining_speed(mres.speed)) : "not mining") % get_mining_speed(ires.difficulty / ires.target) % (unsigned)hfres.version % get_fork_extra_info(hfres.earliest_height, net_height, ires.target) % (hfres.state == cryptonote::HardFork::Ready ? "up to date" : hfres.state == cryptonote::HardFork::UpdateNeeded ? "update needed" : "out of date, likely forked") % (unsigned)ires.outgoing_connections_count % (unsigned)ires.incoming_connections_count % (unsigned int)floor(uptime / 60.0 / 60.0 / 24.0) % (unsigned int)floor(fmod((uptime / 60.0 / 60.0), 24.0)) % (unsigned int)floor(fmod((uptime / 60.0), 60.0)) % (unsigned int)fmod(uptime, 60.0);
 
-	GULPS_INFOF_CLR("Height: {}llu/{}llu ({}.1f{}{}) on {}s{}s, {}s, net hash {}s, v{}u{}s, {}s, {}u(out)+{}u(in) connections, uptime {}ud {}uh {}um {}us", (unsigned long long)ires.height, (unsigned long long)net_height, get_sync_percentage(ires), (ires.testnet ? "testnet" : ires.stagenet ? "stagenet" : "mainnet"), bootstrap_msg, (!has_mining_info ? "mining info unavailable" : mining_busy ? "syncing" : mres.active ? ((mres.is_background_mining_enabled ? "smart " : "") + std::string("mining at ") + get_mining_speed(mres.speed)) : "not mining"), get_mining_speed(ires.difficulty / ires.target), (unsigned)hfres.version, get_fork_extra_info(hfres.earliest_height, net_height, ires.target), (hfres.state == cryptonote::HardFork::Ready ? "up to date" : hfres.state == cryptonote::HardFork::UpdateNeeded ? "update needed" : "out of date, likely forked"), (unsigned)ires.outgoing_connections_count, (unsigned)ires.incoming_connections_count, (unsigned int)floor(uptime / 60.0 / 60.0 / 24.0), (unsigned int)floor(fmod((uptime / 60.0 / 60.0), 24.0)), (unsigned int)floor(fmod((uptime / 60.0), 60.0)), (unsigned int)fmod(uptime, 60.0));
+/*	GULPS_INFOF_CLR("Height: {}/{} ({:.1f}) on {}{}, {}, net hash {}, v{}{}, {}, {}(out)+{}(in) connections, uptime {} {} {} {}", 
+								(unsigned long long)ires.height, 
+								
+								(unsigned long long)net_height, 
+								
+								get_sync_percentage(ires), 
+								
+								(ires.testnet ? "testnet" : ires.stagenet ? "stagenet" : "mainnet"), 
+								
+								bootstrap_msg, 
+								
+								(!has_mining_info ? "mining info unavailable" : mining_busy ? "syncing" : mres.active ? ((mres.is_background_mining_enabled ? "smart " : "") + std::string("mining at ") + get_mining_speed(mres.speed)) : "not mining"), 
+								
+								get_mining_speed(ires.difficulty / ires.target), 
+								
+								(unsigned)hfres.version,
+								
+								get_fork_extra_info(hfres.earliest_height, net_height, ires.target), 
+								
+								(hfres.state == cryptonote::HardFork::Ready ? "up to date" : hfres.state == cryptonote::HardFork::UpdateNeeded ? "update needed" : "out of date, likely forked"), 
+								
+								(unsigned)ires.outgoing_connections_count, 
+								
+								(unsigned)ires.incoming_connections_count, 
+								
+								(unsigned int)floor(uptime / 60.0 / 60.0 / 24.0), 
+								
+								(unsigned int)floor(fmod((uptime / 60.0 / 60.0), 24.0)), 
+								
+								(unsigned int)floor(fmod((uptime / 60.0), 60.0)), 
+								
+								(unsigned int)fmod(uptime, 60.0));*/
 
 	return true;
 }
@@ -499,38 +533,38 @@ bool t_rpc_command_executor::print_connections()
 		}
 	}
 
-	tools::msg_writer() << std::setw(30) << std::left << "Remote Host"
-						<< std::setw(20) << "Peer id"
-						<< std::setw(20) << "Support Flags"
-						<< std::setw(30) << "Recv/Sent (inactive,sec)"
-						<< std::setw(25) << "State"
-						<< std::setw(20) << "Livetime(sec)"
-						<< std::setw(12) << "Down (kB/s)"
-						<< std::setw(14) << "Down(now)"
-						<< std::setw(10) << "Up (kB/s)"
-						<< std::setw(13) << "Up(now)"
-						<< std::endl;
+GULPS_PRINTF_OK("{:<30}{:<20}{:<20}{:<30}{:<25}{:<20}{:<12}{:<14}{:<10}{:<13}", 
+														"Remote Host",
+														"Peer id",
+														"Support Flags",
+														"Recv/Sent (inactive,sec)",
+														"State",
+														"Livetime(sec)",
+														"Down (kB/s)",
+														"Down(now)",
+														"Up (kB/s)",
+														"Up(now)");
 
 	for(auto &info : res.connections)
 	{
 		std::string address = info.incoming ? "INC " : "OUT ";
 		address += info.ip + ":" + info.port;
 		//std::string in_out = info.incoming ? "INC " : "OUT ";
-		tools::msg_writer()
+		GULPS_PRINTF_OK("{:<30}{:<20}{:<20}{:<30}{:<25}{:<20}{:<12}{:<14}{:<10}{:<13}{:<}{:<}",
 			//<< std::setw(30) << std::left << in_out
-			<< std::setw(30) << std::left << address
-			<< std::setw(20) << epee::string_tools::pad_string(info.peer_id, 16, '0', true)
-			<< std::setw(20) << info.support_flags
-			<< std::setw(30) << std::to_string(info.recv_count) + "(" + std::to_string(info.recv_idle_time) + ")/" + std::to_string(info.send_count) + "(" + std::to_string(info.send_idle_time) + ")"
-			<< std::setw(25) << info.state
-			<< std::setw(20) << info.live_time
-			<< std::setw(12) << info.avg_download
-			<< std::setw(14) << info.current_download
-			<< std::setw(10) << info.avg_upload
-			<< std::setw(13) << info.current_upload
+			address,
+			epee::string_tools::pad_string(info.peer_id, 16, '0', true),
+			info.support_flags,
+			std::to_string(info.recv_count) + "(" + std::to_string(info.recv_idle_time) + ")/" + std::to_string(info.send_count) + "(" + std::to_string(info.send_idle_time) + ")",
+			info.state,
+			info.live_time,
+			info.avg_download,
+			info.current_download,
+			info.avg_upload,
+			info.current_upload,
 
-			<< std::left << (info.localhost ? "[LOCALHOST]" : "")
-			<< std::left << (info.local_ip ? "[LAN]" : "");
+			(info.localhost ? "[LOCALHOST]" : ""),
+			(info.local_ip ? "[LAN]" : ""));
 		//GULPS_PRINTF_OK( boost::format("%-25s peer_id: %-25s %s") % address % info.peer_id % in_out);
 	}
 
@@ -1027,10 +1061,11 @@ bool t_rpc_command_executor::print_transaction_pool_stats()
 		backlog_message = (boost::format("estimated %u block (%u minutes) backlog") % backlog % (backlog * cryptonote::common_config::DIFFICULTY_TARGET / 60)).str();
 	}
 
-	tools::msg_writer() << n_transactions << " tx(es), " << res.pool_stats.bytes_total << " bytes total (min " << res.pool_stats.bytes_min << ", max " << res.pool_stats.bytes_max << ", avg " << avg_bytes << ", median " << res.pool_stats.bytes_med << ")" << std::endl
-						<< "fees " << cryptonote::print_money(res.pool_stats.fee_total) << " (avg " << cryptonote::print_money(n_transactions ? res.pool_stats.fee_total / n_transactions : 0) << " per tx"
-						<< ", " << cryptonote::print_money(res.pool_stats.bytes_total ? res.pool_stats.fee_total / res.pool_stats.bytes_total : 0) << " per byte)" << std::endl
-						<< res.pool_stats.num_double_spends << " double spends, " << res.pool_stats.num_not_relayed << " not relayed, " << res.pool_stats.num_failing << " failing, " << res.pool_stats.num_10m << " older than 10 minutes (oldest " << (res.pool_stats.oldest == 0 ? "-" : get_human_time_ago(res.pool_stats.oldest, now)) << "), " << backlog_message;
+	GULPS_PRINTF_OK("{} tx(es), {} bytes total (min {}, max {}, avg {}, median {})\nfees {} (avg {} per tx, {} per byte)\n{} double spends, {} not relayed, {} failing, {} older than 10 minutes (oldest {}), {}",
+									n_transactions , res.pool_stats.bytes_total , res.pool_stats.bytes_min , res.pool_stats.bytes_max , avg_bytes , res.pool_stats.bytes_med , 
+									cryptonote::print_money(res.pool_stats.fee_total) , cryptonote::print_money(n_transactions ? res.pool_stats.fee_total / n_transactions : 0) , 
+									cryptonote::print_money(res.pool_stats.bytes_total ? res.pool_stats.fee_total / res.pool_stats.bytes_total : 0) , res.pool_stats.num_double_spends , 
+									res.pool_stats.num_not_relayed , res.pool_stats.num_failing , res.pool_stats.num_10m , (res.pool_stats.oldest == 0 ? "-" : get_human_time_ago(res.pool_stats.oldest, now)) , backlog_message);
 
 	if(n_transactions > 1 && res.pool_stats.histo.size())
 	{
@@ -1056,10 +1091,9 @@ bool t_rpc_command_executor::print_transaction_pool_stats()
 		GULPS_PRINTF_OK("   Age      Txes       Bytes");
 		for(i = 0; i < n; i++)
 		{
-			tools::msg_writer() << get_time_hms(times[i]) << std::setw(8) << res.pool_stats.histo[i].txs << std::setw(12) << res.pool_stats.histo[i].bytes;
+			GULPS_PRINTF_OK("{}{:>8}{:>12}", get_time_hms(times[i]), res.pool_stats.histo[i].txs, res.pool_stats.histo[i].bytes);
 		}
 	}
-	tools::msg_writer();
 
 	return true;
 }
@@ -1208,8 +1242,8 @@ bool t_rpc_command_executor::get_limit()
 		}
 	}
 
-	tools::msg_writer() << "limit-down is " << res.limit_down << " kB/s";
-	tools::msg_writer() << "limit-up is " << res.limit_up << " kB/s";
+	GULPS_PRINTF_OK("limit-down is {} kB/s", res.limit_down );
+	GULPS_PRINTF_OK("limit-up is {} kB/s", res.limit_up );
 	return true;
 }
 
@@ -1239,8 +1273,8 @@ bool t_rpc_command_executor::set_limit(int64_t limit_down, int64_t limit_up)
 		}
 	}
 
-	tools::msg_writer() << "Set limit-down to " << res.limit_down << " kB/s";
-	tools::msg_writer() << "Set limit-up to " << res.limit_up << " kB/s";
+	GULPS_PRINTF_OK("Set limit-down to {} kB/s", res.limit_down );
+	GULPS_PRINTF_OK("Set limit-up to {} kB/s", res.limit_up );
 	return true;
 }
 
@@ -1267,7 +1301,7 @@ bool t_rpc_command_executor::get_limit_up()
 		}
 	}
 
-	tools::msg_writer() << "limit-up is " << res.limit_up << " kB/s";
+	GULPS_PRINTF_OK("limit-up is {} kB/s", res.limit_up );
 	return true;
 }
 
@@ -1294,7 +1328,7 @@ bool t_rpc_command_executor::get_limit_down()
 		}
 	}
 
-	tools::msg_writer() << "limit-down is " << res.limit_down << " kB/s";
+	GULPS_PRINTF_OK("limit-down is {} kB/s", res.limit_down );
 	return true;
 }
 
@@ -1388,8 +1422,8 @@ bool t_rpc_command_executor::hard_fork_info(uint8_t version)
 	}
 
 	version = version > 0 ? version : res.voting;
-	tools::msg_writer() << "version " << (uint32_t)version << " " << (res.enabled ? "enabled" : "not enabled") << ", " << res.votes << "/" << res.window << " votes, threshold " << res.threshold;
-	tools::msg_writer() << "current version " << (uint32_t)res.version << ", voting for version " << (uint32_t)res.voting;
+	GULPS_PRINTF_OK("version {} {}, {}/{} votes, threshold {}", (uint32_t)version , (res.enabled ? "enabled" : "not enabled") , res.votes , res.window , res.threshold);
+	GULPS_PRINTF_OK("current version {}, voting for version {}", (uint32_t)res.version , (uint32_t)res.voting);
 
 	return true;
 }
@@ -1671,7 +1705,7 @@ bool t_rpc_command_executor::print_blockchain_dynamic_stats(uint64_t nblocks)
 	}
 
 	GULPS_PRINTF_OK("Height: {}, diff {}, cum. diff {}, target {} sec", ires.height , ires.difficulty , ires.cumulative_difficulty
-						, ires.target ,);
+						, ires.target);
 
 	if(nblocks > 0)
 	{
@@ -1872,7 +1906,7 @@ bool t_rpc_command_executor::sync_info()
 		}
 		else
 		{
-			GULPS_PRINTF_SUCCESS("{} {} ({} - {}, {}kB) {} kB\s ({})", address. s.nblocks, s.start_block_height, (s.start_block_height + s.nblocks - 1), (uint64_t)(s.size / 1e3), (unsigned)(s.rate / 1e3), s.speed / 100.0f);
+			GULPS_PRINTF_SUCCESS("{} {} ({} - {}, {}kB) {} kB/s ({})", address, s.nblocks, s.start_block_height, (s.start_block_height + s.nblocks - 1), (uint64_t)(s.size / 1e3), (unsigned)(s.rate / 1e3), s.speed / 100.0f);
 		}
 	}
 

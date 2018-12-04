@@ -303,7 +303,7 @@ int main(int argc, char* argv[])
 			tools::set_max_concurrency(command_line::get_arg(vm, daemon_args::arg_max_concurrency));
 
 		// logging is now set up
-		GULPS_GLOABALF_INFO("Ryo '{}' ({})", RYO_RELEASE_NAME, RYO_VERSION_FULL);
+		GULPS_GLOBAL_INFO("Ryo '{}' ({})", RYO_RELEASE_NAME, RYO_VERSION_FULL);
 
 		GULPS_INFO("Moving from main() into the daemonize now.");
 
