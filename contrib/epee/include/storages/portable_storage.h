@@ -23,6 +23,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
+#ifdef GULPS_CAT_MAJOR
+	#undef GULPS_CAT_MAJOR
+#endif
+#define GULPS_CAT_MAJOR "prt_strg"
 
 #pragma once
 
@@ -33,6 +37,8 @@
 #include "portable_storage_to_bin.h"
 #include "portable_storage_to_json.h"
 #include "portable_storage_val_converters.h"
+
+#include "common/gulps.hpp"	
 
 namespace epee
 {
@@ -144,19 +150,19 @@ inline bool portable_storage::load_from_binary(const binarybuffer &source)
 	m_root.m_entries.clear();
 	if(source.size() < sizeof(storage_block_header))
 	{
-		LOG_ERROR("portable_storage: wrong binary format, packet size = " << source.size() << " less than expected sizeof(storage_block_header)=" << sizeof(storage_block_header));
+		GULPS_ERRORF("portable_storage: wrong binary format, packet size = {} less than expected sizeof(storage_block_header)={}", source.size() , sizeof(storage_block_header));
 		return false;
 	}
 	storage_block_header *pbuff = (storage_block_header *)source.data();
 	if(pbuff->m_signature_a != PORTABLE_STORAGE_SIGNATUREA ||
 	   pbuff->m_signature_b != PORTABLE_STORAGE_SIGNATUREB)
 	{
-		LOG_ERROR("portable_storage: wrong binary format - signature mismatch");
+		GULPS_ERROR("portable_storage: wrong binary format - signature mismatch");
 		return false;
 	}
 	if(pbuff->m_ver != PORTABLE_STORAGE_FORMAT_VER)
 	{
-		LOG_ERROR("portable_storage: wrong binary format - unknown format ver = " << pbuff->m_ver);
+		GULPS_ERRORF("portable_storage: wrong binary format - unknown format ver = {}", pbuff->m_ver);
 		return false;
 	}
 	TRY_ENTRY();

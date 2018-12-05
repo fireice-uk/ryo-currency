@@ -23,8 +23,15 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
+#ifdef GULPS_CAT_MAJOR
+	#undef GULPS_CAT_MAJOR
+#endif
+#define GULPS_CAT_MAJOR "pars_bs_utls"
 
 #pragma once
+
+#include "common/gulps.hpp"	
+
 
 namespace epee
 {
@@ -132,7 +139,7 @@ inline void match_string2(std::string::const_iterator &star_end_string, std::str
 				break;
 			default:
 				val.push_back(*it);
-				LOG_PRINT_L0("Unknown escape sequence :\"\\" << *it << "\"");
+				GULPS_PRINTF("Unknown escape sequence :\"\\{}\"", *it);
 			}
 			escape_mode = false;
 		}

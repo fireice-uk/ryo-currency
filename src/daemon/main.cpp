@@ -338,8 +338,8 @@ int main(int argc, char* argv[])
 		gulps::inst().remove_output(temp_out_id);
 
 		// logging is now set up
-		GULPS_GLOBAL_INFO("Ryo '{}' ({})", RYO_RELEASE_NAME, RYO_VERSION_FULL);
-
+		GULPS_GLOBALF_PRINT("Ryo '{}' ({})", RYO_RELEASE_NAME, RYO_VERSION_FULL);
+		
 		GULPS_INFO("Moving from main() into the daemonize now.");
 
 		return daemonizer::daemonize(argc, argv, daemonize::t_executor{}, vm) ? 0 : 1;

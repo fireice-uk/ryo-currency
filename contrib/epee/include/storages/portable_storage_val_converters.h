@@ -23,6 +23,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
+#ifdef GULPS_CAT_MAJOR
+	#undef GULPS_CAT_MAJOR
+#endif
+#define GULPS_CAT_MAJOR "val_conv"
 
 #pragma once
 
@@ -32,6 +36,8 @@
 #include "misc_language.h"
 #include "portable_storage_base.h"
 #include "warnings.h"
+
+#include "common/gulps.hpp"	
 
 namespace epee
 {
@@ -140,7 +146,7 @@ struct convert_to_integral<std::string, uint64_t, false>
 {
 	static void convert(const std::string &from, uint64_t &to)
 	{
-		MTRACE("Converting std::string to uint64_t. Source: " << from);
+		GULPS_LOG_L2("Converting std::string to uint64_t. Source: {}", from);
 		// String only contains digits
 		if(std::all_of(from.begin(), from.end(), ::isdigit))
 			to = boost::lexical_cast<uint64_t>(from);

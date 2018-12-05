@@ -763,6 +763,9 @@ public:
 
 #define GULPS_GLOBALF_INFO(...) GULPS_CATF_INFO("global", __VA_ARGS__)
 #define GULPS_GLOBALF_INFO_CLR(clr, ...) GULPS_CATF_INFO_CLR(clr, "global", __VA_ARGS__)
+
+#define GULPS_GLOBAL_PRINT(...) GULPS_CAT_PRINT_CLR(gulps::COLOR_CYAN, "global", __VA_ARGS__)
+#define GULPS_GLOBALF_PRINT(...) GULPS_CATF_PRINT_CLR(gulps::COLOR_CYAN, "global", __VA_ARGS__)
 /*
 #define GULPS_ERROR(...) GULPS_OUTPUT(gulps::LEVEL_ERROR, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, fmt::color::red, __VA_ARGS__)
 #define GULPS_WARN(fstr, ...) GULPS_OUTPUT(gulps::LEVEL_WARN, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, fmt::color::orange, fstr, __VA_ARGS__)

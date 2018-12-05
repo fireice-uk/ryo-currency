@@ -23,6 +23,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
+#ifdef GULPS_CAT_MAJOR
+	#undef GULPS_CAT_MAJOR
+#endif
+#define GULPS_CAT_MAJOR "ptb_stg_jsn"
 
 #pragma once
 #include "file_io_utils.h"
@@ -31,6 +35,8 @@
 #include <boost/lexical_cast.hpp>
 
 #define EPEE_JSON_RECURSION_LIMIT_INTERNAL 100
+
+#include "common/gulps.hpp"	
 
 namespace epee
 {
@@ -414,12 +420,12 @@ inline bool load_from_json(const std::string &buff_json, t_storage &stg)
 	}
 	catch(const std::exception &ex)
 	{
-		MERROR("Failed to parse json, what: " << ex.what());
+		GULPS_ERRORF("Failed to parse json, what: {}", ex.what());
 		return false;
 	}
 	catch(...)
 	{
-		MERROR("Failed to parse json");
+		GULPS_ERROR("Failed to parse json");
 		return false;
 	}
 }
