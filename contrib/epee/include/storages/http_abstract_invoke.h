@@ -69,7 +69,7 @@ bool invoke_http_json(const boost::string_ref uri, const t_request &out_struct, 
 	if(pri->m_response_code != 200)
 	{
 		//GULPS_LOGF_L1("Failed to invoke http request to  {}, wrong response code: {}", uri , pri->m_response_code);
-		GULPS_LOG_L1("Failed to invoke http request to  ", uri, " wrong response code: ", std::to_string(pri->m_response_code));
+		GULPS_LOG_L1("Failed to invoke http request to  ", uri, " wrong response code: ", pri->m_response_code);
 		return false;
 	}
 
@@ -98,7 +98,7 @@ bool invoke_http_bin(const boost::string_ref uri, const t_request &out_struct, t
 
 	if(pri->m_response_code != 200)
 	{
-		GULPS_LOG_L1("Failed to invoke http request to  ", uri, " wrong response code: ", std::to_string(pri->m_response_code));
+		GULPS_LOG_L1("Failed to invoke http request to  ", uri, " wrong response code: ", pri->m_response_code);
 		return false;
 	}
 

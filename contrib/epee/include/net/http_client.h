@@ -23,6 +23,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
+#ifdef GULPS_CAT_MAJOR
+	#undef GULPS_CAT_MAJOR
+#endif
+#define GULPS_CAT_MAJOR "http_client"
 
 #pragma once
 #include <boost/lexical_cast.hpp>
@@ -54,6 +58,8 @@
 //#include "shlwapi.h"
 
 //#pragma comment(lib, "shlwapi.lib")
+
+#include "common/gulps.hpp"	
 
 //#undef RYO_DEFAULT_LOG_CATEGORY
 //#define RYO_DEFAULT_LOG_CATEGORY "net.http"
@@ -336,10 +342,10 @@ class http_simple_client_template : public i_target_handler
 		CRITICAL_REGION_LOCAL(m_lock);
 		if(!is_connected())
 		{
-			MDEBUG("Reconnecting...");
+			GULPS_LOG_L1("Reconnecting...");
 			if(!connect(timeout))
 			{
-				MDEBUG("Failed to connect to " << m_host_buff << ":" << m_port);
+				GULPS_LOGF_L1("Failed to connect to {}:{}", m_host_buff , m_port);
 				return false;
 			}
 		}
@@ -390,12 +396,12 @@ class http_simple_client_template : public i_target_handler
 				break;
 			default:
 			case http_client_auth::kParseFailure:
-				LOG_ERROR("Bad server response for authentication");
+				GULPS_LOG_ERROR("Bad server response for authentication");
 				return false;
 			}
 			req_buff.resize(initial_size); // rollback for new auth generation
 		}
-		LOG_ERROR("Client has incorrect username/password for server requiring authentication");
+		GULPS_LOG_ERROR("Client has incorrect username/password for server requiring authentication");
 		return false;
 	}
 	//---------------------------------------------------------------------------
@@ -427,7 +433,7 @@ class http_simple_client_template : public i_target_handler
 			{
 				if(!m_net_client.recv(recv_buffer, timeout))
 				{
-					MERROR("Unexpected recv fail");
+					GULPS_ERROR("Unexpected recv fail");
 					m_state = reciev_machine_state_error;
 				}
 				if(!recv_buffer.size())
@@ -472,7 +478,7 @@ class http_simple_client_template : public i_target_handler
 		}
 		else
 		{
-			LOG_PRINT_L3("Returning false because of wrong state machine. state: " << m_state);
+			GULPS_LOG_L3("Returning false because of wrong state machine. state: ", m_state);
 			return false;
 		}
 	}
@@ -483,7 +489,7 @@ class http_simple_client_template : public i_target_handler
 		CRITICAL_REGION_LOCAL(m_lock);
 		if(!recv_buff.size())
 		{
-			LOG_ERROR("Connection closed at handle_header");
+			GULPS_LOG_ERROR("Connection closed at handle_header");
 			m_state = reciev_machine_state_error;
 			return false;
 		}
@@ -499,7 +505,7 @@ class http_simple_client_template : public i_target_handler
 			analize_cached_header_and_invoke_state();
 			if(!on_header(m_response_info))
 			{
-				MDEBUG("Connection cancelled by on_header");
+				GULPS_LOG_L1("Connection cancelled by on_header");
 				m_state = reciev_machine_state_done;
 				return false;
 			}
@@ -519,7 +525,7 @@ class http_simple_client_template : public i_target_handler
 		CRITICAL_REGION_LOCAL(m_lock);
 		if(!recv_buff.size())
 		{
-			MERROR("Warning: Content-Len mode, but connection unexpectedly closed");
+			GULPS_ERROR("Warning: Content-Len mode, but connection unexpectedly closed");
 			m_state = reciev_machine_state_done;
 			return true;
 		}
@@ -605,7 +611,7 @@ class http_simple_client_template : public i_target_handler
 								break;
 							else
 							{
-								LOG_ERROR("http_stream_filter: Wrong last chunk terminator");
+								GULPS_LOG_ERROR("http_stream_filter: Wrong last chunk terminator");
 								return false;
 							}
 						}
@@ -632,7 +638,7 @@ class http_simple_client_template : public i_target_handler
 		CRITICAL_REGION_LOCAL(m_lock);
 		if(!recv_buff.size())
 		{
-			MERROR("Warning: CHUNKED mode, but connection unexpectedly closed");
+			GULPS_ERROR("Warning: CHUNKED mode, but connection unexpectedly closed");
 			m_state = reciev_machine_state_done;
 			return true;
 		}
@@ -662,7 +668,7 @@ class http_simple_client_template : public i_target_handler
 				}
 				if(!get_chunk_head(m_chunked_cache, m_len_in_remain, is_matched))
 				{
-					LOG_ERROR("http_stream_filter::handle_chunked(*) Failed to get length from chunked head:" << m_chunked_cache);
+					GULPS_LOGF_ERROR("http_stream_filter::handle_chunked(*) Failed to get length from chunked head:{}", m_chunked_cache);
 					m_state = reciev_machine_state_error;
 					return false;
 				}
@@ -714,7 +720,7 @@ class http_simple_client_template : public i_target_handler
 				return true;
 			case http_chunked_state_undefined:
 			default:
-				LOG_ERROR("http_stream_filter::handle_chunked(): Wrong state" << m_chunked_state);
+				GULPS_LOGF_ERROR("http_stream_filter::handle_chunked(): Wrong state{}", m_chunked_state);
 				return false;
 			}
 		}
@@ -724,7 +730,7 @@ class http_simple_client_template : public i_target_handler
 	//---------------------------------------------------------------------------
 	inline bool parse_header(http_header_info &body_info, const std::string &m_cache_to_process)
 	{
-		MTRACE("http_stream_filter::parse_cached_header(*)");
+		GULPS_LOG_L2("http_stream_filter::parse_cached_header(*)");
 
 		const char *ptr = m_cache_to_process.c_str();
 		while(ptr[0] != '\r' || ptr[1] != '\n')
@@ -834,7 +840,7 @@ class http_simple_client_template : public i_target_handler
 			m_pcontent_encoding_handler.reset(new content_encoding_gzip(this, result[3].matched));
 #else
 			m_pcontent_encoding_handler.reset(new do_nothing_sub_handler(this));
-			LOG_ERROR("GZIP encoding not supported in this build, please add zlib to your project and define HTTP_ENABLE_GZIP");
+			GULPS_LOG_ERROR("GZIP encoding not supported in this build, please add zlib to your project and define HTTP_ENABLE_GZIP");
 			return false;
 #endif
 		}
@@ -871,7 +877,7 @@ class http_simple_client_template : public i_target_handler
 			string_tools::trim(m_response_info.m_header_info.m_transfer_encoding);
 			if(string_tools::compare_no_case(m_response_info.m_header_info.m_transfer_encoding, "chunked"))
 			{
-				LOG_ERROR("Wrong Transfer-Encoding:" << m_response_info.m_header_info.m_transfer_encoding);
+				GULPS_LOGF_ERROR("Wrong Transfer-Encoding:{}", m_response_info.m_header_info.m_transfer_encoding);
 				m_state = reciev_machine_state_error;
 				return false;
 			}
@@ -884,7 +890,7 @@ class http_simple_client_template : public i_target_handler
 			//In the response header the length was specified
 			if(!content_len_valid)
 			{
-				LOG_ERROR("http_stream_filter::analize_cached_reply_header_and_invoke_state(): Failed to get_len_from_content_lenght();, m_query_info.m_content_length=" << m_response_info.m_header_info.m_content_length);
+				GULPS_LOGF_ERROR("http_stream_filter::analize_cached_reply_header_and_invoke_state(): Failed to get_len_from_content_lenght();, m_query_info.m_content_length={}", m_response_info.m_header_info.m_content_length);
 				m_state = reciev_machine_state_error;
 				return false;
 			}
@@ -907,13 +913,13 @@ class http_simple_client_template : public i_target_handler
 		else if(is_multipart_body(m_response_info.m_header_info, fake_str))
 		{
 			m_state = reciev_machine_state_error;
-			LOG_ERROR("Unsupported MULTIPART BODY.");
+			GULPS_LOG_ERROR("Unsupported MULTIPART BODY.");
 			return false;
 		}
 		else
 		{ //Apparently there are no signs of the form of transfer, will receive data until the connection is closed
 			m_state = reciev_machine_state_error;
-			MERROR("Undefined transfer type, consider http_body_transfer_connection_close method. header: " << m_header_cache);
+			GULPS_ERRORF("Undefined transfer type, consider http_body_transfer_connection_close method. header: {}", m_header_cache);
 			return false;
 		}
 		return false;
@@ -942,7 +948,7 @@ class http_simple_client_template : public i_target_handler
 				boundary = result[7];
 			else
 			{
-				LOG_ERROR("Failed to match boundary in content-type=" << head_info.m_content_type);
+				GULPS_LOGF_ERROR("Failed to match boundary in content-type={}", head_info.m_content_type);
 				return false;
 			}
 			return true;
