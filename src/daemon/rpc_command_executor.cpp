@@ -64,8 +64,8 @@
 //#define RYO_DEFAULT_LOG_CATEGORY "daemon"
 
 #define GULPS_PRINT_FAIL(...) GULPS_ERROR("Error: ", __VA_ARGS__)
-#define GULPS_PRINT_SUCCESS(...) GULPS_PRINT_CLR(gulps::COLOR_GREEN, __VA_ARGS__)
-#define GULPS_PRINTF_SUCCESS(...) GULPS_PRINTF_CLR(gulps::COLOR_GREEN, __VA_ARGS__)
+#define GULPS_PRINT_SUCCESS(...) GULPS_PRINT_CLR(gulps::COLOR_BOLD_GREEN, __VA_ARGS__)
+#define GULPS_PRINTF_SUCCESS(...) GULPS_PRINTF_CLR(gulps::COLOR_BOLD_GREEN, __VA_ARGS__)
 #define GULPS_PRINT_OK(...) GULPS_PRINT(__VA_ARGS__)
 #define GULPS_PRINTF_OK(...) GULPS_PRINTF(__VA_ARGS__)
 
@@ -89,12 +89,12 @@ void print_peer(std::string const &prefix, cryptonote::peer const &peer)
 	peer_id_str >> id_str;
 	epee::string_tools::xtype_to_string(peer.port, port_str);
 	std::string addr_str = ip_str + ":" + port_str;
-	GULPS_PRINTF_OK("{}-10s {}-25s {}-25s {}s", prefix, id_str, addr_str, elapsed);
+	GULPS_PRINTF_OK("{:<10} {:<25} {:<25} {:<}", prefix, id_str, addr_str, elapsed);
 }
 
 void print_block_header(cryptonote::block_header_response const &header)
-{
-	GULPS_INFO_CLR(gulps::COLOR_GREEN,
+{	
+	GULPS_PRINT_CLR(gulps::COLOR_GREEN,
 		"timestamp: ", boost::lexical_cast<std::string>(header.timestamp),
 		"\nprevious hash: ", header.prev_hash,
 		"\nnonce: ", boost::lexical_cast<std::string>(header.nonce),
@@ -104,6 +104,7 @@ void print_block_header(cryptonote::block_header_response const &header)
 		"\nhash: ", header.hash,
 		"\ndifficulty: ", boost::lexical_cast<std::string>(header.difficulty),
 		"\nreward: ", boost::lexical_cast<std::string>(header.reward));
+		//TODO FIX NOT PRINTING EVERYTHING THAT MAIN RYOD PRINTS
 }
 
 std::string get_human_time_ago(time_t t, time_t now)
@@ -526,7 +527,7 @@ GULPS_PRINTF_OK("{:<30}{:<20}{:<20}{:<30}{:<25}{:<20}{:<12}{:<14}{:<10}{:<13}",
 														"Down (kB/s)",
 														"Down(now)",
 														"Up (kB/s)",
-														"Up(now)");
+														"Up(now)\n");
 
 	for(auto &info : res.connections)
 	{
@@ -585,8 +586,8 @@ bool t_rpc_command_executor::print_blockchain_info(uint64_t start_block_index, u
 	for(auto &header : res.headers)
 	{
 		if(!first)
-			
-		GULPS_PRINTF("\nheight: {}, timestamp: {}, difficulty: {}, size: {}, transactions: {}\nmajor version: {}, minor version: {}\nblock id: {}, previous block id: {}\ndifficulty: {}, nonce {}, reward {}", 
+			GULPS_PRINT("\n");
+		GULPS_PRINTF_OK("\nheight: {}, timestamp: {}, difficulty: {}, size: {}, transactions: {}\nmajor version: {}, minor version: {}\nblock id: {}, previous block id: {}\ndifficulty: {}, nonce {}, reward {}", 
 			header.height, header.timestamp, header.difficulty, header.block_size, header.num_txes, (unsigned)header.major_version, (unsigned)header.minor_version,
 			header.hash, header.prev_hash, header.difficulty, header.nonce, cryptonote::print_money(header.reward));
 		first = false;
@@ -1436,7 +1437,7 @@ bool t_rpc_command_executor::print_bans()
 
 	for(auto i = res.bans.begin(); i != res.bans.end(); ++i)
 	{
-		GULPS_PRINT_OK("{} banned for {} second", epee::string_tools::get_ip_string_from_int32(i->ip), i->seconds);
+		GULPS_PRINTF_OK("{} banned for {} seconds", epee::string_tools::get_ip_string_from_int32(i->ip), i->seconds);
 	}
 
 	return true;

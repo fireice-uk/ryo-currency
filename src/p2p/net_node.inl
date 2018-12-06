@@ -235,7 +235,7 @@ bool node_server<t_payload_net_handler>::block_host(const epee::net_utils::netwo
 	for(const auto &c : conns)
 		m_net_server.get_config_object().close(c);
 
-	GULPS_GLOBALF_PRINT_CLR(gulps::COLOR_CYAN, "Host {} blocked", addr.host_str());
+	GULPS_GLOBALF_PRINT_CLR(gulps::COLOR_CYAN, "Host {} blocked.", addr.host_str());
 	return true;
 }
 //-----------------------------------------------------------------------------------
@@ -704,19 +704,19 @@ bool node_server<t_payload_net_handler>::do_handshake_with_peer(peerid_type &pi,
 
 																									 if(code < 0)
 																									 {
-																										 GULPS_WARNF("{} COMMAND_HANDSHAKE invoke failed. ({}, {})", contextx_str(context), code , epee::levin::get_err_descr(code) );
+																										 GULPS_LOGF_WARN("{} COMMAND_HANDSHAKE invoke failed. ({}, {})", contextx_str(context), code , epee::levin::get_err_descr(code) );
 																										 return;
 																									 }
 
 																									 if(rsp.node_data.network_id != m_network_id)
 																									 {
-																										 GULPS_WARNF("{} COMMAND_HANDSHAKE Failed, wrong network!  ({}), closing connection.", contextx_str(context), epee::string_tools::get_str_from_guid_a(rsp.node_data.network_id));
+																										 GULPS_LOGF_WARN("{} COMMAND_HANDSHAKE Failed, wrong network!  ({}), closing connection.", contextx_str(context), epee::string_tools::get_str_from_guid_a(rsp.node_data.network_id));
 																										 return;
 																									 }
 
 																									 if(!handle_remote_peerlist(rsp.local_peerlist_new, rsp.node_data.local_time, context))
 																									 {
-																										 GULPS_WARNF("{} COMMAND_HANDSHAKE: failed to handle_remote_peerlist(...), closing connection.", contextx_str(context));
+																										 GULPS_LOGF_WARN("{} COMMAND_HANDSHAKE: failed to handle_remote_peerlist(...), closing connection.", contextx_str(context));
 																										 add_host_fail(context.m_remote_address);
 																										 return;
 																									 }
@@ -725,7 +725,7 @@ bool node_server<t_payload_net_handler>::do_handshake_with_peer(peerid_type &pi,
 																									 {
 																										 if(!m_payload_handler.process_payload_sync_data(rsp.payload_data, context, true))
 																										 {
-																											 GULPS_WARNF("{} COMMAND_HANDSHAKE invoked, but process_payload_sync_data returned false, dropping connection.", contextx_str(context));
+																											 GULPS_LOGF_WARN("{} COMMAND_HANDSHAKE invoked, but process_payload_sync_data returned false, dropping connection.", contextx_str(context));
 																											 hsh_result = false;
 																											 return;
 																										 }
@@ -755,7 +755,7 @@ bool node_server<t_payload_net_handler>::do_handshake_with_peer(peerid_type &pi,
 
 	if(!hsh_result)
 	{
-		GULPS_WARNF("{} COMMAND_HANDSHAKE Failed", contextx_str(context_));
+		GULPS_LOGF_WARN("{} COMMAND_HANDSHAKE Failed", contextx_str(context_));
 		m_net_server.get_config_object().close(context_.m_connection_id);
 	}
 	else
@@ -779,13 +779,13 @@ bool node_server<t_payload_net_handler>::do_peer_timed_sync(const epee::net_util
 																									  context.m_in_timedsync = false;
 																									  if(code < 0)
 																									  {
-																										  GULPS_WARNF("{} COMMAND_TIMED_SYNC invoke failed. ({}, {})", contextx_str(context), code , epee::levin::get_err_descr(code) );
+																										  GULPS_LOGF_WARN("{} COMMAND_TIMED_SYNC invoke failed. ({}, {})", contextx_str(context), code , epee::levin::get_err_descr(code) );
 																										  return;
 																									  }
 
 																									  if(!handle_remote_peerlist(rsp.local_peerlist_new, rsp.local_time, context))
 																									  {
-																										  GULPS_WARNF("{} COMMAND_TIMED_SYNC: failed to handle_remote_peerlist(...), closing connection.", contextx_str(context));
+																										  GULPS_LOGF_WARN("{} COMMAND_TIMED_SYNC: failed to handle_remote_peerlist(...), closing connection.", contextx_str(context));
 																										  m_net_server.get_config_object().close(context.m_connection_id);
 																										  add_host_fail(context.m_remote_address);
 																									  }
@@ -796,7 +796,7 @@ bool node_server<t_payload_net_handler>::do_peer_timed_sync(const epee::net_util
 
 	if(!r)
 	{
-		GULPS_WARNF("{} COMMAND_TIMED_SYNC Failed", contextx_str(context_));
+		GULPS_LOGF_WARN("{} COMMAND_TIMED_SYNC Failed", contextx_str(context_));
 		return false;
 	}
 	return true;
@@ -1533,7 +1533,7 @@ bool node_server<t_payload_net_handler>::try_ping(basic_node_data &node_data, p2
 																									 const boost::system::error_code &ec) -> bool {
 		if(ec)
 		{
-			GULPS_WARNF("{} back ping connect failed to {}",contextx_str(ping_context),  address.str());
+			GULPS_LOGF_WARN("{} back ping connect failed to {}",contextx_str(ping_context),  address.str());
 			return false;
 		}
 		COMMAND_PING::request req;
@@ -1551,13 +1551,13 @@ bool node_server<t_payload_net_handler>::try_ping(basic_node_data &node_data, p2
 																								  [=](int code, const COMMAND_PING::response &rsp, p2p_connection_context &context) {
 																									  if(code <= 0)
 																									  {
-																										  GULPS_WARNF("{} Failed to invoke COMMAND_PING to {}({}, {})", contextx_str(ping_context), address.str() , code , epee::levin::get_err_descr(code) );
+																										  GULPS_LOGF_WARN("{} Failed to invoke COMMAND_PING to {}({}, {})", contextx_str(ping_context), address.str() , code , epee::levin::get_err_descr(code) );
 																										  return;
 																									  }
 
 																									  if(rsp.status != PING_OK_RESPONSE_STATUS_TEXT || pr != rsp.peer_id)
 																									  {
-																										  GULPS_WARNF("{} back ping invoke wrong response \"{}\" from {}, hsh_peer_id={}, rsp.peer_id={}", contextx_str(ping_context), rsp.status, address.str(), pr_ , rsp.peer_id);
+																										  GULPS_LOGF_WARN("{} back ping invoke wrong response \"{}\" from {}, hsh_peer_id={}, rsp.peer_id={}", contextx_str(ping_context), rsp.status, address.str(), pr_ , rsp.peer_id);
 																										  m_net_server.get_config_object().close(ping_context.m_connection_id);
 																										  return;
 																									  }
@@ -1567,7 +1567,7 @@ bool node_server<t_payload_net_handler>::try_ping(basic_node_data &node_data, p2
 
 		if(!inv_call_res)
 		{
-			GULPS_WARNF("{} back ping invoke failed to {}",contextx_str(ping_context),  address.str());
+			GULPS_LOGF_WARN("{} back ping invoke failed to {}",contextx_str(ping_context),  address.str());
 			m_net_server.get_config_object().close(ping_context.m_connection_id);
 			return false;
 		}
@@ -1575,7 +1575,7 @@ bool node_server<t_payload_net_handler>::try_ping(basic_node_data &node_data, p2
 	});
 	if(!r)
 	{
-		GULPS_WARNF("{} Failed to call connect_async, network error.", contextx_str(context));
+		GULPS_LOGF_WARN("{} Failed to call connect_async, network error.", contextx_str(context));
 	}
 	return r;
 }
@@ -1592,7 +1592,7 @@ bool node_server<t_payload_net_handler>::try_get_support_flags(const p2p_connect
 		[=](int code, const typename COMMAND_REQUEST_SUPPORT_FLAGS::response &rsp, p2p_connection_context &context_) {
 			if(code < 0)
 			{
-				GULPS_WARNF("{} COMMAND_REQUEST_SUPPORT_FLAGS invoke failed. ({}, {})", contextx_str(context_), code , epee::levin::get_err_descr(code) );
+				GULPS_LOGF_WARN("{} COMMAND_REQUEST_SUPPORT_FLAGS invoke failed. ({}, {})", contextx_str(context_), code , epee::levin::get_err_descr(code) );
 				return;
 			}
 
@@ -1608,7 +1608,7 @@ int node_server<t_payload_net_handler>::handle_timed_sync(int command, typename 
 {
 	if(!m_payload_handler.process_payload_sync_data(arg.payload_data, context, false))
 	{
-		GULPS_WARNF("{} Failed to process_payload_sync_data(), dropping connection", contextx_str(context));
+		GULPS_LOGF_WARN("{} Failed to process_payload_sync_data(), dropping connection", contextx_str(context));
 		drop_connection(context);
 		return 1;
 	}
@@ -1627,7 +1627,7 @@ int node_server<t_payload_net_handler>::handle_handshake(int command, typename C
 	if(arg.node_data.network_id != m_network_id)
 	{
 
-		GULPS_INFOF("{} WRONG NETWORK AGENT CONNECTED! id={}", contextx_str(context), epee::string_tools::get_str_from_guid_a(arg.node_data.network_id));
+		GULPS_LOGF_L0("{} WRONG NETWORK AGENT CONNECTED! id={}", contextx_str(context), epee::string_tools::get_str_from_guid_a(arg.node_data.network_id));
 		drop_connection(context);
 		add_host_fail(context.m_remote_address);
 		return 1;
@@ -1635,7 +1635,7 @@ int node_server<t_payload_net_handler>::handle_handshake(int command, typename C
 
 	if(!context.m_is_income)
 	{
-		GULPS_WARNF("{} COMMAND_HANDSHAKE came not from incoming connection", contextx_str(context));
+		GULPS_LOGF_WARN("{} COMMAND_HANDSHAKE came not from incoming connection", contextx_str(context));
 		drop_connection(context);
 		add_host_fail(context.m_remote_address);
 		return 1;
@@ -1643,21 +1643,21 @@ int node_server<t_payload_net_handler>::handle_handshake(int command, typename C
 
 	if(context.peer_id)
 	{
-		GULPS_WARNF("{} COMMAND_HANDSHAKE came, but seems that connection already have associated peer_id (double COMMAND_HANDSHAKE?)", contextx_str(context));
+		GULPS_LOGF_WARN("{} COMMAND_HANDSHAKE came, but seems that connection already have associated peer_id (double COMMAND_HANDSHAKE?)", contextx_str(context));
 		drop_connection(context);
 		return 1;
 	}
 
 	if(m_current_number_of_in_peers >= m_config.m_net_config.max_in_connection_count) // in peers limit
 	{
-		GULPS_WARNF("{} COMMAND_HANDSHAKE came, but already have max incoming connections, so dropping this one.", contextx_str(context));
+		GULPS_LOGF_WARN("{} COMMAND_HANDSHAKE came, but already have max incoming connections, so dropping this one.", contextx_str(context));
 		drop_connection(context);
 		return 1;
 	}
 
 	if(!m_payload_handler.process_payload_sync_data(arg.payload_data, context, true))
 	{
-		GULPS_WARNF("{} COMMAND_HANDSHAKE came, but process_payload_sync_data returned false, dropping connection.", contextx_str(context));
+		GULPS_LOGF_WARN("{} COMMAND_HANDSHAKE came, but process_payload_sync_data returned false, dropping connection.", contextx_str(context));
 		drop_connection(context);
 		return 1;
 	}

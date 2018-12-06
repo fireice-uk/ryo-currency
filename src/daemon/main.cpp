@@ -158,7 +158,7 @@ int main(int argc, char* argv[])
 		if(command_line::get_arg(vm, command_line::arg_help))
 		{
 			GULPS_PRINTF("Ryo '{}' ({})\n", RYO_RELEASE_NAME , RYO_VERSION_FULL );
-			GULPS_PRINTF("Usage: {} [options|settings] [daemon_command...]\n\n\n", std::string{argv[0]});
+			GULPS_PRINTF("\nUsage: {} [options|settings] [daemon_command...]\n\n", std::string{argv[0]});
 			GULPS_PRINT(visible_options);
 			return 0;
 		}

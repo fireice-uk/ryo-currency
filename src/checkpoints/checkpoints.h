@@ -47,6 +47,7 @@
 #pragma once
 #include "crypto/hash.h"
 #include "cryptonote_config.h"
+#include "common/gulps.hpp"
 #include "misc_log_ex.h"
 #include <map>
 #include <vector>

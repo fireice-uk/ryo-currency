@@ -30,7 +30,7 @@
 #include <string>
 
 #include "easylogging++.h"
-
+	
 #define RYO_DEFAULT_LOG_CATEGORY "default"
 #define MAX_LOG_FILE_SIZE 104850000 // 100 MB - 7600 bytes
 

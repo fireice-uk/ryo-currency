@@ -44,6 +44,7 @@
 //
 
 #include "log.hpp"
+#include "common/gulps.hpp"
 #include "misc_log_ex.h"
 
 namespace hw

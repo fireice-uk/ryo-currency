@@ -50,6 +50,7 @@
 #include <boost/archive/portable_binary_iarchive.hpp>
 #include <boost/archive/portable_binary_oarchive.hpp>
 #include <boost/filesystem/operations.hpp>
+#include "common/gulps.hpp"
 #include "misc_log_ex.h"
 
 namespace tools

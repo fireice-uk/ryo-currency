@@ -28,6 +28,7 @@
 
 #include "wipeable_string.h"
 #include "memwipe.h"
+#include "common/gulps.hpp"
 #include "misc_log_ex.h"
 #include <string.h>
 

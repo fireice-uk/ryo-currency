@@ -46,7 +46,9 @@
 
 #include "include_base_utils.h"
 using namespace epee;
-
+#ifdef GULPS_CAT_MAJOR
+	#undef GULPS_CAT_MAJOR
+#endif
 #define GULPS_CAT_MAJOR "formt_utils"
 #include "common/gulps.hpp"
 

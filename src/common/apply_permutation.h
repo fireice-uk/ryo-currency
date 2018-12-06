@@ -47,7 +47,7 @@
 // https://blogs.msdn.microsoft.com/oldnewthing/20170109-00/?p=95145
 
 #pragma once
-
+#include "common/gulps.hpp"
 #include "misc_log_ex.h"
 #include <functional>
 #include <vector>
