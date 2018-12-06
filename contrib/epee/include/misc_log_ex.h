@@ -131,29 +131,34 @@ inline bool get_set_enable_assert(bool set = false, bool v = false)
 
 #define ENDL std::endl
 
+#ifndef TRY_ENTRY
 #define TRY_ENTRY() \
-	try             \
-	{
-#define CATCH_ENTRY(location, return_val)                                          \
-	}                                                                              \
-	catch(const std::exception &ex)                                                \
-	{                                                                              \
-		(void)(ex);                                                                \
-		LOG_ERROR("Exception at [" << location << "], what=" << ex.what());        \
-		return return_val;                                                         \
-	}                                                                              \
-	catch(...)                                                                     \
-	{                                                                              \
-		LOG_ERROR("Exception at [" << location << "], generic exception \"...\""); \
-		return return_val;                                                         \
-	}
+		try             \
+		{
+	#define CATCH_ENTRY(location, return_val)                                          \
+		}                                                                              \
+		catch(const std::exception &ex)                                                \
+		{                                                                              \
+			(void)(ex);                                                                \
+			LOG_ERROR("Exception at [" << location << "], what=" << ex.what());        \
+			return return_val;                                                         \
+		}                                                                              \
+		catch(...)                                                                     \
+		{                                                                              \
+			LOG_ERROR("Exception at [" << location << "], generic exception \"...\""); \
+			return return_val;                                                         \
+		}
+#endif
 
-#define CATCH_ENTRY_L0(lacation, return_val) CATCH_ENTRY(lacation, return_val)
-#define CATCH_ENTRY_L1(lacation, return_val) CATCH_ENTRY(lacation, return_val)
-#define CATCH_ENTRY_L2(lacation, return_val) CATCH_ENTRY(lacation, return_val)
-#define CATCH_ENTRY_L3(lacation, return_val) CATCH_ENTRY(lacation, return_val)
-#define CATCH_ENTRY_L4(lacation, return_val) CATCH_ENTRY(lacation, return_val)
+#ifndef CATCH_ENTRY_L0
+	#define CATCH_ENTRY_L0(lacation, return_val) CATCH_ENTRY(lacation, return_val)
+	#define CATCH_ENTRY_L1(lacation, return_val) CATCH_ENTRY(lacation, return_val)
+	#define CATCH_ENTRY_L2(lacation, return_val) CATCH_ENTRY(lacation, return_val)
+	#define CATCH_ENTRY_L3(lacation, return_val) CATCH_ENTRY(lacation, return_val)
+	#define CATCH_ENTRY_L4(lacation, return_val) CATCH_ENTRY(lacation, return_val)
+#endif
 
+#ifndef ASSERT_MES_AND_THROW
 #define ASSERT_MES_AND_THROW(message)       \
 	{                                       \
 		LOG_ERROR(message);                 \
@@ -161,12 +166,16 @@ inline bool get_set_enable_assert(bool set = false, bool v = false)
 		ss << message;                      \
 		throw std::runtime_error(ss.str()); \
 	}
+#endif
+
+#ifndef CHECK_AND_ASSERT_THROW_MES
 #define CHECK_AND_ASSERT_THROW_MES(expr, message) \
 	do                                            \
 	{                                             \
 		if(!(expr))                               \
 			ASSERT_MES_AND_THROW(message);        \
 	} while(0)
+#endif
 
 #ifndef CHECK_AND_ASSERT
 #define CHECK_AND_ASSERT(expr, fail_ret_val) \

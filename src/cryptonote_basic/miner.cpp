@@ -216,7 +216,7 @@ void miner::merge_hr()
 			const auto precision = std::cout.precision();
 			//TODO CHECK IF  ITS OKAY
 			//std::cout << "hashrate: " << std::setprecision(4) << std::fixed << hr << precision << ENDL;
-			GULPS_PRINT("hashrate: {}{}", hr, precision);
+			GULPS_PRINTF("hashrate: {:.{}f}", hr, precision);
 		}
 	}
 	m_last_hr_merge_time = misc_utils::get_tick_count();

@@ -750,13 +750,13 @@ public:
 #define GULPS_CAT2_LOG_L2(maj, min, ...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_TRACE, maj, min, gulps::COLOR_WHITE, __VA_ARGS__)
 #define GULPS_CAT2_LOG_L3(maj, min, ...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_TRACE2, maj, min, gulps::COLOR_WHITE, __VA_ARGS__)
 
-#define GULPS_CAT2_ERRORF(maj, min, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_ERROR, maj, min, gulps::COLOR_BOLD_RED, __VA_ARGS__)
+#define GULPS_CAT2F_LOG_ERROR(maj, min, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_ERROR, maj, min, gulps::COLOR_BOLD_RED, __VA_ARGS__)
 
-#define GULPS_VERIFY_ERR_TX(...) GULPS_CAT2_ERROR("verify", "tx", __VA_ARGS__)
-#define GULPS_VERIFY_ERR_BLK(...) GULPS_CAT2_ERROR("verify", "block", __VA_ARGS__)
+#define GULPS_VERIFY_ERR_TX(...) GULPS_CAT2_LOG_ERROR("verify", "tx", __VA_ARGS__)
+#define GULPS_VERIFY_ERR_BLK(...) GULPS_CAT2_LOG_ERROR("verify", "block", __VA_ARGS__)
 
-#define GULPS_VERIFYF_ERR_TX(...) GULPS_CAT2_ERRORF("verify", "tx", __VA_ARGS__)
-#define GULPS_VERIFYF_ERR_BLK(...) GULPS_CAT2_ERRORF("verify", "block", __VA_ARGS__)
+#define GULPS_VERIFYF_ERR_TX(...) GULPS_CAT2F_LOG_ERROR("verify", "tx", __VA_ARGS__)
+#define GULPS_VERIFYF_ERR_BLK(...) GULPS_CAT2F_LOG_ERROR("verify", "block", __VA_ARGS__)
 
 #define GULPS_GLOBAL_PRINT(...) GULPS_CAT_PRINT_CLR(gulps::COLOR_CYAN, "global", __VA_ARGS__)
 #define GULPS_GLOBALF_PRINT(...) GULPS_CATF_PRINT_CLR(gulps::COLOR_CYAN, "global", __VA_ARGS__)
@@ -772,5 +772,169 @@ public:
 #define GULPS_DEBUG1(fstr, ...) GULPS_OUTPUT(gulps::LEVEL_DEBUG_1, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, fmt::color::white, fstr, __VA_ARGS__)
 #define GULPS_DEBUG2(fstr, ...) GULPS_OUTPUT(gulps::LEVEL_DEBUG_2, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, fmt::color::white, fstr, __VA_ARGS__)
 #define GULPS_PRINT(clr, fstr, ...) GULPS_OUTPUT(gulps::LEVEL_OUTPUT_0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, clr, fstr, __VA_ARGS__)*/
+
+#ifdef CHECK_AND_ASSERT_MES
+	#undef CHECK_AND_ASSERT_MES
+#endif
+#define CHECK_AND_ASSERT_MES(expr, fail_ret_val, message) \
+	do                                                    \
+	{                                                     \
+		if(!(expr))                                       \
+		{                                                 \
+			std::stringstream ss;						\
+			ss << message;			\
+			GULPS_LOG_ERROR(ss.str());                           \
+			return fail_ret_val;                          \
+		};                                                \
+	} while(0)
+		
+#ifndef LOCAL_ASSERT
+#include <assert.h>
+#if(defined _MSC_VER)
+#define LOCAL_ASSERT(expr)                       \
+	{                                            \
+		if(epee::debug::get_set_enable_assert()) \
+		{                                        \
+			_ASSERTE(expr);                      \
+		}                                        \
+	}
+#else
+#define LOCAL_ASSERT(expr)
+#endif
+#endif
+
+#ifdef TRY_ENTRY
+	#undef TRY_ENTRY
+	#ifdef CATCH_ENTRY
+		#undef CATCH_ENTRY
+	#endif
+#endif
+#define TRY_ENTRY() \
+	try             \
+	{
+#define CATCH_ENTRY(location, return_val)                                          \
+	}                                                                              \
+	catch(const std::exception &ex)                                                \
+	{                                                                              \
+		(void)(ex);                                                                \
+		GULPS_LOG_ERROR("Exception at [", location, "], what=", ex.what());        \
+		return return_val;                                                         \
+	}                                                                              \
+	catch(...)                                                                     \
+	{                                                                              \
+		GULPS_LOG_ERROR("Exception at [", location, "], generic exception \"...\""); \
+		return return_val;                                                         \
+	}
+
+#ifndef CATCH_ENTRY_L0
+	#define CATCH_ENTRY_L0(lacation, return_val) CATCH_ENTRY(lacation, return_val)
+	#define CATCH_ENTRY_L1(lacation, return_val) CATCH_ENTRY(lacation, return_val)
+	#define CATCH_ENTRY_L2(lacation, return_val) CATCH_ENTRY(lacation, return_val)
+	#define CATCH_ENTRY_L3(lacation, return_val) CATCH_ENTRY(lacation, return_val)
+	#define CATCH_ENTRY_L4(lacation, return_val) CATCH_ENTRY(lacation, return_val)
+#endif
+
+#ifdef ASSERT_MES_AND_THROW
+	#undef ASSERT_MES_AND_THROW
+#endif
+#define ASSERT_MES_AND_THROW(message)       \
+	{                                       \
+		std::stringstream ss;               \
+		ss << message;                      \
+		GULPS_LOG_ERROR(ss.str());                 \
+		throw std::runtime_error(ss.str()); \
+	}
+	
+#ifndef CHECK_AND_ASSERT_THROW_MES
+#define CHECK_AND_ASSERT_THROW_MES(expr, message) \
+	do                                            \
+	{                                             \
+		if(!(expr))                               \
+			ASSERT_MES_AND_THROW(message);        \
+	} while(0)
+#endif
+
+#ifndef CHECK_AND_ASSERT
+#define CHECK_AND_ASSERT(expr, fail_ret_val) \
+	do                                       \
+	{                                        \
+		if(!(expr))                          \
+		{                                    \
+			LOCAL_ASSERT(expr);              \
+			return fail_ret_val;             \
+		};                                   \
+	} while(0)
+#endif
+
+#ifdef CHECK_AND_ASSERT_MES
+	#undef CHECK_AND_ASSERT_MES
+#endif
+#define CHECK_AND_ASSERT_MES(expr, fail_ret_val, message) \
+	do                                                    \
+	{                                                     \
+		if(!(expr))                                       \
+		{                                                 \
+			std::stringstream ss;               \
+			ss << message;                      \
+			GULPS_LOG_ERROR(ss.str());                           \
+			return fail_ret_val;                          \
+		};                                                \
+	} while(0)
+
+#ifdef CHECK_AND_NO_ASSERT_MES_L
+	#undef CHECK_AND_NO_ASSERT_MES_L
+#endif
+#define CHECK_AND_NO_ASSERT_MES_L(expr, fail_ret_val, l, message) \
+	do                                                            \
+	{                                                             \
+		if(!(expr))                                               \
+		{                                                         \
+			std::stringstream ss;               \
+			ss << message;                      \
+			GULPS_LOG_L##l(ss.str()); /*LOCAL_ASSERT(expr);*/      \
+			return fail_ret_val;                                  \
+		};                                                        \
+	} while(0)
+		
+#ifndef CHECK_AND_NO_ASSERT_MES
+#define CHECK_AND_NO_ASSERT_MES(expr, fail_ret_val, message) CHECK_AND_NO_ASSERT_MES_L(expr, fail_ret_val, 0, message)
+#endif
+
+#ifndef CHECK_AND_NO_ASSERT_MES_L1
+#define CHECK_AND_NO_ASSERT_MES_L1(expr, fail_ret_val, message) CHECK_AND_NO_ASSERT_MES_L(expr, fail_ret_val, 1, message)
+#endif
+
+#ifdef CHECK_AND_ASSERT_MES_NO_RET
+	#undef CHECK_AND_ASSERT_MES_NO_RET
+#endif
+#define CHECK_AND_ASSERT_MES_NO_RET(expr, message) \
+	do                                             \
+	{                                              \
+		if(!(expr))                                \
+		{                                          \
+			std::stringstream ss;               \
+			ss << message;                      \
+			GULPS_LOG_ERROR(ss.str());                    \
+			return;                                \
+		};                                         \
+	} while(0)
+		
+#ifdef CHECK_AND_ASSERT_MES2
+	#undef CHECK_AND_ASSERT_MES2
+#endif
+#define CHECK_AND_ASSERT_MES2(expr, message) \
+	do                                       \
+	{                                        \
+		if(!(expr))                          \
+		{                                    \
+			std::stringstream ss;               \
+			ss << message;                      \
+			GULPS_LOG_ERROR(ss.str());              \
+		};                                   \
+	} while(0)
+
+
+
+
 
 

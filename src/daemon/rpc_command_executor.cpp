@@ -104,7 +104,6 @@ void print_block_header(cryptonote::block_header_response const &header)
 		"\nhash: ", header.hash,
 		"\ndifficulty: ", boost::lexical_cast<std::string>(header.difficulty),
 		"\nreward: ", boost::lexical_cast<std::string>(header.reward));
-		//TODO FIX NOT PRINTING EVERYTHING THAT MAIN RYOD PRINTS
 }
 
 std::string get_human_time_ago(time_t t, time_t now)
@@ -472,7 +471,7 @@ bool t_rpc_command_executor::show_status()
 		}
 	}
 	
-	GULPS_PRINTF_SUCCESS("Height: {}/{} ({:.1f}) on {}{}, {}, net hash {}, v{}{}, {}, {}(out)+{}(in) connections, uptime {} {} {} {}", 
+	GULPS_PRINTF_SUCCESS("Height: {}/{} ({:.1f}) on {}{}, {}, net hash {}, v{}{}, {}, {}(out)+{}(in) connections, uptime {}d {}h {}m {}s", 
 								(unsigned long long)ires.height, 
 								(unsigned long long)net_height, 
 								get_sync_percentage(ires), 
@@ -709,7 +708,7 @@ bool t_rpc_command_executor::print_block_by_hash(crypto::hash block_hash)
 	}
 
 	print_block_header(res.block_header);
-	GULPS_INFO_CLR( gulps::COLOR_GREEN,  res.json );
+	GULPS_PRINT_CLR( gulps::COLOR_GREEN,  res.json );
 
 	return true;
 }
@@ -741,7 +740,7 @@ bool t_rpc_command_executor::print_block_by_height(uint64_t height)
 	}
 
 	print_block_header(res.block_header);
-	GULPS_INFO_CLR( gulps::COLOR_GREEN,  res.json );
+	GULPS_PRINT_CLR( gulps::COLOR_GREEN,  res.json );
 
 	return true;
 }
@@ -788,7 +787,7 @@ bool t_rpc_command_executor::print_transaction(crypto::hash transaction_hash,
 		const std::string &as_hex = (1 == res.txs.size()) ? res.txs.front().as_hex : res.txs_as_hex.front();
 		// Print raw hex if requested
 		if(include_hex)
-			GULPS_INFO_CLR( gulps::COLOR_GREEN,  as_hex );
+			GULPS_PRINT_CLR( gulps::COLOR_GREEN,  as_hex );
 
 		// Print json if requested
 		if(include_json)
@@ -806,7 +805,7 @@ bool t_rpc_command_executor::print_transaction(crypto::hash transaction_hash,
 			}
 			else
 			{
-				GULPS_INFO_CLR( gulps::COLOR_GREEN,  cryptonote::obj_to_json_str(tx) );
+				GULPS_PRINT_CLR( gulps::COLOR_GREEN,  cryptonote::obj_to_json_str(tx) );
 			}
 		}
 	}
@@ -844,8 +843,8 @@ bool t_rpc_command_executor::is_key_image_spent(const crypto::key_image &ki)
 
 	if(1 == res.spent_status.size())
 	{
-		// first as hex
-		GULPS_PRINT_SUCCESS(ki.data, ": ", (res.spent_status.front() ? "spent" : "unspent"), (res.spent_status.front() == cryptonote::COMMAND_RPC_IS_KEY_IMAGE_SPENT::SPENT_IN_POOL ? " (in pool)" : ""));
+		// first as hex	//TODO CHECK IF PRINTS CORRECTLY
+		GULPS_PRINT_SUCCESS(ki, ": ", (res.spent_status.front() ? "spent" : "unspent"), (res.spent_status.front() == cryptonote::COMMAND_RPC_IS_KEY_IMAGE_SPENT::SPENT_IN_POOL ? " (in pool)" : ""));
 	}
 	else
 	{
@@ -888,7 +887,7 @@ bool t_rpc_command_executor::print_transaction_pool_long()
 		GULPS_PRINT_OK( "Transactions: ");
 		for(auto &tx_info : res.transactions)
 		{
-			GULPS_PRINTF_OK("id: {}\n{}\nblob_size: {}\nfee: {}\nfee/byte: {}\nreceive_time: {} ({})relayed: {}\ndo_not_relay: {}\nkept_by_block: {}\ndouble_spend_seen: {}\nmax_used_block_height: {}\nmax_used_block_id: {}\nlast_failed_height: {}l\nast_failed_id: {}"
+			GULPS_PRINTF_OK("id: {}\n{}\nblob_size: {}\nfee: {}\nfee/byte: {}\nreceive_time: {} ({})relayed: {}\ndo_not_relay: {}\nkept_by_block: {}\ndouble_spend_seen: {}\nmax_used_block_height: {}\nmax_used_block_id: {}\nlast_failed_height: {}\nlast_failed_id: {}"
 										, tx_info.id_hash 
 										, tx_info.tx_json 
 										, tx_info.blob_size
@@ -973,7 +972,7 @@ bool t_rpc_command_executor::print_transaction_pool_short()
 		const time_t now = time(NULL);
 		for(auto &tx_info : res.transactions)
 		{
-				GULPS_PRINTF_OK("id: {}\n{}\nblob_size: {}\nfee: {}\nfee/byte: {}\nreceive_time: {} ({})relayed: {}\ndo_not_relay: {}\nkept_by_block: {}\ndouble_spend_seen: {}\nmax_used_block_height: {}\nmax_used_block_id: {}\nlast_failed_height: {}l\nast_failed_id: {}"
+				GULPS_PRINTF_OK("id: {}\n{}\nblob_size: {}\nfee: {}\nfee/byte: {}\nreceive_time: {} ({})relayed: {}\ndo_not_relay: {}\nkept_by_block: {}\ndouble_spend_seen: {}\nmax_used_block_height: {}\nmax_used_block_id: {}\nlast_failed_height: {}\nlast_failed_id: {}"
 										, tx_info.id_hash 
 										, tx_info.tx_json 
 										, tx_info.blob_size
@@ -1864,7 +1863,7 @@ bool t_rpc_command_executor::sync_info()
 	uint64_t current_download = 0;
 	for(const auto &p : res.peers)
 		current_download += p.info.current_download;
-	GULPS_INFOF_CLR(gulps::COLOR_GREEN,"Downloading at {} kB/s", current_download);
+	GULPS_PRINT_CLR(gulps::COLOR_GREEN,"Downloading at ", current_download, " kB/s");
 
 	GULPS_PRINT_SUCCESS(std::to_string(res.peers.size()), " peers");
 	for(const auto &p : res.peers)
