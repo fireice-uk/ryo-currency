@@ -676,7 +676,7 @@ bool t_rpc_command_executor::print_height()
 		}
 	}
 
-	GULPS_PRINTF_SUCCESS(boost::lexical_cast<std::string>(res.height));
+	GULPS_PRINT_SUCCESS(boost::lexical_cast<std::string>(res.height));
 
 	return true;
 }
@@ -884,7 +884,7 @@ bool t_rpc_command_executor::print_transaction_pool_long()
 	if(!res.transactions.empty())
 	{
 		const time_t now = time(NULL);
-		GULPS_PRINTF_OK( "Transactions: ");
+		GULPS_PRINT_OK( "Transactions: ");
 		for(auto &tx_info : res.transactions)
 		{
 			GULPS_PRINTF_OK("id: {}\n{}\nblob_size: {}\nfee: {}\nfee/byte: {}\nreceive_time: {} ({})relayed: {}\ndo_not_relay: {}\nkept_by_block: {}\ndouble_spend_seen: {}\nmax_used_block_height: {}\nmax_used_block_id: {}\nlast_failed_height: {}l\nast_failed_id: {}"
@@ -905,12 +905,12 @@ bool t_rpc_command_executor::print_transaction_pool_long()
 		}
 		if(res.spent_key_images.empty())
 		{
-			GULPS_PRINTF_OK( "WARNING: Inconsistent pool state - no spent key images");
+			GULPS_PRINT_OK( "WARNING: Inconsistent pool state - no spent key images");
 		}
 	}
 	if(!res.spent_key_images.empty())
 	{
-		GULPS_PRINTF_OK( "\nSpent key images: ");
+		GULPS_PRINT_OK( "\nSpent key images: ");
 		for(const cryptonote::spent_key_image_info &kinfo : res.spent_key_images)
 		{
 			GULPS_PRINTF_OK("key image: {}", kinfo.id_hash);
@@ -920,7 +920,7 @@ bool t_rpc_command_executor::print_transaction_pool_long()
 			}
 			else if(kinfo.txs_hashes.size() == 0)
 			{
-				GULPS_PRINTF_OK( "  WARNING: spent key image has no txs associated");
+				GULPS_PRINT_OK( "  WARNING: spent key image has no txs associated");
 			}
 			else
 			{
@@ -933,7 +933,7 @@ bool t_rpc_command_executor::print_transaction_pool_long()
 		}
 		if(res.transactions.empty())
 		{
-			GULPS_PRINTF_OK( "WARNING: Inconsistent pool state - no transactions");
+			GULPS_PRINT_OK( "WARNING: Inconsistent pool state - no transactions");
 		}
 	}
 
@@ -1071,7 +1071,7 @@ bool t_rpc_command_executor::print_transaction_pool_stats()
 			for(i = 0; i < denom; i++)
 				times[i] = i * numer / denom;
 		}
-		GULPS_PRINTF_OK("   Age      Txes       Bytes");
+		GULPS_PRINT_OK("   Age      Txes       Bytes");
 		for(i = 0; i < n; i++)
 		{
 			GULPS_PRINTF_OK("{}{:>8}{:>12}", get_time_hms(times[i]), res.pool_stats.histo[i].txs, res.pool_stats.histo[i].bytes);
@@ -1374,7 +1374,7 @@ bool t_rpc_command_executor::in_peers(uint64_t limit)
 		}
 	}
 
-	GULPS_PRINTF_OK("Max number of in peers set to ", limit);
+	GULPS_PRINT_OK("Max number of in peers set to ", limit);
 
 	return true;
 }
@@ -1786,7 +1786,7 @@ bool t_rpc_command_executor::update(const std::string &command)
 
 	if(!res.update)
 	{
-		GULPS_PRINTF_OK( "No update available");
+		GULPS_PRINT_OK( "No update available");
 		return true;
 	}
 
@@ -1801,7 +1801,7 @@ bool t_rpc_command_executor::update(const std::string &command)
 	if(command == "download")
 		return true;
 
-	GULPS_PRINTF_OK( "'update' not implemented yet");
+	GULPS_PRINT_OK( "'update' not implemented yet");
 
 	return true;
 }

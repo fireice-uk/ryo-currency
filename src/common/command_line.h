@@ -272,7 +272,7 @@ bool handle_error_helper(const boost::program_options::options_description &desc
 	}
 	catch(...)
 	{
-		GULPS_ERRORF( "Failed to parse arguments: unknown exception");
+		GULPS_ERROR( "Failed to parse arguments: unknown exception");
 		GULPS_ERROR(desc);
 		return false;
 	}

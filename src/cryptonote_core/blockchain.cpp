@@ -3810,7 +3810,7 @@ bool Blockchain::cleanup_handle_incoming_blocks(bool force_sync)
 {
 	bool success = false;
 
-	GULPS_LOGF_L2("Blockchain::", __func__);
+	GULPS_LOG_L2("Blockchain::", __func__);
 	CRITICAL_REGION_BEGIN(m_blockchain_lock);
 	TIME_MEASURE_START(t1);
 
@@ -3992,7 +3992,7 @@ uint64_t Blockchain::prevalidate_block_hashes(uint64_t height, const std::list<c
 //    keys.
 bool Blockchain::prepare_handle_incoming_blocks(const std::list<block_complete_entry> &blocks_entry)
 {
-	GULPS_LOGF_L2("Blockchain::", __func__);
+	GULPS_LOG_L2("Blockchain::", __func__);
 	TIME_MEASURE_START(prepare);
 	bool stop_batch;
 	uint64_t bytes = 0;
@@ -4165,7 +4165,7 @@ bool Blockchain::prepare_handle_incoming_blocks(const std::list<block_complete_e
 #define SCAN_TABLE_QUIT(m)    \
 	do                        \
 	{                         \
-		GULPS_VERIFYF_ERR_BLK(m);        \
+		GULPS_VERIFY_ERR_BLK(m);        \
 		m_scan_table.clear(); \
 		return false;         \
 	} while(0);

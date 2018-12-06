@@ -23,6 +23,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
+#ifdef GULPS_CAT_MAJOR
+	#undef GULPS_CAT_MAJOR
+#endif
+#define GULPS_CAT_MAJOR "net"
 
 #ifndef _NET_UTILS_BASE_H_
 #define _NET_UTILS_BASE_H_
@@ -33,6 +37,8 @@
 #include <boost/uuid/uuid.hpp>
 #include <type_traits>
 #include <typeinfo>
+
+#include "common/gulps.hpp"	
 
 //#undef RYO_DEFAULT_LOG_CATEGORY
 //#define RYO_DEFAULT_LOG_CATEGORY "net"
@@ -197,14 +203,14 @@ class network_address
 			const_cast<network_address &>(this_ref) = ipv4_network_address{0, 0};
 			auto &addr = this_ref.template as_mutable<ipv4_network_address>();
 			if(epee::serialization::selector<is_store>::serialize(addr, stg, hparent_section, "addr"))
-				MDEBUG("Found as addr: " << this_ref.str());
+				GULPS_LOGF_L1("Found as addr: {}", this_ref.str());
 			else if(epee::serialization::selector<is_store>::serialize(addr, stg, hparent_section, "template as<ipv4_network_address>()"))
-				MDEBUG("Found as template as<ipv4_network_address>(): " << this_ref.str());
+				GULPS_LOGF_L1("Found as template as<ipv4_network_address>(): {}", this_ref.str());
 			else if(epee::serialization::selector<is_store>::serialize(addr, stg, hparent_section, "template as_mutable<ipv4_network_address>()"))
-				MDEBUG("Found as template as_mutable<ipv4_network_address>(): " << this_ref.str());
+				GULPS_LOGF_L1("Found as template as_mutable<ipv4_network_address>(): {}", this_ref.str());
 			else
 			{
-				MWARNING("Address not found");
+				GULPS_WARN("Address not found");
 				return false;
 			}
 		}
@@ -217,7 +223,7 @@ class network_address
 		break;
 	}
 	default:
-		MERROR("Unsupported network address type: " << (unsigned)type);
+		GULPS_ERROR("Unsupported network address type: ", (unsigned)type);
 		return false;
 	}
 	END_KV_SERIALIZE_MAP()

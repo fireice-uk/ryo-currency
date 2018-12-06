@@ -618,7 +618,7 @@ int t_cryptonote_protocol_handler<t_core>::handle_notify_new_fluffy_block(int co
 		}
 		else // whoo-hoo we've got em all ..
 		{
-			GULPS_LOGF_L1("We have all needed txes for this fluffy block");
+			GULPS_LOG_L1("We have all needed txes for this fluffy block");
 
 			block_complete_entry b;
 			b.block = arg.b.block;
@@ -1367,7 +1367,7 @@ bool t_cryptonote_protocol_handler<t_core>::request_missing_objects(cryptonote_c
 		const size_t count_limit = m_core.get_block_sync_size(m_core.get_current_blockchain_height());
 		std::pair<uint64_t, uint64_t> span = std::make_pair(0, 0);
 		{
-			GULPS_LOGF_L1(" checking for gap");
+			GULPS_LOG_L1(" checking for gap");
 			span = m_block_queue.get_start_gap_span();
 			if(span.second > 0)
 			{
@@ -1533,7 +1533,7 @@ skip:
 		{
 			if(m_core.get_current_blockchain_height() >= m_core.get_target_blockchain_height())
 			{
-				GULPS_GLOBALF_INFO_CLR(gulps::COLOR_GREEN, "SYNCHRONIZED OK");
+				GULPS_GLOBAL_INFO_CLR(gulps::COLOR_GREEN, "SYNCHRONIZED OK");
 				on_connection_synchronized();
 			}
 		}

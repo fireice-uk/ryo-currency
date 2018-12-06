@@ -89,7 +89,7 @@ struct pre_rct_output_data_t
 template <typename T>
 inline void throw0(const T &e)
 {
-	GULPS_PRINTF(e.what());
+	GULPS_PRINT(e.what());
 	throw e;
 }
 

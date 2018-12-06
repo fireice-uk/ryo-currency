@@ -159,11 +159,11 @@ void cryptonote_protocol_handler_base::handler_response_blocks_now(size_t packet
 	{ // rate limiting
 		//XXX
 		/*if (::cryptonote::core::get_is_stopping()) { 
-			GULPS_LOGF_L1("We are stopping - so abort sleep");
+			GULPS_LOG_L1("We are stopping - so abort sleep");
 			return;
 		}*/
 		/*if (m_was_shutdown) { 
-			GULPS_LOGF_L1("m_was_shutdown - so abort sleep");
+			GULPS_LOG_L1("m_was_shutdown - so abort sleep");
 			return;
 		}*/
 

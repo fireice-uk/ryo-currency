@@ -201,8 +201,7 @@ public:
 
 		std::string print_message(bool inc_text = true) const
 		{
-			std::string sout = fmt::format("{:%Y-%m-%d %H:%M:%S} {}-{} [{}] {}.{} {}:{} ", fmt::localtime(time), 
-					level_to_str(lvl), out_to_str(out), thread_id, cat_major, cat_minor, src_path, src_line);
+			std::string sout = fmt::format("{}-{} [{}] {}.{} {}:{} ", fmt::localtime(time), level_to_str(lvl), out_to_str(out), thread_id, cat_major, cat_minor, src_path, src_line);
 
 			if(inc_text)
 				sout += text;

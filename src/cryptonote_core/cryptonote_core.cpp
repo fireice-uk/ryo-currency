@@ -788,19 +788,19 @@ bool core::check_tx_semantic(const transaction &tx, bool keeped_by_block) const
 	//check if tx use different key images
 	if(!check_tx_inputs_keyimages_diff(tx))
 	{
-		GULPS_VERIFYF_ERR_TX("tx uses a single key image more than once");
+		GULPS_VERIFY_ERR_TX("tx uses a single key image more than once");
 		return false;
 	}
 
 	if(!check_tx_inputs_ring_members_diff(tx))
 	{
-		GULPS_VERIFYF_ERR_TX("tx uses duplicate ring members");
+		GULPS_VERIFY_ERR_TX("tx uses duplicate ring members");
 		return false;
 	}
 
 	if(!check_tx_inputs_keyimages_domain(tx))
 	{
-		GULPS_VERIFYF_ERR_TX("tx uses key image not in the valid domain");
+		GULPS_VERIFY_ERR_TX("tx uses key image not in the valid domain");
 		return false;
 	}
 
@@ -811,13 +811,13 @@ bool core::check_tx_semantic(const transaction &tx, bool keeped_by_block) const
 		{
 		case rct::RCTTypeNull:
 			// coinbase should not come here, so we reject for all other types
-			GULPS_VERIFYF_ERR_TX("Unexpected Null rctSig type");
+			GULPS_VERIFY_ERR_TX("Unexpected Null rctSig type");
 			return false;
 		case rct::RCTTypeSimple:
 		case rct::RCTTypeSimpleBulletproof:
 			if(!rct::verRctSimple(rv, true))
 			{
-				GULPS_VERIFYF_ERR_TX("rct signature semantics check failed");
+				GULPS_VERIFY_ERR_TX("rct signature semantics check failed");
 				return false;
 			}
 			break;
@@ -825,7 +825,7 @@ bool core::check_tx_semantic(const transaction &tx, bool keeped_by_block) const
 		case rct::RCTTypeFullBulletproof:
 			if(!rct::verRct(rv, true))
 			{
-				GULPS_VERIFYF_ERR_TX("rct signature semantics check failed");
+				GULPS_VERIFY_ERR_TX("rct signature semantics check failed");
 				return false;
 			}
 			break;

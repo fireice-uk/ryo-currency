@@ -573,7 +573,7 @@ bool node_server<t_payload_net_handler>::run()
 {
 	// creating thread to log number of connections
 	mPeersLoggerThread.reset(new boost::thread([&]() {
-		_note("Thread monitor number of peers - start");
+		GULPS_LOG_L1("Thread monitor number of peers - start");
 		while(!is_closing && !m_net_server.is_stop_signal_sent())
 		{ // main loop of thread
 			//number_of_peers = m_net_server.get_config_object().get_connections_count();
@@ -596,7 +596,7 @@ bool node_server<t_payload_net_handler>::run()
 
 			boost::this_thread::sleep_for(boost::chrono::seconds(1));
 		} // main loop of thread
-		_note("Thread monitor number of peers - done");
+		GULPS_LOG_L1("Thread monitor number of peers - done");
 	})); // lambda
 
 	//here you can set worker threads count
@@ -1013,11 +1013,11 @@ bool node_server<t_payload_net_handler>::make_new_connection_from_anchor_peerlis
 {
 	for(const auto &pe : anchor_peerlist)
 	{
-		_note("Considering connecting (out) to peer: " << peerid_type(pe.id) << " " << pe.adr.str());
+		GULPS_LOGF_L1("Considering connecting (out) to peer: {} {}", peerid_type(pe.id) , pe.adr.str());
 
 		if(is_peer_used(pe))
 		{
-			_note("Peer is used");
+			GULPS_LOG_L1("Peer is used");
 			continue;
 		}
 
@@ -1037,7 +1037,7 @@ bool node_server<t_payload_net_handler>::make_new_connection_from_anchor_peerlis
 
 		if(!try_to_connect_and_handshake_with_new_peer(pe.adr, false, 0, anchor, pe.first_seen))
 		{
-			_note("Handshake failed");
+			GULPS_LOG_L1("Handshake failed");
 			continue;
 		}
 
@@ -1093,11 +1093,11 @@ bool node_server<t_payload_net_handler>::make_new_connection_from_peerlist(bool 
 
 		++try_count;
 
-		_note("Considering connecting (out) to peer: " << peerid_to_string(pe.id) << " " << pe.adr.str());
+		GULPS_LOGF_L1("Considering connecting (out) to peer: {} {}", peerid_to_string(pe.id) , pe.adr.str());
 
 		if(is_peer_used(pe))
 		{
-			_note("Peer is used");
+			GULPS_LOG_L1("Peer is used");
 			continue;
 		}
 
@@ -1113,7 +1113,7 @@ bool node_server<t_payload_net_handler>::make_new_connection_from_peerlist(bool 
 
 		if(!try_to_connect_and_handshake_with_new_peer(pe.adr, false, pe.last_seen, use_white_list ? white : gray))
 		{
-			_note("Handshake failed");
+			GULPS_LOG_L1("Handshake failed");
 			continue;
 		}
 

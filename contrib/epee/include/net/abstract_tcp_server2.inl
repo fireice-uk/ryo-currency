@@ -98,11 +98,11 @@ connection<t_protocol_handler>::~connection() noexcept(false)
 {
 	if(!m_was_shutdown)
 	{
-		GULPS_LOGF_L2("[sock {}] Socket destroyed without shutdown.", socket_.native_handle() );
+		GULPS_LOG_L2("[sock ", socket_.native_handle() , "] Socket destroyed without shutdown.");
 		shutdown();
 	}
 
-	GULPS_LOGF_L2("[sock {}] Socket destroyed", socket_.native_handle() );
+	GULPS_LOG_L2("[sock ", socket_.native_handle(), "] Socket destroyed");
 }
 //---------------------------------------------------------------------------------
 template <class t_protocol_handler>
@@ -155,11 +155,11 @@ bool connection<t_protocol_handler>::start(bool is_income, bool is_multithreaded
 	random_uuid = crypto::rand<boost::uuids::uuid>();
 
 	context.set_details(random_uuid, epee::net_utils::ipv4_network_address(ip_, remote_ep.port()), is_income);
-	GULPS_LOGF_L2("[sock {}] new connection from {} to {}:{}, total sockets objects {}", socket_.native_handle() , print_connection_context_short(context) , local_ep.address().to_string() , local_ep.port() , m_ref_sock_count);
+	GULPS_LOG_L2("[sock ", socket_.native_handle(), "] new connection from ", print_connection_context_short(context), " to ", local_ep.address().to_string(), ":", local_ep.port(), ", total sockets objects ", &m_ref_sock_count);
 
 	if(m_pfilter && !m_pfilter->is_remote_host_allowed(context.m_remote_address))
 	{
-		GULPS_LOGF_L1("[sock {}] host denied ", socket_.native_handle() );
+		GULPS_LOG_L1("[sock ", socket_.native_handle(), "] host denied " );
 		close();
 		return false;
 	}
@@ -351,10 +351,10 @@ void connection<t_protocol_handler>::handle_read(const boost::system::error_code
 	}
 	else
 	{
-		GULPS_LOGF_L2("[sock {}] Some not success at read: {}:{}", socket_.native_handle() , e.message() , e.value());
+		GULPS_LOG_L2("[sock ", socket_.native_handle(), "] Some not success at read: ", e.message(), ":", e.value());
 		if(e.value() != 2)
 		{
-			GULPS_LOGF_L2("[sock {}] Some problems at read: {}:{}", socket_.native_handle() , e.message() , e.value());
+			GULPS_LOG_L2("[sock ", socket_.native_handle(), "] Some problems at read: " , e.message(), ":" , e.value());
 			shutdown();
 		}
 	}
@@ -515,7 +515,7 @@ bool connection<t_protocol_handler>::do_send_chunk(const void *ptr, size_t cb)
 		retry++;
 
 		/* if ( ::cryptonote::core::get_is_stopping() ) { // TODO re-add fast stop
-            _fact("ABORT queue wait due to stopping");
+            GULPS_LOG_L1("ABORT queue wait due to stopping");
             return false; // aborted
         }*/
 
@@ -666,7 +666,7 @@ void connection<t_protocol_handler>::handle_write(const boost::system::error_cod
 
 	if(e)
 	{
-		GULPS_LOGF_L1("[sock {}] Some problems at write: {}:{}", socket_.native_handle() , e.message() , e.value());
+		GULPS_LOG_L1("[sock ", socket_.native_handle(), "] Some problems at write: ", e.message(), ":", e.value());
 		shutdown();
 		return;
 	}
@@ -682,7 +682,7 @@ void connection<t_protocol_handler>::handle_write(const boost::system::error_cod
 	CRITICAL_REGION_BEGIN(m_send_que_lock);
 	if(m_send_que.empty())
 	{
-		GULPS_ERRORF("[sock {}] m_send_que.size() == 0 at handle_write!", socket_.native_handle() );
+		GULPS_ERROR("[sock ", socket_.native_handle(), "], m_send_que.size() == 0 at handle_write!");
 		return;
 	}
 
@@ -699,7 +699,7 @@ void connection<t_protocol_handler>::handle_write(const boost::system::error_cod
 		//have more data to send
 		reset_timer(get_default_time(), false);
 		auto size_now = m_send_que.front().size();
-		GULPS_LOGF_L1("handle_write() NOW SENDS: packet={} B, from  queue size={}", size_now , m_send_que.size());
+		GULPS_LOG_L1("handle_write NOW SENDS: packet=", size_now, " B, from  queue size=", m_send_que.size());
 		if(speed_limit_is_enabled())
 			do_send_handler_write_from_queue(e, m_send_que.front().size(), m_send_que.size()); // (((H)))
 		CHECK_AND_ASSERT_MES(size_now == m_send_que.front().size(), void(), "Unexpected queue size");
@@ -724,7 +724,7 @@ template <class t_protocol_handler>
 void connection<t_protocol_handler>::setRpcStation()
 {
 	m_connection_type = e_connection_type_RPC;
-	GULPS_LOGF_L1("set m_connection_type = RPC ");
+	GULPS_LOG_L1("set m_connection_type = RPC ");
 }
 
 template <class t_protocol_handler>
@@ -796,7 +796,7 @@ bool boosted_tcp_server<t_protocol_handler>::init_server(uint32_t port, const st
 	acceptor_.listen();
 	boost::asio::ip::tcp::endpoint binded_endpoint = acceptor_.local_endpoint();
 	m_port = binded_endpoint.port();
-	GULPS_LOGF_L1("start accept");
+	GULPS_LOG_L1("start accept");
 	new_connection_.reset(new connection<t_protocol_handler>(io_service_, m_config, m_sock_count, m_sock_number, m_pfilter, m_connection_type));
 	acceptor_.async_accept(new_connection_->socket(),
 						   boost::bind(&boosted_tcp_server<t_protocol_handler>::handle_accept, this,
@@ -840,7 +840,7 @@ bool boosted_tcp_server<t_protocol_handler>::worker_thread()
 	std::string thread_name = std::string("[") + m_thread_name_prefix;
 	thread_name += boost::to_string(local_thr_index) + "]";
 	MLOG_SET_THREAD_NAME(thread_name);
-	//   _fact("Thread name: " << m_thread_name_prefix);
+	//   GULPS_LOG_L1("Thread name: ", m_thread_name_prefix);
 	while(!m_stop_signal_sent)
 	{
 		try
@@ -894,40 +894,40 @@ bool boosted_tcp_server<t_protocol_handler>::run_server(size_t threads_count, bo
 		{
 			boost::shared_ptr<boost::thread> thread(new boost::thread(
 				attrs, boost::bind(&boosted_tcp_server<t_protocol_handler>::worker_thread, this)));
-			_note("Run server thread name: " << m_thread_name_prefix);
+			GULPS_LOG_L1("Run server thread name: ", m_thread_name_prefix);
 			m_threads.push_back(thread);
 		}
 		CRITICAL_REGION_END();
 		// Wait for all threads in the pool to exit.
 		if(wait)
 		{
-			_fact("JOINING all threads");
+			GULPS_LOG_L1("JOINING all threads");
 			for(std::size_t i = 0; i < m_threads.size(); ++i)
 			{
 				m_threads[i]->join();
 			}
-			_fact("JOINING all threads - almost");
+			GULPS_LOG_L1("JOINING all threads - almost");
 			m_threads.clear();
-			_fact("JOINING all threads - DONE");
+			GULPS_LOG_L1("JOINING all threads - DONE");
 		}
 		else
 		{
-			GULPS_LOGF_L1("Reiniting OK.");
+			GULPS_LOG_L1("Reiniting OK.");
 			return true;
 		}
 
 		if(wait && !m_stop_signal_sent)
 		{
 			//some problems with the listening socket ?..
-			GULPS_LOGF_L1("Net service stopped without stop request, restarting...");
+			GULPS_LOG_L1("Net service stopped without stop request, restarting...");
 			if(!this->init_server(m_port, m_address))
 			{
-				GULPS_LOGF_L1("Reiniting service failed, exit.");
+				GULPS_LOG_L1("Reiniting service failed, exit.");
 				return false;
 			}
 			else
 			{
-				GULPS_LOGF_L1("Reiniting OK.");
+				GULPS_LOG_L1("Reiniting OK.");
 			}
 		}
 	}
@@ -993,13 +993,13 @@ bool boosted_tcp_server<t_protocol_handler>::is_stop_signal_sent()
 template <class t_protocol_handler>
 void boosted_tcp_server<t_protocol_handler>::handle_accept(const boost::system::error_code &e)
 {
-	GULPS_LOGF_L1("handle_accept");
+	GULPS_LOG_L1("handle_accept");
 	TRY_ENTRY();
 	if(!e)
 	{
 		if(m_connection_type == e_connection_type_RPC)
 		{
-			GULPS_LOGF_L1("New server for RPC connections");
+			GULPS_LOG_L1("New server for RPC connections");
 			new_connection_->setRpcStation(); // hopefully this is not needed actually
 		}
 		connection_ptr conn(std::move(new_connection_));
