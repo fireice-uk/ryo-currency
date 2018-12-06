@@ -104,13 +104,13 @@ class t_core final
 	bool run()
 	{
 		//initialize core here
-		GULPS_GLOBAL_INFO("Initializing core...");
+		GULPS_GLOBAL_PRINT("Initializing core...");
 		std::string config_subdir = get_config_subdir();
 		if(!m_core.init(m_vm_HACK, config_subdir.empty() ? NULL : config_subdir.c_str()))
 		{
 			return false;
 		}
-		GULPS_GLOBAL_INFO("Core initialized OK");
+		GULPS_GLOBAL_PRINT("Core initialized OK");
 		return true;
 	}
 
@@ -121,7 +121,7 @@ class t_core final
 
 	~t_core()
 	{
-		GULPS_GLOBAL_INFO("Deinitializing core...");
+		GULPS_GLOBAL_PRINT("Deinitializing core...");
 		try
 		{
 			m_core.deinit();

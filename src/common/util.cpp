@@ -560,7 +560,7 @@ static bool unbound_built_with_threads()
 	// if no threads, bails out early with UB_NOERROR, otherwise fails with UB_AFTERFINAL id already finalized
 	bool with_threads = ub_ctx_async(ctx, 1) != 0; // UB_AFTERFINAL is not defined in public headers, check any error
 	ub_ctx_delete(ctx);
-	GULPS_INFOF("libunbound was built {} threads",  (with_threads ? "with" : "without") );
+	GULPS_LOGF_L0("libunbound was built {} threads",  (with_threads ? "with" : "without") );
 	return with_threads;
 }
 

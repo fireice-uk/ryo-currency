@@ -71,12 +71,12 @@ class t_protocol final
 		boost::program_options::variables_map const &vm, t_core &core, bool offline = false)
 		: m_protocol{core.get(), nullptr, offline}
 	{
-		GULPS_GLOBAL_INFO("Initializing cryptonote protocol...");
+		GULPS_GLOBAL_PRINT("Initializing cryptonote protocol...");
 		if(!m_protocol.init(vm))
 		{
 			throw std::runtime_error("Failed to initialize cryptonote protocol.");
 		}
-		GULPS_GLOBAL_INFO("Cryptonote protocol initialized OK");
+		GULPS_GLOBAL_PRINT("Cryptonote protocol initialized OK");
 	}
 
 	t_protocol_raw &get()
@@ -92,12 +92,12 @@ class t_protocol final
 
 	~t_protocol()
 	{
-		GULPS_GLOBAL_INFO("Stopping cryptonote protocol...");
+		GULPS_GLOBAL_PRINT("Stopping cryptonote protocol...");
 		try
 		{
 			m_protocol.deinit();
 			m_protocol.set_p2p_endpoint(nullptr);
-			GULPS_GLOBAL_INFO("Cryptonote protocol stopped successfully");
+			GULPS_GLOBAL_PRINT("Cryptonote protocol stopped successfully");
 		}
 		catch(...)
 		{

@@ -83,12 +83,12 @@ class t_p2p final
 		: m_server{protocol.get()}
 	{
 		//initialize objects
-		GULPS_GLOBAL_INFO("Initializing p2p server...");
+		GULPS_GLOBAL_PRINT("Initializing p2p server...");
 		if(!m_server.init(vm))
 		{
 			throw std::runtime_error("Failed to initialize p2p server.");
 		}
-		GULPS_GLOBAL_INFO("p2p server initialized OK");
+		GULPS_GLOBAL_PRINT("p2p server initialized OK");
 	}
 
 	t_node_server &get()
@@ -98,9 +98,9 @@ class t_p2p final
 
 	void run()
 	{
-		GULPS_GLOBAL_INFO("Starting p2p net loop...");
+		GULPS_GLOBAL_PRINT("Starting p2p net loop...");
 		m_server.run();
-		GULPS_GLOBAL_INFO("p2p net loop stopped");
+		GULPS_GLOBAL_PRINT("p2p net loop stopped");
 	}
 
 	void stop()
@@ -110,7 +110,7 @@ class t_p2p final
 
 	~t_p2p()
 	{
-		GULPS_GLOBAL_INFO("Deinitializing p2p...");
+		GULPS_GLOBAL_PRINT("Deinitializing p2p...");
 		try
 		{
 			m_server.deinit();

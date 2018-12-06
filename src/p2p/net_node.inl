@@ -198,7 +198,7 @@ bool node_server<t_payload_net_handler>::is_remote_host_allowed(const epee::net_
 	if(time(nullptr) >= it->second)
 	{
 		m_blocked_hosts.erase(it);
-		GULPS_GLOBALF_INFO_CLR(gulps::COLOR_CYAN, "Host {}  unblocked.", address.host_str());
+		GULPS_GLOBALF_PRINT_CLR(gulps::COLOR_CYAN, "Host {}  unblocked.", address.host_str());
 		return true;
 	}
 	return false;
@@ -235,7 +235,7 @@ bool node_server<t_payload_net_handler>::block_host(const epee::net_utils::netwo
 	for(const auto &c : conns)
 		m_net_server.get_config_object().close(c);
 
-	GULPS_GLOBALF_INFO_CLR(gulps::COLOR_CYAN, "Host {} blocked", addr.host_str());
+	GULPS_GLOBALF_PRINT_CLR(gulps::COLOR_CYAN, "Host {} blocked", addr.host_str());
 	return true;
 }
 //-----------------------------------------------------------------------------------
@@ -247,7 +247,7 @@ bool node_server<t_payload_net_handler>::unblock_host(const epee::net_utils::net
 	if(i == m_blocked_hosts.end())
 		return false;
 	m_blocked_hosts.erase(i);
-	GULPS_GLOBALF_INFO_CLR(gulps::COLOR_CYAN, "Host {} unblocked", address.host_str());
+	GULPS_GLOBALF_PRINT_CLR(gulps::COLOR_CYAN, "Host {} unblocked", address.host_str());
 	return true;
 }
 //-----------------------------------------------------------------------------------

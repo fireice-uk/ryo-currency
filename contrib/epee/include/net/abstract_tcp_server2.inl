@@ -849,7 +849,7 @@ bool boosted_tcp_server<t_protocol_handler>::worker_thread()
 		}
 		catch(const std::exception &ex)
 		{
-			GULPS_ERRORF("Exception at server worker thread, what={}", ex.what());
+			GULPS_ERROR("Exception at server worker thread, what=", ex.what());
 		}
 		catch(...)
 		{

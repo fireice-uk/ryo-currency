@@ -695,10 +695,10 @@ bool miner::background_worker_thread()
 			uint8_t idle_percentage = get_percent_of_total(idle_diff, total_diff);
 			uint8_t process_percentage = get_percent_of_total(process_diff, total_diff);
 
-			GULPS_PRINTF("idle percentage is {}\%, miner percentage is {}\%, ac power : {}", unsigned(idle_percentage), unsigned(process_percentage), on_ac_power);
+			GULPS_PRINTF("idle percentage is {}%, miner percentage is {}%, ac power : {}", unsigned(idle_percentage), unsigned(process_percentage), on_ac_power);
 			if(idle_percentage + process_percentage < get_idle_threshold() || !on_ac_power)
 			{
-				GULPS_PRINTF("cpu is {}% idle, idle threshold is {}\%, ac power : {}, background mining stopping, thanks for your contribution!", unsigned(idle_percentage), unsigned(get_idle_threshold()), on_ac_power);
+				GULPS_PRINTF("cpu is {}% idle, idle threshold is {}%, ac power : {}, background mining stopping, thanks for your contribution!", unsigned(idle_percentage), unsigned(get_idle_threshold()), on_ac_power);
 				m_is_background_mining_started = false;
 
 				// reset process times

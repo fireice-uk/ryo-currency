@@ -375,7 +375,7 @@ bool core::init(const boost::program_options::variables_map &vm, const char *con
 	}
 
 	folder /= db->get_db_name();
-	GULPS_GLOBALF_INFO("Loading blockchain from folder {} ...", folder.string());
+	GULPS_GLOBALF_PRINT("Loading blockchain from folder {} ...", folder.string());
 
 	const std::string filename = folder.string();
 	// default to fast:async:1
@@ -474,7 +474,7 @@ bool core::init(const boost::program_options::variables_map &vm, const char *con
 
 	block_sync_size = command_line::get_arg(vm, arg_block_sync_size);
 
-	GULPS_GLOBAL_INFO("Loading checkpoints");
+	GULPS_GLOBAL_PRINT("Loading checkpoints");
 
 	// load json & DNS checkpoints, and verify them
 	// with respect to what blocks we already have
@@ -1309,13 +1309,13 @@ bool core::on_idle()
 			main_message = "The daemon is running offline and will not attempt to sync to the Ryo network.";
 		else
 			main_message = "The daemon will start synchronizing with the network. This may take a long time to complete.";
-			GULPS_GLOBAL_INFO_CLR(gulps::COLOR_YELLOW, "\n**********************************************************************\n{}\n\n",
+			GULPS_GLOBAL_PRINT_CLR(gulps::COLOR_YELLOW, "**********************************************************************\n",
 						   main_message,
-						   "You can set the level of process detailization through \"set_log <level|categories>\" command,\n",
+						   "\n\nYou can set the level of process detailization through \"set_log <level|categories>\" command,\n",
 						   "where <level> is between 0 (no details) and 4 (very verbose), or custom category based levels (eg, *:WARNING).\n\n",
 						   "Use the \"help\" command to see the list of available commands.\n",
 						   "Use \"help <command>\" to see a command's documentation.\n",
-						   "**********************************************************************\n");
+						   "**********************************************************************\n\n");
 		m_starter_message_showed = true;
 	}
 
@@ -1393,7 +1393,7 @@ bool core::check_updates()
       return true;
 
     std::string url = tools::get_update_url(software, subdir, buildtag, version, true);
-    GULPS_GLOBALF_INFO_CLR(gulps:COLOR_CYAN, "Version {} of {} for {} is available: {}, SHA256 hash {}", version , software, buildtag, url, hash);
+    GULPS_GLOBALF_PRINT_CLR(gulps:COLOR_CYAN, "Version {} of {} for {} is available: {}, SHA256 hash {}", version , software, buildtag, url, hash);
 
     if (check_updates_level == UPDATES_NOTIFY)
       return true;

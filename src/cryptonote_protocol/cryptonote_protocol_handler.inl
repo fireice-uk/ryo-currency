@@ -324,12 +324,11 @@ bool t_cryptonote_protocol_handler<t_core>::process_payload_sync_data(const CORE
 		uint64_t last_block_v1 = m_core.get_nettype() == TESTNET ? 624633 : m_core.get_nettype() == MAINNET ? 1009826 : (uint64_t)-1;
 		uint64_t diff_v2 = max_block_height > last_block_v1 ? std::min(abs_diff, max_block_height - last_block_v1) : 0;
 		if(is_inital) 
-		GULPS_GLOBALF_INFO("{} Sync data returned a new top block candidate: {} -> {} [Your node is {} blocks ({} days {})]\nSYNCHRONIZATION started", context_str, m_core.get_current_blockchain_height(), 
+		GULPS_GLOBALF_PRINT("{} Sync data returned a new top block candidate: {} -> {} [Your node is {} blocks ({} days {})]\nSYNCHRONIZATION started", context_str, m_core.get_current_blockchain_height(), 
 					hshd.current_height, abs_diff, ((abs_diff - diff_v2) / (24 * 60 * 60 / common_config::DIFFICULTY_TARGET)) + (diff_v2 / (24 * 60 * 60 / common_config::DIFFICULTY_TARGET)), 
 					(0 <= diff ? std::string("behind") : std::string("ahead")));
 		else
-		GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_DEBUG,  GULPS_CAT_MAJOR, "global", gulps::COLOR_WHITE,
-					"{} Sync data returned a new top block candidate: {} -> {} [Your node is {} blocks ({} days {})]\nSYNCHRONIZATION started", context_str, m_core.get_current_blockchain_height(), 
+		GULPS_GLOBALF_PRINT("{} Sync data returned a new top block candidate: {} -> {} [Your node is {} blocks ({} days {})]\nSYNCHRONIZATION started", context_str, m_core.get_current_blockchain_height(), 
 					hshd.current_height, abs_diff, ((abs_diff - diff_v2) / (24 * 60 * 60 / common_config::DIFFICULTY_TARGET)) + (diff_v2 / (24 * 60 * 60 / common_config::DIFFICULTY_TARGET)), 
 					(0 <= diff ? std::string("behind") : std::string("ahead")));
 					
@@ -1146,7 +1145,7 @@ int t_cryptonote_protocol_handler<t_core>::try_add_next_blocks(cryptonote_connec
 						timing_message = std::string(" (") + std::to_string(dt.total_microseconds() / 1e6) + " sec, " + std::to_string((m_core.get_current_blockchain_height() - previous_height) * 1e6 / dt.total_microseconds()) + " blocks/sec), " + std::to_string(m_block_queue.get_data_size() / 1048576.f) + " MB queued";
 					if(ELPP->vRegistry()->allowed(el::Level::Debug, "sync-info"))
 						timing_message += std::string(": ") + m_block_queue.get_overview();
-					GULPS_GLOBALF_INFO_CLR(gulps::COLOR_YELLOW, " Synced {}/{} {}", m_core.get_current_blockchain_height(), m_core.get_target_blockchain_height(), timing_message);
+					GULPS_GLOBALF_PRINT_CLR(gulps::COLOR_YELLOW, "{} Synced {}/{} {}", context_str, m_core.get_current_blockchain_height(), m_core.get_target_blockchain_height(), timing_message);
 				}
 			}
 		}
@@ -1533,7 +1532,7 @@ skip:
 		{
 			if(m_core.get_current_blockchain_height() >= m_core.get_target_blockchain_height())
 			{
-				GULPS_GLOBAL_INFO_CLR(gulps::COLOR_GREEN, "SYNCHRONIZED OK");
+				GULPS_GLOBAL_PRINT_CLR(gulps::COLOR_GREEN, "SYNCHRONIZED OK");
 				on_connection_synchronized();
 			}
 		}
@@ -1551,10 +1550,10 @@ bool t_cryptonote_protocol_handler<t_core>::on_connection_synchronized()
 	bool val_expected = false;
 	if(m_synchronized.compare_exchange_strong(val_expected, true))
 	{
-		GULPS_GLOBAL_INFO_CLR(gulps::COLOR_YELLOW, "\n**********************************************************************\n",
-						   "You are now synchronized with the network. You may now start ryo-wallet-cli.\n",
+		GULPS_GLOBAL_PRINT_CLR(gulps::COLOR_YELLOW, "\n**********************************************************************\n",
+						   "You are now synchronized with the network. You may now start ryo-wallet-cli.\n\n",
 						   "Use the \"help\" command to see the list of available commands.\n",
-						   "**********************************************************************");
+						   "**********************************************************************\n");
 		m_core.on_synchronized();
 	}
 	m_core.safesyncmode(true);

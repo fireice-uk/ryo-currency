@@ -318,7 +318,7 @@ void network_throttle::calculate_times(size_t packet_size, calculate_times_struc
 			oss << sample.m_size << " ";
 		oss << "]" << std::ends;
 		std::string history_str = oss.str();
-		GULPS_LOGF_L2("{} dbg {}: speed is A={:>8} vs Max={:>8}  so sleep: D={:>8} sec E={:>8} (Enow={:>8}) M={:>8} W={:>8} R={:>8} Wgood {:>8} History: {:>8} m_last_sample_time={:>:8}",
+		GULPS_LOGF_L2("{} dbg {}: speed is A={:>8} vs Max={:>8}  so sleep: D={:>8} sec E={:>8} (Enow={:>8}) M={:>8} W={:>8} R={:>8} Wgood {:>8} History: {:>8} m_last_sample_time={:>8}",
 			   (cts.delay > 0 ? "SLEEP" : ""),
 			   m_name,
 			   cts.average,

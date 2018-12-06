@@ -461,15 +461,15 @@ bool Blockchain::init(BlockchainDB *db, const network_type nettype, bool offline
 		if(ideal_hf_version <= 1 || ideal_hf_version == top_block.major_version)
 		{
 			if(num_popped_blocks > 0)
-				GULPS_GLOBALF_INFO("Initial popping done, top block: {}, top height: {}, block version: {}", top_id , top_height, (uint64_t)top_block.major_version);
+				GULPS_GLOBALF_PRINT("Initial popping done, top block: {}, top height: {}, block version: {}", top_id , top_height, (uint64_t)top_block.major_version);
 			break;
 		}
 		else
 		{
 			if(num_popped_blocks == 0)
-				GULPS_GLOBALF_INFO("Current top block {} at height {} has version {} which disagrees with the ideal version {}", top_id, top_height, (uint64_t)top_block.major_version, (uint64_t)ideal_hf_version);
+				GULPS_GLOBALF_PRINT("Current top block {} at height {} has version {} which disagrees with the ideal version {}", top_id, top_height, (uint64_t)top_block.major_version, (uint64_t)ideal_hf_version);
 			if(num_popped_blocks % 100 == 0)
-				GULPS_GLOBALF_INFO("Popping blocks... {}", top_height);
+				GULPS_GLOBALF_PRINT("Popping blocks... {}", top_height);
 			++num_popped_blocks;
 			block popped_block;
 			std::vector<transaction> popped_txs;
@@ -1082,7 +1082,7 @@ bool Blockchain::switch_to_alternative_blockchain(std::list<blocks_ext_by_hash::
 
 	m_hardfork->reorganize_from_chain_height(split_height);
 
-	GULPS_GLOBALF_INFO_CLR(gulps::COLOR_GREEN, "REORGANIZE SUCCESS! on height: {}, new blockchain size: {}", split_height , m_db->height());
+	GULPS_GLOBALF_PRINT_CLR(gulps::COLOR_GREEN, "REORGANIZE SUCCESS! on height: {}, new blockchain size: {}", split_height , m_db->height());
 	return true;
 }
 //------------------------------------------------------------------
@@ -1651,7 +1651,7 @@ bool Blockchain::handle_alternative_block(const block &b, const crypto::hash &id
 		if(is_a_checkpoint)
 		{
 			//do reorganize!
-			GULPS_GLOBALF_INFO_CLR(gulps::COLOR_GREEN, "###### REORGANIZE on height: {} of {}, checkpoint is found in alternative chain on height {}", alt_chain.front()->second.height , m_db->height() - 1 , bei.height);
+			GULPS_GLOBALF_PRINT_CLR(gulps::COLOR_GREEN, "###### REORGANIZE on height: {} of {}, checkpoint is found in alternative chain on height {}", alt_chain.front()->second.height , m_db->height() - 1 , bei.height);
 
 			bool r = switch_to_alternative_blockchain(alt_chain, true);
 
@@ -1665,7 +1665,7 @@ bool Blockchain::handle_alternative_block(const block &b, const crypto::hash &id
 		else if(main_chain_cumulative_difficulty < bei.cumulative_difficulty) //check if difficulty bigger then in main chain
 		{
 			//do reorganize!
-			GULPS_GLOBALF_INFO_CLR(gulps::COLOR_GREEN, "###### REORGANIZE on height: {} of {} with cum_difficulty {} \nalternative blockchain size: {} with cum_difficulty {}", alt_chain.front()->second.height , m_db->height() - 1 , m_db->get_block_cumulative_difficulty(m_db->height() - 1) , alt_chain.size() ,bei.cumulative_difficulty);
+			GULPS_GLOBALF_PRINT_CLR(gulps::COLOR_GREEN, "###### REORGANIZE on height: {} of {} with cum_difficulty {} \nalternative blockchain size: {} with cum_difficulty {}", alt_chain.front()->second.height , m_db->height() - 1 , m_db->get_block_cumulative_difficulty(m_db->height() - 1) , alt_chain.size() ,bei.cumulative_difficulty);
 
 			bool r = switch_to_alternative_blockchain(alt_chain, false);
 			if(r)
@@ -1676,7 +1676,7 @@ bool Blockchain::handle_alternative_block(const block &b, const crypto::hash &id
 		}
 		else
 		{
-			GULPS_GLOBALF_INFO_CLR(gulps::COLOR_BLUE, "----- BLOCK ADDED AS ALTERNATIVE ON HEIGHT {}\nid:\t{}\nPoW:\t{}\ndifficulty:\t{}", bei.height , id , proof_of_work , current_diff);
+			GULPS_GLOBALF_PRINT_CLR(gulps::COLOR_BLUE, "----- BLOCK ADDED AS ALTERNATIVE ON HEIGHT {}\nid:\t{}\nPoW:\t{}\ndifficulty:\t{}", bei.height , id , proof_of_work , current_diff);
 			return true;
 		}
 	}
