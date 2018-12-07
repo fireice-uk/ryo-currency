@@ -194,7 +194,30 @@ bool t_command_parser_executor::print_block(const std::vector<std::string> &args
 	}
 
 	const std::string &arg = args.front();
-	try
+
+	//TEMPORARY (?)
+	bool is_hash = !(std::find_if(arg.begin(), arg.end(), [](char c) { return !std::isdigit(c); }) == arg.end());
+	if(is_hash)
+	{
+		crypto::hash block_hash;
+		if(parse_hash256(arg, block_hash))
+		{
+			return m_executor.print_block_by_hash(block_hash);
+		}
+	}
+	else
+	{	
+		try
+		{
+			uint64_t height = boost::lexical_cast<uint64_t>(arg);
+			return m_executor.print_block_by_height(height);
+		}
+		catch(const boost::bad_lexical_cast &e)
+		{
+			return false;
+		}
+	}
+	/*try //TODO FIX IT, IT THROWS EXCEPION "what= argument not found" AND WON'T PRINT ANYTHING IF WE PASS HASH INSTEAD OF HEIGHT
 	{
 		uint64_t height = boost::lexical_cast<uint64_t>(arg);
 		return m_executor.print_block_by_height(height);
@@ -206,8 +229,7 @@ bool t_command_parser_executor::print_block(const std::vector<std::string> &args
 		{
 			return m_executor.print_block_by_hash(block_hash);
 		}
-	}
-
+	}*/
 	return false;
 }
 
@@ -465,7 +487,7 @@ bool t_command_parser_executor::out_peers(const std::vector<std::string> &args)
 
 	catch(const std::exception &ex)
 	{
-		_erro("stoi exception");
+		GULPS_ERROR("stoi exception");
 		return false;
 	}
 
@@ -485,7 +507,7 @@ bool t_command_parser_executor::in_peers(const std::vector<std::string> &args)
 
 	catch(const std::exception &ex)
 	{
-		_erro("stoi exception");
+		GULPS_ERROR("stoi exception");
 		return false;
 	}
 

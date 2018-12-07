@@ -167,7 +167,7 @@ void t_cryptonote_protocol_handler<t_core>::log_connections()
 	   << std::setw(14) << "Down(now)"
 	   << std::setw(10) << "Up (kB/s)"
 	   << std::setw(13) << "Up(now)"
-	   << ENDL;
+	   << "\n";
 
 	m_p2p->for_each_connection([&](const connection_context &cntxt, nodetool::peerid_type peer_id, uint32_t support_flags) {
 		bool local_ip = cntxt.m_remote_address.is_local();
@@ -184,7 +184,7 @@ void t_cryptonote_protocol_handler<t_core>::log_connections()
 		   << std::setw(13) << std::fixed << cntxt.m_current_speed_up / 1024
 		   << (local_ip ? "[LAN]" : "")
 		   << std::left << (cntxt.m_remote_address.is_loopback() ? "[LOCALHOST]" : "") // 127.0.0.1
-		   << ENDL;
+		   << "\n";
 
 		if(connection_time > 1)
 		{
@@ -197,13 +197,13 @@ void t_cryptonote_protocol_handler<t_core>::log_connections()
 
 		return true;
 	});
-	ss << ENDL
+	ss << "\n"
 	   << std::setw(125) << " "
 	   << std::setw(12) << down_sum
 	   << std::setw(14) << down_curr_sum
 	   << std::setw(10) << up_sum
 	   << std::setw(13) << up_curr_sum
-	   << ENDL;
+	   << "\n";
 		GULPS_PRINT("Connections:\n", ss.str());
 }
 //------------------------------------------------------------------------------------------------------------------------
@@ -1498,7 +1498,7 @@ skip:
 
 		NOTIFY_REQUEST_CHAIN::request r = boost::value_initialized<NOTIFY_REQUEST_CHAIN::request>();
 		m_core.get_short_chain_history(r.block_ids);
-		CHECK_AND_ASSERT_MES(!r.block_ids.empty(), false, "Short chain history is empty");
+		GULPS_CHECK_AND_ASSERT_MES(!r.block_ids.empty(), false, "Short chain history is empty");
 
 		if(!start_from_current_chain)
 		{
@@ -1520,12 +1520,12 @@ skip:
 	}
 	else
 	{
-		CHECK_AND_ASSERT_MES(context.m_last_response_height == context.m_remote_blockchain_height - 1 && !context.m_needed_objects.size() && !context.m_requested_objects.size(), false, "request_missing_blocks final condition failed!"
-																																															 << "\r\nm_last_response_height=" << context.m_last_response_height
-																																															 << "\r\nm_remote_blockchain_height=" << context.m_remote_blockchain_height
-																																															 << "\r\nm_needed_objects.size()=" << context.m_needed_objects.size()
-																																															 << "\r\nm_requested_objects.size()=" << context.m_requested_objects.size()
-																																															 << "\r\non connection [" << epee::net_utils::print_connection_context_short(context) << "]");
+		GULPS_CHECK_AND_ASSERT_MES(context.m_last_response_height == context.m_remote_blockchain_height - 1 && !context.m_needed_objects.size() && !context.m_requested_objects.size(), false, "request_missing_blocks final condition failed!"
+																																															 ,"\r\nm_last_response_height=", context.m_last_response_height
+																																															 ,"\r\nm_remote_blockchain_height=", context.m_remote_blockchain_height
+																																															 ,"\r\nm_needed_objects.size()=", context.m_needed_objects.size()
+																																															 ,"\r\nm_requested_objects.size()=", context.m_requested_objects.size()
+																																															 ,"\r\non connection [", epee::net_utils::print_connection_context_short(context), "]");
 
 		context.m_state = cryptonote_connection_context::state_normal;
 		if(context.m_remote_blockchain_height >= m_core.get_target_blockchain_height())

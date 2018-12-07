@@ -48,10 +48,10 @@
 
 #pragma once
 
-#include "misc_log_ex.h"
 #include "readline_buffer.h"
 #include <iostream>
 
+#include "misc_log_ex.h" //TEMP BEFORE WE CLEAN THINGS DOWN HERE
 #include "common/gulps.hpp"
 
 namespace tools

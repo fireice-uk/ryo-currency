@@ -213,7 +213,7 @@ void add_arg(boost::program_options::options_description &description, const arg
 {
 	if(0 != description.find_nothrow(arg.name, false))
 	{
-		CHECK_AND_ASSERT_MES(!unique, void(), "Argument already exists: " << arg.name);
+		GULPS_CHECK_AND_ASSERT_MES(!unique, void(), "Argument already exists: " , arg.name);
 		return;
 	}
 
@@ -225,7 +225,7 @@ void add_arg(boost::program_options::options_description &description, const arg
 {
 	if(0 != description.find_nothrow(arg.name, false))
 	{
-		CHECK_AND_ASSERT_MES(!unique, void(), "Argument already exists: " << arg.name);
+		GULPS_CHECK_AND_ASSERT_MES(!unique, void(), "Argument already exists: " , arg.name);
 		return;
 	}
 
@@ -237,7 +237,7 @@ inline void add_arg(boost::program_options::options_description &description, co
 {
 	if(0 != description.find_nothrow(arg.name, false))
 	{
-		CHECK_AND_ASSERT_MES(!unique, void(), "Argument already exists: " << arg.name);
+		GULPS_CHECK_AND_ASSERT_MES(!unique, void(), "Argument already exists: " , arg.name);
 		return;
 	}
 

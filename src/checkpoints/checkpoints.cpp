@@ -47,8 +47,6 @@
 
 #include "include_base_utils.h"
 
-using namespace epee;
-
 #include "checkpoints.h"
 
 #include "common/dns_utils.h"
@@ -97,12 +95,12 @@ bool checkpoints::add_checkpoint(uint64_t height, const std::string &hash_str)
 {
 	crypto::hash h = crypto::null_hash;
 	bool r = epee::string_tools::parse_tpod_from_hex_string(hash_str, h);
-	CHECK_AND_ASSERT_MES(r, false, "Failed to parse checkpoint hash string into binary representation!");
+	GULPS_CHECK_AND_ASSERT_MES(r, false, "Failed to parse checkpoint hash string into binary representation!");
 
 	// return false if adding at a height we already have AND the hash is different
 	if(m_points.count(height))
 	{
-		CHECK_AND_ASSERT_MES(h == m_points[height], false, "Checkpoint at given height already exists, and hash for new checkpoint was different!");
+		GULPS_CHECK_AND_ASSERT_MES(h == m_points[height], false, "Checkpoint at given height already exists, and hash for new checkpoint was different!");
 	}
 	m_points[height] = h;
 	return true;
@@ -174,7 +172,7 @@ bool checkpoints::check_for_conflicts(const checkpoints &other) const
 	{
 		if(m_points.count(pt.first))
 		{
-			CHECK_AND_ASSERT_MES(pt.second == m_points.at(pt.first), false, "Checkpoint at given height already exists, and hash for new checkpoint was different!");
+			GULPS_CHECK_AND_ASSERT_MES(pt.second == m_points.at(pt.first), false, "Checkpoint at given height already exists, and hash for new checkpoint was different!");
 		}
 	}
 	return true;

@@ -45,7 +45,6 @@
 
 #include "updates.h"
 #include "dns_utils.h"
-#include "misc_log_ex.h"
 #include "util.h"
 #include <boost/algorithm/string.hpp>
 

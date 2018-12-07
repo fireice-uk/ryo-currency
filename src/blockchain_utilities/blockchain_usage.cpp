@@ -243,7 +243,7 @@ int main(int argc, char *argv[])
 	BlockchainDB *db = new_db(db_type);
 	if(db == NULL)
 	{
-		LOG_ERROR("Attempted to use non-existent database type: " << db_type);
+		GULPS_LOG_ERROR("Attempted to use non-existent database type: ", db_type);
 		throw std::runtime_error("Attempting to use non-existent database type");
 	}
 	GULPS_PRINT("database: " , db_type);
@@ -262,7 +262,7 @@ int main(int argc, char *argv[])
 	}
 	r = core_storage->init(db, net_type);
 
-	CHECK_AND_ASSERT_MES(r, 1, "Failed to initialize source blockchain storage");
+	GULPS_CHECK_AND_ASSERT_MES(r, 1, "Failed to initialize source blockchain storage");
 	GULPS_PRINT("Source blockchain storage initialized OK");
 
 	GULPS_PRINT("Building usage patterns...");

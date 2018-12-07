@@ -46,7 +46,6 @@
 #define GULPS_CAT_MAJOR "daemon"
 
 #include "daemon/daemon.h"
-#include "misc_log_ex.h"
 #include "rpc/daemon_handler.h"
 #include "rpc/zmq_server.h"
 #include <boost/algorithm/string/split.hpp>

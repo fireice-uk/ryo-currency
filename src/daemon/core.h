@@ -50,7 +50,6 @@
 
 #include "cryptonote_core/cryptonote_core.h"
 #include "cryptonote_protocol/cryptonote_protocol_handler.h"
-#include "misc_log_ex.h"
 
 #include "common/gulps.hpp"	
 

@@ -260,7 +260,7 @@ bool node_server<t_payload_net_handler>::add_host_fail(const epee::net_utils::ne
 	if(fails > P2P_IP_FAILS_BEFORE_BLOCK)
 	{
 		auto it = m_host_fails_score.find(address.host_str());
-		CHECK_AND_ASSERT_MES(it != m_host_fails_score.end(), false, "internal error");
+		GULPS_CHECK_AND_ASSERT_MES(it != m_host_fails_score.end(), false, "internal error");
 		it->second = P2P_IP_FAILS_BEFORE_BLOCK / 2;
 		block_host(address);
 	}
@@ -297,7 +297,7 @@ bool node_server<t_payload_net_handler>::handle_command_line(
 			pe.id = crypto::rand<uint64_t>();
 			const uint16_t default_port = config_get_p2p_port(m_nettype);
 			bool r = parse_peer_from_string(pe.adr, pr_str, default_port);
-			CHECK_AND_ASSERT_MES(r, false, "Failed to parse address from string: " << pr_str);
+			GULPS_CHECK_AND_ASSERT_MES(r, false, "Failed to parse address from string: " , pr_str);
 			m_command_line_peers.push_back(pe);
 		}
 	}
@@ -409,7 +409,7 @@ bool node_server<t_payload_net_handler>::init(const boost::program_options::vari
 	std::set<std::string> full_addrs;
 
 	bool res = handle_command_line(vm);
-	CHECK_AND_ASSERT_MES(res, false, "Failed to handle command line");
+	GULPS_CHECK_AND_ASSERT_MES(res, false, "Failed to handle command line");
 
 	if(m_nettype == cryptonote::TESTNET)
 	{
@@ -522,10 +522,10 @@ bool node_server<t_payload_net_handler>::init(const boost::program_options::vari
 	}
 
 	res = init_config();
-	CHECK_AND_ASSERT_MES(res, false, "Failed to init config.");
+	GULPS_CHECK_AND_ASSERT_MES(res, false, "Failed to init config.");
 
 	res = m_peerlist.init(m_allow_local_ip);
-	CHECK_AND_ASSERT_MES(res, false, "Failed to init peerlist.");
+	GULPS_CHECK_AND_ASSERT_MES(res, false, "Failed to init peerlist.");
 
 	for(auto &p : m_command_line_peers)
 		m_peerlist.append_with_peer_white(p);
@@ -548,7 +548,7 @@ bool node_server<t_payload_net_handler>::init(const boost::program_options::vari
 	//try to bind
 	GULPS_INFOF("Binding on {}:{}", m_bind_ip , m_port);
 	res = m_net_server.init_server(m_port, m_bind_ip);
-	CHECK_AND_ASSERT_MES(res, false, "Failed to bind server");
+	GULPS_CHECK_AND_ASSERT_MES(res, false, "Failed to bind server");
 
 	m_listening_port = m_net_server.get_binded_port();
 	GULPS_INFOF_CLR(gulps::COLOR_GREEN, "Net service bound to {}:{}", m_bind_ip, m_listening_port);
@@ -893,7 +893,7 @@ bool node_server<t_payload_net_handler>::try_to_connect_and_handshake_with_new_p
 	GULPS_LOGF_L1("Connecting to {}(peer_type={}, last_seen: {})...", na.str() , peer_type , (last_seen_stamp ? epee::misc_utils::get_time_interval_string(time(NULL) - last_seen_stamp) : "never")
 							);
 
-	CHECK_AND_ASSERT_MES(na.get_type_id() == epee::net_utils::ipv4_network_address::ID, false,
+	GULPS_CHECK_AND_ASSERT_MES(na.get_type_id() == epee::net_utils::ipv4_network_address::ID, false,
 						 "Only IPv4 addresses are supported here");
 	const epee::net_utils::ipv4_network_address &ipv4 = na.as<const epee::net_utils::ipv4_network_address>();
 
@@ -956,7 +956,7 @@ bool node_server<t_payload_net_handler>::check_connection_and_handshake_with_pee
 	GULPS_LOGF_L1("Connecting to {}(last_seen: {})...", na.str() , (last_seen_stamp ? epee::misc_utils::get_time_interval_string(time(NULL) - last_seen_stamp) : "never")
 								  );
 
-	CHECK_AND_ASSERT_MES(na.get_type_id() == epee::net_utils::ipv4_network_address::ID, false,
+	GULPS_CHECK_AND_ASSERT_MES(na.get_type_id() == epee::net_utils::ipv4_network_address::ID, false,
 						 "Only IPv4 addresses are supported here");
 	const epee::net_utils::ipv4_network_address &ipv4 = na.as<epee::net_utils::ipv4_network_address>();
 
@@ -1081,7 +1081,7 @@ bool node_server<t_payload_net_handler>::make_new_connection_from_peerlist(bool 
 			random_index = crypto::rand<size_t>() % local_peers_count;
 		}
 
-		CHECK_AND_ASSERT_MES(random_index < local_peers_count, false, "random_starter_index < peers_local.size() failed!!");
+		GULPS_CHECK_AND_ASSERT_MES(random_index < local_peers_count, false, "random_starter_index < peers_local.size() failed!!");
 
 		if(tried_peers.count(random_index))
 			continue;
@@ -1089,7 +1089,7 @@ bool node_server<t_payload_net_handler>::make_new_connection_from_peerlist(bool 
 		tried_peers.insert(random_index);
 		peerlist_entry pe = AUTO_VAL_INIT(pe);
 		bool r = use_white_list ? m_peerlist.get_white_peer_by_index(pe, random_index) : m_peerlist.get_gray_peer_by_index(pe, random_index);
-		CHECK_AND_ASSERT_MES(r, false, "Failed to get random peer from peerlist(white:" << use_white_list << ")");
+		GULPS_CHECK_AND_ASSERT_MES(r, false, "Failed to get random peer from peerlist(white:" , use_white_list , ")");
 
 		++try_count;
 
@@ -1517,7 +1517,7 @@ bool node_server<t_payload_net_handler>::try_ping(basic_node_data &node_data, p2
 	if(!node_data.my_port)
 		return false;
 
-	CHECK_AND_ASSERT_MES(context.m_remote_address.get_type_id() == epee::net_utils::ipv4_network_address::ID, false,
+	GULPS_CHECK_AND_ASSERT_MES(context.m_remote_address.get_type_id() == epee::net_utils::ipv4_network_address::ID, false,
 						 "Only IPv4 addresses are supported here");
 
 	const epee::net_utils::network_address na = context.m_remote_address;
@@ -1679,7 +1679,7 @@ int node_server<t_payload_net_handler>::handle_handshake(int command, typename C
 		uint32_t port_l = arg.node_data.my_port;
 		//try ping to be sure that we can add this peer to peer_list
 		try_ping(arg.node_data, context, [peer_id_l, port_l, context, this]() {
-			CHECK_AND_ASSERT_MES(context.m_remote_address.get_type_id() == epee::net_utils::ipv4_network_address::ID, void(),
+			GULPS_CHECK_AND_ASSERT_MES(context.m_remote_address.get_type_id() == epee::net_utils::ipv4_network_address::ID, void(),
 								 "Only IPv4 addresses are supported here");
 			//called only(!) if success pinged, update local peerlist
 			peerlist_entry pe;
@@ -1805,7 +1805,7 @@ bool node_server<t_payload_net_handler>::parse_peers_and_add_to_container(const 
 		epee::net_utils::network_address na = AUTO_VAL_INIT(na);
 		const uint16_t default_port = config_get_p2p_port(m_nettype);
 		bool r = parse_peer_from_string(na, pr_str, default_port);
-		CHECK_AND_ASSERT_MES(r, false, "Failed to parse address from string: " << pr_str);
+		GULPS_CHECK_AND_ASSERT_MES(r, false, "Failed to parse address from string: " , pr_str);
 		container.push_back(na);
 	}
 
@@ -1856,7 +1856,7 @@ bool node_server<t_payload_net_handler>::set_tos_flag(const boost::program_optio
 		return true;
 	}
 	epee::net_utils::connection<epee::levin::async_protocol_handler<p2p_connection_context>>::set_tos_flag(flag);
-	_dbg1("Set ToS flag  " << flag);
+	GULPS_LOG_L1("Set ToS flag  ", flag);
 	return true;
 }
 

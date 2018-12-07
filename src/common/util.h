@@ -60,7 +60,6 @@
 #include <system_error>
 
 #ifdef _WIN32
-#include "misc_log_ex.h"
 #include "windows.h"
 #endif
 

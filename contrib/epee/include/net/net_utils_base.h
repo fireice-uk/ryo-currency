@@ -31,7 +31,6 @@
 #ifndef _NET_UTILS_BASE_H_
 #define _NET_UTILS_BASE_H_
 
-#include "misc_log_ex.h"
 #include "serialization/keyvalue_serialization.h"
 #include <boost/asio/io_service.hpp>
 #include <boost/uuid/uuid.hpp>

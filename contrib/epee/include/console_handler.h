@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "misc_log_ex.h"
 #include "string_tools.h"
 #include <atomic>
 #include <condition_variable>
@@ -334,6 +333,7 @@ class async_console_handler
 			if(' ' != prompt.back())
 				GULPS_PRINT(' ');
 			epee::reset_console_color();
+			std::cout.flush();
 #endif
 		}
 	}
@@ -365,7 +365,6 @@ class async_console_handler
 					GULPS_ERROR("Failed to read line.");
 				}
 				string_tools::trim(command);
-
 				GULPS_LOG_L2("Read command: ", command);
 				if(command.empty())
 				{
@@ -489,7 +488,7 @@ class command_handler
 
 		for(auto &x : m_command_handlers)
 		{
-			ss << x.second.second.first << ENDL;
+			ss << x.second.second.first << "\n";
 		}
 		return ss.str();
 	}

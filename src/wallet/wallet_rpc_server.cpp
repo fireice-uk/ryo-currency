@@ -50,7 +50,7 @@
 #include <boost/asio/ip/address.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <cstdint>
-using namespace epee;
+
 
 #include "common/command_line.h"
 #include "common/i18n.h"
@@ -69,11 +69,7 @@ using namespace epee;
 #include "wallet_rpc_server.h"
 #include "wallet_rpc_server_commands_defs.h"
 #include "common/gulps.hpp"
-
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "wallet.rpc"
-
-
+using namespace epee;
 
 
 namespace
@@ -869,9 +865,9 @@ bool wallet_rpc_server::on_transfer_split(const wallet_rpc::COMMAND_RPC_TRANSFER
 			mixin = m_wallet->adjust_mixin(req.mixin);
 		}
 		uint32_t priority = m_wallet->adjust_priority(req.priority);
-		LOG_PRINT_L2("on_transfer_split calling create_transactions_2");
+		GULPS_LOG_L2("on_transfer_split calling create_transactions_2");
 		std::vector<wallet2::pending_tx> ptx_vector = m_wallet->create_transactions_2(dsts, mixin, req.unlock_time, priority, extra, req.account_index, req.subaddr_indices, m_trusted_daemon);
-		LOG_PRINT_L2("on_transfer_split called create_transactions_2");
+		GULPS_LOG_L2("on_transfer_split called create_transactions_2");
 
 		return fill_response(ptx_vector, req.get_tx_keys, res.tx_key_list, res.amount_list, res.fee_list, res.multisig_txset, req.do_not_relay,
 							 res.tx_hash_list, req.get_tx_hex, res.tx_blob_list, req.get_tx_metadata, res.tx_metadata_list, er);
@@ -3153,7 +3149,7 @@ just_dir:
 	if(wal)
 		wrpc.start_wallet_backend(std::move(wal));
 	bool r = wrpc.init(&(vm.get()));
-	CHECK_AND_ASSERT_MES(r, 1, tools::wallet_rpc_server::tr("Failed to initialize wallet RPC server"));
+	GULPS_CHECK_AND_ASSERT_MES(r, 1, tools::wallet_rpc_server::tr("Failed to initialize wallet RPC server"));
 	tools::signal_handler::install([&wrpc](int) {
 		wrpc.send_stop_signal();
 	});

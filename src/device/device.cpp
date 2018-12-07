@@ -49,7 +49,6 @@
 #ifdef HAVE_PCSC
 #include "device_ledger.hpp"
 #endif
-#include "misc_log_ex.h"
 
 #include "common/gulps.hpp"	
 

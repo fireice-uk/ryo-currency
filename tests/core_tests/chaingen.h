@@ -51,6 +51,7 @@
 #include "cryptonote_basic/cryptonote_format_utils.h"
 #include "cryptonote_core/cryptonote_core.h"
 #include "misc_language.h"
+#include "misc_log_ex.h"
 
 #undef RYO_DEFAULT_LOG_CATEGORY
 #define RYO_DEFAULT_LOG_CATEGORY "tests.core"

@@ -215,7 +215,7 @@ void miner::merge_hr()
 			float hr = static_cast<float>(total_hr) / static_cast<float>(m_last_hash_rates.size());
 			const auto precision = std::cout.precision();
 			//TODO CHECK IF  ITS OKAY
-			//std::cout << "hashrate: " << std::setprecision(4) << std::fixed << hr << precision << ENDL;
+			//std::cout << "hashrate: " << std::setprecision(4) << std::fixed << hr << precision << "\n";
 			GULPS_PRINTF("hashrate: {:.{}f}", hr, precision);
 		}
 	}
@@ -241,7 +241,7 @@ bool miner::init(const boost::program_options::variables_map &vm, network_type n
 	{
 		std::string buff;
 		bool r = file_io_utils::load_file_to_string(command_line::get_arg(vm, arg_extra_messages), buff);
-		CHECK_AND_ASSERT_MES(r, false, "Failed to load file with extra messages: " << command_line::get_arg(vm, arg_extra_messages));
+		GULPS_CHECK_AND_ASSERT_MES(r, false, "Failed to load file with extra messages: " , command_line::get_arg(vm, arg_extra_messages));
 		std::vector<std::string> extra_vec;
 		boost::split(extra_vec, buff, boost::is_any_of("\n"), boost::token_compress_on);
 		m_extra_messages.resize(extra_vec.size());
@@ -458,7 +458,7 @@ void miner::resume()
 bool miner::worker_thread()
 {
 	uint32_t th_local_index = boost::interprocess::ipcdetail::atomic_inc32(&m_thread_index);
-	MLOG_SET_THREAD_NAME(std::string("[miner ") + std::to_string(th_local_index) + "]");
+	GULPS_SET_THREAD_NAME(std::string("[miner ") + std::to_string(th_local_index) + "]");
 	GULPS_PRINTF("Miner thread was started [{}]", th_local_index);
 	uint32_t nonce = m_starter_nonce + th_local_index;
 	difficulty_type local_diff = 0;
@@ -1022,7 +1022,7 @@ boost::logic::tribool miner::on_battery_power()
 		if(ioctl(fd, APMIO_GETINFO, &info) == -1)
 		{
 			close(fd);
-			GULPS_LOG_FERROR("Cannot query battery status: ioctl({}, APMIO_GETINFO): {}", dev_apm, strerror(errno));
+			GULPS_LOGF_FERROR("Cannot query battery status: ioctl({}, APMIO_GETINFO): {}", dev_apm, strerror(errno));
 			return boost::logic::tribool(boost::logic::indeterminate);
 		}
 

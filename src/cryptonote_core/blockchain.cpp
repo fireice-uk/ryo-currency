@@ -414,7 +414,7 @@ bool Blockchain::init(BlockchainDB *db, const network_type nettype, bool offline
 			generate_genesis_block(bl, config<MAINNET>::GENESIS_TX, config<MAINNET>::GENESIS_NONCE);
 		}
 		add_new_block(bl, bvc);
-		CHECK_AND_ASSERT_MES(!bvc.m_verifivation_failed, false, "Failed to add genesis block to blockchain");
+		GULPS_CHECK_AND_ASSERT_MES(!bvc.m_verifivation_failed, false, "Failed to add genesis block to blockchain");
 	}
 	// TODO: if blockchain load successful, verify blockchain against both
 	//       hard-coded and runtime-loaded (and enforced) checkpoints.
@@ -898,7 +898,7 @@ bool Blockchain::rollback_blockchain_switching(std::list<block> &original_chain,
 	{
 		block_verification_context bvc = boost::value_initialized<block_verification_context>();
 		bool r = handle_block_to_main_chain(bl, bvc);
-		CHECK_AND_ASSERT_MES(r && bvc.m_added_to_main_chain, false, "PANIC! failed to add (again) block while chain switching during the rollback!");
+		GULPS_CHECK_AND_ASSERT_MES(r && bvc.m_added_to_main_chain, false, "PANIC! failed to add (again) block while chain switching during the rollback!");
 	}
 
 	m_hardfork->reorganize_from_chain_height(rollback_height);
@@ -938,7 +938,7 @@ bool Blockchain::switch_to_alternative_blockchain(std::list<blocks_ext_by_hash::
 	m_timestamps_and_difficulties_height = 0;
 
 	// if empty alt chain passed (not sure how that could happen), return false
-	CHECK_AND_ASSERT_MES(alt_chain.size(), false, "switch_to_alternative_blockchain: empty chain passed");
+	GULPS_CHECK_AND_ASSERT_MES(alt_chain.size(), false, "switch_to_alternative_blockchain: empty chain passed");
 
 	// verify that main chain has front of alt chain's parent block
 	if(!m_db->block_exists(alt_chain.front()->second.bl.prev_id))
@@ -1128,8 +1128,8 @@ difficulty_type Blockchain::get_next_difficulty_for_alternative_chain(const std:
 		}
 
 		// make sure we haven't accidentally grabbed too many blocks...maybe don't need this check?
-		CHECK_AND_ASSERT_MES((alt_chain.size() + timestamps.size()) <= block_count, false, "Internal error, alt_chain.size()[" << alt_chain.size()
-																															   << "] + vtimestampsec.size()[" << timestamps.size() << "] NOT <= DIFFICULTY_WINDOW[]" << block_count);
+		GULPS_CHECK_AND_ASSERT_MES((alt_chain.size() + timestamps.size()) <= block_count, false, "Internal error, alt_chain.size()[" , alt_chain.size()
+																															   , "] + vtimestampsec.size()[", timestamps.size(), "] NOT <= DIFFICULTY_WINDOW[]", block_count);
 
 		for(auto it : alt_chain)
 		{
@@ -1174,9 +1174,9 @@ difficulty_type Blockchain::get_next_difficulty_for_alternative_chain(const std:
 bool Blockchain::prevalidate_miner_transaction(const block &b, uint64_t height)
 {
 	GULPS_LOG_L3("Blockchain::", __func__);
-	CHECK_AND_ASSERT_MES(b.miner_tx.vin.size() == 1, false, "coinbase transaction in the block has no inputs");
-	CHECK_AND_ASSERT_MES(b.miner_tx.vin[0].type() == typeid(txin_gen), false, "coinbase transaction in the block has the wrong type");
-	CHECK_AND_ASSERT_MES(b.miner_tx.rct_signatures.type == rct::RCTTypeNull, false, "V1 miner transactions are not allowed.");
+	GULPS_CHECK_AND_ASSERT_MES(b.miner_tx.vin.size() == 1, false, "coinbase transaction in the block has no inputs");
+	GULPS_CHECK_AND_ASSERT_MES(b.miner_tx.vin[0].type() == typeid(txin_gen), false, "coinbase transaction in the block has the wrong type");
+	GULPS_CHECK_AND_ASSERT_MES(b.miner_tx.rct_signatures.type == rct::RCTTypeNull, false, "V1 miner transactions are not allowed.");
 
 	if(boost::get<txin_gen>(b.miner_tx.vin[0]).height != height)
 	{
@@ -1184,7 +1184,7 @@ bool Blockchain::prevalidate_miner_transaction(const block &b, uint64_t height)
 		return false;
 	}
 	GULPS_LOG_L1("Miner tx hash: ", get_transaction_hash(b.miner_tx));
-	CHECK_AND_ASSERT_MES(b.miner_tx.unlock_time == height + CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW, false, "coinbase transaction transaction has the wrong unlock time=" << b.miner_tx.unlock_time << ", expected " << height + CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW);
+	GULPS_CHECK_AND_ASSERT_MES(b.miner_tx.unlock_time == height + CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW, false, "coinbase transaction transaction has the wrong unlock time=" , b.miner_tx.unlock_time , ", expected " , height + CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW);
 
 	//check outs overflow
 	//NOTE: not entirely sure this is necessary, given that this function is
@@ -1220,9 +1220,9 @@ bool Blockchain::validate_miner_transaction_v2(const block &b, uint64_t height, 
 		const tx_out& o = b.miner_tx.vout[i];
 		crypto::public_key pk;
 
-		CHECK_AND_ASSERT_MES(derive_public_key(deriv, i, m_dev_spend_key, pk), false, "Dev public key is invalid!");
-		CHECK_AND_ASSERT_MES(o.target.type() == typeid(txout_to_key), false, "Out needs to be txout_to_key!");
-		CHECK_AND_ASSERT_MES(o.amount != 0, false, "Non-plaintext output in a miner tx");
+		GULPS_CHECK_AND_ASSERT_MES(derive_public_key(deriv, i, m_dev_spend_key, pk), false, "Dev public key is invalid!");
+		GULPS_CHECK_AND_ASSERT_MES(o.target.type() == typeid(txout_to_key), false, "Out needs to be txout_to_key!");
+		GULPS_CHECK_AND_ASSERT_MES(o.amount != 0, false, "Non-plaintext output in a miner tx");
 
 		if(boost::get<txout_to_key>(b.miner_tx.vout[i].target).key == pk)
 			dev_money += o.amount;
@@ -1259,7 +1259,7 @@ bool Blockchain::validate_miner_transaction_v2(const block &b, uint64_t height, 
 	// from hard fork 2, since a miner can claim less than the full block reward, we update the base_reward
 	// to show the amount of coins that were actually generated, the remainder will be pushed back for later
 	// emission. This modifies the emission curve very slightly.
-	CHECK_AND_ASSERT_MES(miner_money - fee <= base_reward, false, "base reward calculation bug");
+	GULPS_CHECK_AND_ASSERT_MES(miner_money - fee <= base_reward, false, "base reward calculation bug");
 	if(base_reward + fee != miner_money)
 		partial_block_reward = true;
 	base_reward = miner_money - fee;
@@ -1293,7 +1293,7 @@ bool Blockchain::validate_miner_transaction_v1(const block &b, size_t cumulative
 	// from hard fork 2, since a miner can claim less than the full block reward, we update the base_reward
 	// to show the amount of coins that were actually generated, the remainder will be pushed back for later
 	// emission. This modifies the emission curve very slightly.
-	CHECK_AND_ASSERT_MES(money_in_use - fee <= base_reward, false, "base reward calculation bug");
+	GULPS_CHECK_AND_ASSERT_MES(money_in_use - fee <= base_reward, false, "base reward calculation bug");
 	if(base_reward + fee != money_in_use)
 		partial_block_reward = true;
 	base_reward = money_in_use - fee;
@@ -1366,7 +1366,7 @@ bool Blockchain::create_block_template(block &b, const account_public_address &m
 	}
 
 	diffic = get_difficulty_for_next_block();
-	CHECK_AND_ASSERT_MES(diffic, false, "difficulty overhead.");
+	GULPS_CHECK_AND_ASSERT_MES(diffic, false, "difficulty overhead.");
 
 	median_size = m_current_block_cumul_sz_limit / 2;
 	already_generated_coins = m_db->get_block_already_generated_coins(height - 1);
@@ -1422,7 +1422,7 @@ bool Blockchain::create_block_template(block &b, const account_public_address &m
    */
 	//make blocks coin-base tx looks close to real coinbase tx to get truthful blob size
 	bool r = construct_miner_tx(m_nettype, height, median_size, already_generated_coins, txs_size, fee, miner_address, b.miner_tx, ex_nonce);
-	CHECK_AND_ASSERT_MES(r, false, "Failed to construct miner tx, first chance");
+	GULPS_CHECK_AND_ASSERT_MES(r, false, "Failed to construct miner tx, first chance");
 	size_t cumulative_size = txs_size + get_object_blobsize(b.miner_tx);
 #if defined(DEBUG_CREATE_BLOCK_TEMPLATE)
 	GULPS_LOGF_L1("Creating block template: miner tx size {}, cumulative size {}", get_object_blobsize(b.miner_tx) , cumulative_size);
@@ -1431,7 +1431,7 @@ bool Blockchain::create_block_template(block &b, const account_public_address &m
 	{
 		r = construct_miner_tx(m_nettype, height, median_size, already_generated_coins, cumulative_size, fee, miner_address, b.miner_tx, ex_nonce);
 
-		CHECK_AND_ASSERT_MES(r, false, "Failed to construct miner tx, second chance");
+		GULPS_CHECK_AND_ASSERT_MES(r, false, "Failed to construct miner tx, second chance");
 		size_t coinbase_blob_size = get_object_blobsize(b.miner_tx);
 		if(coinbase_blob_size > cumulative_size - txs_size)
 		{
@@ -1452,7 +1452,7 @@ bool Blockchain::create_block_template(block &b, const account_public_address &m
 			//here  could be 1 byte difference, because of extra field counter is varint, and it can become from 1-byte len to 2-bytes len.
 			if(cumulative_size != txs_size + get_object_blobsize(b.miner_tx))
 			{
-				CHECK_AND_ASSERT_MES(cumulative_size + 1 == txs_size + get_object_blobsize(b.miner_tx), false, "unexpected case: cumulative_size=" << cumulative_size << " + 1 is not equal txs_cumulative_size=" << txs_size << " + get_object_blobsize(b.miner_tx)=" << get_object_blobsize(b.miner_tx));
+				GULPS_CHECK_AND_ASSERT_MES(cumulative_size + 1 == txs_size + get_object_blobsize(b.miner_tx), false, "unexpected case: cumulative_size=" , cumulative_size , " + 1 is not equal txs_cumulative_size=" , txs_size , " + get_object_blobsize(b.miner_tx)=" , get_object_blobsize(b.miner_tx));
 				b.miner_tx.extra.resize(b.miner_tx.extra.size() - 1);
 				if(cumulative_size != txs_size + get_object_blobsize(b.miner_tx))
 				{
@@ -1464,7 +1464,7 @@ bool Blockchain::create_block_template(block &b, const account_public_address &m
 				GULPS_LOGF_L1("Setting extra for block: {}, try_count={}", b.miner_tx.extra.size() , try_count);
 			}
 		}
-		CHECK_AND_ASSERT_MES(cumulative_size == txs_size + get_object_blobsize(b.miner_tx), false, "unexpected case: cumulative_size=" << cumulative_size << " is not equal txs_cumulative_size=" << txs_size << " + get_object_blobsize(b.miner_tx)=" << get_object_blobsize(b.miner_tx));
+		GULPS_CHECK_AND_ASSERT_MES(cumulative_size == txs_size + get_object_blobsize(b.miner_tx), false, "unexpected case: cumulative_size=" , cumulative_size , " is not equal txs_cumulative_size=" , txs_size , " + get_object_blobsize(b.miner_tx)=" , get_object_blobsize(b.miner_tx));
 #if defined(DEBUG_CREATE_BLOCK_TEMPLATE)
 		GULPS_LOGF_L1("Creating block template: miner tx size {}, cumulative size {} is now good", coinbase_blob_size , cumulative_size );
 #endif
@@ -1487,8 +1487,8 @@ bool Blockchain::complete_timestamps_vector(uint64_t start_top_height, std::vect
 
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 	size_t need_elements = window_size - timestamps.size();
-	CHECK_AND_ASSERT_MES(start_top_height < m_db->height(), false, "internal error: passed start_height not < "
-																	   << " m_db->height() -- " << start_top_height << " >= " << m_db->height());
+	GULPS_CHECK_AND_ASSERT_MES(start_top_height < m_db->height(), false, "internal error: passed start_height not < "
+																	   ," m_db->height() -- ", start_top_height, " >= ", m_db->height());
 	size_t stop_offset = start_top_height > need_elements ? start_top_height - need_elements : 0;
 	while(start_top_height != stop_offset)
 	{
@@ -1560,7 +1560,7 @@ bool Blockchain::handle_alternative_block(const block &b, const crypto::hash &id
 		if(alt_chain.size())
 		{
 			// make sure alt chain doesn't somehow start past the end of the main chain
-			CHECK_AND_ASSERT_MES(m_db->height() > alt_chain.front()->second.height, false, "main blockchain wrong height");
+			GULPS_CHECK_AND_ASSERT_MES(m_db->height() > alt_chain.front()->second.height, false, "main blockchain wrong height");
 
 			// make sure that the blockchain contains the block that should connect
 			// this alternate chain with it.
@@ -1572,7 +1572,7 @@ bool Blockchain::handle_alternative_block(const block &b, const crypto::hash &id
 
 			// make sure block connects correctly to the main chain
 			auto h = m_db->get_block_hash_from_height(alt_chain.front()->second.height - 1);
-			CHECK_AND_ASSERT_MES(h == alt_chain.front()->second.bl.prev_id, false, "alternative chain has wrong connection to main chain");
+			GULPS_CHECK_AND_ASSERT_MES(h == alt_chain.front()->second.bl.prev_id, false, "alternative chain has wrong connection to main chain");
 			complete_timestamps_vector(m_db->get_block_height(alt_chain.front()->second.bl.prev_id), timestamps);
 		}
 		// if block not associated with known alternate chain
@@ -1580,7 +1580,7 @@ bool Blockchain::handle_alternative_block(const block &b, const crypto::hash &id
 		{
 			// if block parent is not part of main chain or an alternate chain,
 			// we ignore it
-			CHECK_AND_ASSERT_MES(parent_in_main, false, "internal error: broken imperative condition: parent_in_main");
+			GULPS_CHECK_AND_ASSERT_MES(parent_in_main, false, "internal error: broken imperative condition: parent_in_main");
 
 			complete_timestamps_vector(m_db->get_block_height(b.prev_id), timestamps);
 		}
@@ -1609,7 +1609,7 @@ bool Blockchain::handle_alternative_block(const block &b, const crypto::hash &id
 
 		// Check the block's hash against the difficulty target for its alt chain
 		difficulty_type current_diff = get_next_difficulty_for_alternative_chain(alt_chain, bei);
-		CHECK_AND_ASSERT_MES(current_diff, false, "!!!!!!! DIFFICULTY OVERHEAD !!!!!!!");
+		GULPS_CHECK_AND_ASSERT_MES(current_diff, false, "!!!!!!! DIFFICULTY OVERHEAD !!!!!!!");
 		crypto::hash proof_of_work = null_hash;
 		get_block_longhash(bei.bl, m_pow_ctx, proof_of_work);
 		if(!check_hash(proof_of_work, current_diff))
@@ -1644,7 +1644,7 @@ bool Blockchain::handle_alternative_block(const block &b, const crypto::hash &id
 		// add block to alternate blocks storage,
 		// as well as the current "alt chain" container
 		auto i_res = m_alternative_chains.insert(blocks_ext_by_hash::value_type(id, bei));
-		CHECK_AND_ASSERT_MES(i_res.second, false, "insertion of new alternative block returned as it already exist");
+		GULPS_CHECK_AND_ASSERT_MES(i_res.second, false, "insertion of new alternative block returned as it already exist");
 		alt_chain.push_back(i_res.first);
 
 		// FIXME: is it even possible for a checkpoint to show up not on the main chain?
@@ -1709,7 +1709,7 @@ bool Blockchain::get_blocks(uint64_t start_offset, size_t count, std::list<std::
 	{
 		std::list<crypto::hash> missed_ids;
 		get_transactions_blobs(blk.second.tx_hashes, txs, missed_ids);
-		CHECK_AND_ASSERT_MES(!missed_ids.size(), false, "has missed transactions in own block in main blockchain");
+		GULPS_CHECK_AND_ASSERT_MES(!missed_ids.size(), false, "has missed transactions in own block in main blockchain");
 	}
 
 	return true;
@@ -2357,10 +2357,10 @@ bool Blockchain::find_blockchain_supplement(const uint64_t req_start_block, cons
 		blocks.resize(blocks.size() + 1);
 		blocks.back().first = m_db->get_block_blob_from_height(i);
 		block b;
-		CHECK_AND_ASSERT_MES(parse_and_validate_block_from_blob(blocks.back().first, b), false, "internal error, invalid block");
+		GULPS_CHECK_AND_ASSERT_MES(parse_and_validate_block_from_blob(blocks.back().first, b), false, "internal error, invalid block");
 		std::list<crypto::hash> mis;
 		get_transactions_blobs(b.tx_hashes, blocks.back().second, mis);
-		CHECK_AND_ASSERT_MES(!mis.size(), false, "internal error, transaction from block not found");
+		GULPS_CHECK_AND_ASSERT_MES(!mis.size(), false, "internal error, transaction from block not found");
 		size += blocks.back().first.size();
 		for(const auto &t : blocks.back().second)
 			size += t.size();
@@ -2382,7 +2382,7 @@ bool Blockchain::add_block_as_invalid(const block_extended_info &bei, const cryp
 	GULPS_LOG_L3("Blockchain::", __func__);
 	CRITICAL_REGION_LOCAL(m_blockchain_lock);
 	auto i_res = m_invalid_blocks.insert(std::map<crypto::hash, block_extended_info>::value_type(h, bei));
-	CHECK_AND_ASSERT_MES(i_res.second, false, "at insertion invalid by tx returned status existed");
+	GULPS_CHECK_AND_ASSERT_MES(i_res.second, false, "at insertion invalid by tx returned status existed");
 	GULPS_INFOF("BLOCK ADDED AS INVALID: {}\n, prev_id={}, m_invalid_blocks count={}", h , bei.bl.prev_id , m_invalid_blocks.size());
 	return true;
 }
@@ -2512,7 +2512,7 @@ bool Blockchain::get_tx_outputs_gindexs(const crypto::hash &tx_id, std::vector<u
 	{
 		// empty indexs is only valid if the vout is empty, which is legal but rare
 		cryptonote::transaction tx = m_db->get_tx(tx_id);
-		CHECK_AND_ASSERT_MES(tx.vout.empty(), false, "internal error: global indexes for transaction " << tx_id << " is empty, and tx vout is not");
+		GULPS_CHECK_AND_ASSERT_MES(tx.vout.empty(), false, "internal error: global indexes for transaction " , tx_id , " is empty, and tx vout is not");
 	}
 
 	return true;
@@ -2570,7 +2570,7 @@ bool Blockchain::check_tx_inputs(transaction &tx, uint64_t &max_used_block_heigh
 	if(!res)
 		return false;
 
-	CHECK_AND_ASSERT_MES(max_used_block_height < m_db->height(), false, "internal error: max used block index=" << max_used_block_height << " is not less then blockchain size = " << m_db->height());
+	GULPS_CHECK_AND_ASSERT_MES(max_used_block_height < m_db->height(), false, "internal error: max used block index=" , max_used_block_height , " is not less then blockchain size = " , m_db->height());
 	max_used_block_id = m_db->get_block_hash_from_height(max_used_block_height);
 	return true;
 }
@@ -2630,7 +2630,7 @@ bool Blockchain::have_tx_keyimges_as_spent(const transaction &tx) const
 bool Blockchain::expand_transaction_2(transaction &tx, const crypto::hash &tx_prefix_hash, const std::vector<std::vector<rct::ctkey>> &pubkeys)
 {
 	PERF_TIMER(expand_transaction_2);
-	CHECK_AND_ASSERT_MES(tx.version == 2 || tx.version == 3, false, "Transaction version is not 2 or 3");
+	GULPS_CHECK_AND_ASSERT_MES(tx.version == 2 || tx.version == 3, false, "Transaction version is not 2 or 3");
 
 	rct::rctSig &rv = tx.rct_signatures;
 
@@ -2640,13 +2640,13 @@ bool Blockchain::expand_transaction_2(transaction &tx, const crypto::hash &tx_pr
 	// mixRing - full and simple store it in opposite ways
 	if(rv.type == rct::RCTTypeFull || rv.type == rct::RCTTypeFullBulletproof)
 	{
-		CHECK_AND_ASSERT_MES(!pubkeys.empty() && !pubkeys[0].empty(), false, "empty pubkeys");
+		GULPS_CHECK_AND_ASSERT_MES(!pubkeys.empty() && !pubkeys[0].empty(), false, "empty pubkeys");
 		rv.mixRing.resize(pubkeys[0].size());
 		for(size_t m = 0; m < pubkeys[0].size(); ++m)
 			rv.mixRing[m].clear();
 		for(size_t n = 0; n < pubkeys.size(); ++n)
 		{
-			CHECK_AND_ASSERT_MES(pubkeys[n].size() <= pubkeys[0].size(), false, "More inputs that first ring");
+			GULPS_CHECK_AND_ASSERT_MES(pubkeys[n].size() <= pubkeys[0].size(), false, "More inputs that first ring");
 			for(size_t m = 0; m < pubkeys[n].size(); ++m)
 			{
 				rv.mixRing[m].push_back(pubkeys[n][m]);
@@ -2655,7 +2655,7 @@ bool Blockchain::expand_transaction_2(transaction &tx, const crypto::hash &tx_pr
 	}
 	else if(rv.type == rct::RCTTypeSimple || rv.type == rct::RCTTypeSimpleBulletproof)
 	{
-		CHECK_AND_ASSERT_MES(!pubkeys.empty() && !pubkeys[0].empty(), false, "empty pubkeys");
+		GULPS_CHECK_AND_ASSERT_MES(!pubkeys.empty() && !pubkeys[0].empty(), false, "empty pubkeys");
 		rv.mixRing.resize(pubkeys.size());
 		for(size_t n = 0; n < pubkeys.size(); ++n)
 		{
@@ -2668,7 +2668,7 @@ bool Blockchain::expand_transaction_2(transaction &tx, const crypto::hash &tx_pr
 	}
 	else
 	{
-		CHECK_AND_ASSERT_MES(false, false, "Unsupported rct tx type: " + boost::lexical_cast<std::string>(rv.type));
+		GULPS_CHECK_AND_ASSERT_MES(false, false, "Unsupported rct tx type: " + boost::lexical_cast<std::string>(rv.type));
 	}
 
 	// II
@@ -2681,7 +2681,7 @@ bool Blockchain::expand_transaction_2(transaction &tx, const crypto::hash &tx_pr
 	}
 	else if(rv.type == rct::RCTTypeSimple || rv.type == rct::RCTTypeSimpleBulletproof)
 	{
-		CHECK_AND_ASSERT_MES(rv.p.MGs.size() == tx.vin.size(), false, "Bad MGs size");
+		GULPS_CHECK_AND_ASSERT_MES(rv.p.MGs.size() == tx.vin.size(), false, "Bad MGs size");
 		for(size_t n = 0; n < tx.vin.size(); ++n)
 		{
 			rv.p.MGs[n].II.resize(1);
@@ -2690,7 +2690,7 @@ bool Blockchain::expand_transaction_2(transaction &tx, const crypto::hash &tx_pr
 	}
 	else
 	{
-		CHECK_AND_ASSERT_MES(false, false, "Unsupported rct tx type: " + boost::lexical_cast<std::string>(rv.type));
+		GULPS_CHECK_AND_ASSERT_MES(false, false, "Unsupported rct tx type: " + boost::lexical_cast<std::string>(rv.type));
 	}
 
 	// outPk was already done by handle_incoming_tx
@@ -2850,11 +2850,11 @@ bool Blockchain::check_tx_inputs(transaction &tx, tx_verification_context &tvc, 
 	{
 		// make sure output being spent is of type txin_to_key, rather than
 		// e.g. txin_gen, which is only used for miner transactions
-		CHECK_AND_ASSERT_MES(txin.type() == typeid(txin_to_key), false, "wrong type id in tx input at Blockchain::check_tx_inputs");
+		GULPS_CHECK_AND_ASSERT_MES(txin.type() == typeid(txin_to_key), false, "wrong type id in tx input at Blockchain::check_tx_inputs");
 		const txin_to_key &in_to_key = boost::get<txin_to_key>(txin);
 
 		// make sure tx output has key offset(s) (is signed to be used)
-		CHECK_AND_ASSERT_MES(in_to_key.key_offsets.size(), false, "empty in_to_key.key_offsets in transaction with id " << get_transaction_hash(tx));
+		GULPS_CHECK_AND_ASSERT_MES(in_to_key.key_offsets.size(), false, "empty in_to_key.key_offsets in transaction with id " , get_transaction_hash(tx));
 
 		if(have_tx_keyimg_as_spent(in_to_key.k_image))
 		{
@@ -2868,7 +2868,7 @@ bool Blockchain::check_tx_inputs(transaction &tx, tx_verification_context &tvc, 
 		if(!check_tx_input(tx.version, in_to_key, tx_prefix_hash, std::vector<crypto::signature>(), tx.rct_signatures, pubkeys[sig_index], pmax_used_block_height))
 		{
 			it->second[in_to_key.k_image] = false;
-			GULPS_VERIFY_ERR_TX("Failed to check ring signature for tx {}  vin key with k_image: {}  sig_index: {}", get_transaction_hash(tx).data , in_to_key.k_image , sig_index);
+			GULPS_VERIFY_ERR_TX("Failed to check ring signature for tx ", get_transaction_hash(tx), " vin key with k_image: ", in_to_key.k_image, " sig_index: ", sig_index);
 			if(pmax_used_block_height) // a default value of NULL is used when called from Blockchain::handle_block_to_main_chain()
 			{
 				GULPS_VERIFYF_ERR_TX("  *pmax_used_block_height: {}", *pmax_used_block_height);
@@ -3176,7 +3176,7 @@ bool Blockchain::check_tx_input(size_t tx_version, const txin_to_key &txin, cons
 	}
 	if(tx_version == 1)
 	{
-		CHECK_AND_ASSERT_MES(sig.size() == output_keys.size(), false, "internal error: tx signatures count=" << sig.size() << " mismatch with outputs keys count for inputs=" << output_keys.size());
+		GULPS_CHECK_AND_ASSERT_MES(sig.size() == output_keys.size(), false, "internal error: tx signatures count=" , sig.size() , " mismatch with outputs keys count for inputs=" , output_keys.size());
 	}
 	// rct_signatures will be expanded after this
 	return true;
@@ -3353,7 +3353,7 @@ bool Blockchain::handle_block_to_main_chain(const block &bl, const crypto::hash 
 	// FIXME: get_difficulty_for_next_block can also assert, look into
 	// changing this to throwing exceptions instead so we can clean up.
 	difficulty_type current_diffic = get_difficulty_for_next_block();
-	CHECK_AND_ASSERT_MES(current_diffic, false, "!!!!!!!!! difficulty overhead !!!!!!!!!");
+	GULPS_CHECK_AND_ASSERT_MES(current_diffic, false, "!!!!!!!!! difficulty overhead !!!!!!!!!");
 
 	TIME_MEASURE_FINISH(target_calculating_time);
 
@@ -3964,7 +3964,7 @@ uint64_t Blockchain::prevalidate_block_hashes(uint64_t height, const std::list<c
 			size_t end = n * HASH_OF_HASHES_STEP + HASH_OF_HASHES_STEP;
 			for(size_t i = n * HASH_OF_HASHES_STEP; i < end; ++i)
 			{
-				CHECK_AND_ASSERT_MES(m_blocks_hash_check[i] == crypto::null_hash || m_blocks_hash_check[i] == data[i - first_index * HASH_OF_HASHES_STEP],
+				GULPS_CHECK_AND_ASSERT_MES(m_blocks_hash_check[i] == crypto::null_hash || m_blocks_hash_check[i] == data[i - first_index * HASH_OF_HASHES_STEP],
 									 0, "Consistency failure in m_blocks_hash_check construction");
 				m_blocks_hash_check[i] = data[i - first_index * HASH_OF_HASHES_STEP];
 			}
@@ -3979,7 +3979,7 @@ uint64_t Blockchain::prevalidate_block_hashes(uint64_t height, const std::list<c
 		}
 	}
 	GULPS_LOGF_L1("usable: {} / {}", usable , hashes.size());
-	CHECK_AND_ASSERT_MES(usable < std::numeric_limits<uint64_t>::max() / 2, 0, "usable is negative");
+	GULPS_CHECK_AND_ASSERT_MES(usable < std::numeric_limits<uint64_t>::max() / 2, 0, "usable is negative");
 	return usable;
 }
 

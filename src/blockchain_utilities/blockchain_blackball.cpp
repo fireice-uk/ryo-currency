@@ -151,7 +151,7 @@ static bool for_all_transactions(const std::string &filename, const std::functio
 		ss << bd;
 		binary_archive<false> ba(ss);
 		bool r = do_serialize(ba, tx);
-		CHECK_AND_ASSERT_MES(r, false, "Failed to parse transaction from blob");
+		GULPS_CHECK_AND_ASSERT_MES(r, false, "Failed to parse transaction from blob");
 
 		if(!f(tx))
 		{
@@ -349,7 +349,7 @@ int main(int argc, char *argv[])
 		}
 		r = core_storage[n]->init(db, net_type);
 
-		CHECK_AND_ASSERT_MES(r, 1, "Failed to initialize source blockchain storage");
+		GULPS_CHECK_AND_ASSERT_MES(r, 1, "Failed to initialize source blockchain storage");
 		GULPS_PRINT("Source blockchain storage initialized OK");
 	}
 

@@ -121,10 +121,10 @@ bool construct_miner_tx(cryptonote::network_type nettype, size_t height, size_t 
 	crypto::key_derivation derivation = AUTO_VAL_INIT(derivation);
 	crypto::public_key out_eph_public_key = AUTO_VAL_INIT(out_eph_public_key);
 	bool r = crypto::generate_key_derivation(miner_address.m_view_public_key, txkey.sec, derivation);
-	CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to generate_key_derivation(" << miner_address.m_view_public_key << ", " << txkey.sec << ")");
+	GULPS_CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to generate_key_derivation(" , miner_address.m_view_public_key , ", " , txkey.sec , ")");
 
 	r = crypto::derive_public_key(derivation, 0, miner_address.m_spend_public_key, out_eph_public_key);
-	CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to derive_public_key(" << derivation << ", 0, " << miner_address.m_spend_public_key << ")");
+	GULPS_CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to derive_public_key(" , derivation , ", 0, " , miner_address.m_spend_public_key , ")");
 
 	tx_out out = { block_reward, txout_to_key(out_eph_public_key) };
 	tx.vout.push_back(out);
@@ -134,13 +134,13 @@ bool construct_miner_tx(cryptonote::network_type nettype, size_t height, size_t 
 	{
 		address_parse_info dev_addr;
 		r = get_account_address_from_str<MAINNET>(dev_addr, std::string(common_config::DEV_FUND_ADDRESS));
-		CHECK_AND_ASSERT_MES(r, false, "Failed to parse dev address");
+		GULPS_CHECK_AND_ASSERT_MES(r, false, "Failed to parse dev address");
 
 		r = crypto::generate_key_derivation(dev_addr.address.m_view_public_key, txkey.sec, derivation);
-		CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to generate_key_derivation(" << dev_addr.address.m_view_public_key << ", " << txkey.sec << ")");
+		GULPS_CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to generate_key_derivation(" , dev_addr.address.m_view_public_key , ", " , txkey.sec , ")");
 		
 		r = crypto::derive_public_key(derivation, 1, dev_addr.address.m_spend_public_key, out_eph_public_key);
-		CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to derive_public_key(" << derivation << ", 1, " << dev_addr.address.m_spend_public_key << ")");
+		GULPS_CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to derive_public_key(" , derivation , ", 1, " , dev_addr.address.m_spend_public_key , ")");
 		
 		out = { dev_fund_amount, txout_to_key(out_eph_public_key) };
 		tx.vout.push_back(out);
@@ -230,7 +230,7 @@ bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std
 			crypto::hash8 payment_id = null_hash8;
 			if(get_encrypted_payment_id_from_tx_extra_nonce(extra_nonce.nonce, payment_id))
 			{
-				GULPS_LOGF_L2("Encrypting payment id {}" , payment_id.data);
+				GULPS_LOG_L2("Encrypting payment id " , payment_id);
 				crypto::public_key view_key_pub = get_destination_view_key_pub(destinations, change_addr);
 				if(view_key_pub == null_pkey)
 				{
@@ -252,7 +252,7 @@ bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std
 					GULPS_LOG_ERROR("Failed to add encrypted payment id to tx extra");
 					return false;
 				}
-				GULPS_LOGF_L1("Encrypted payment ID: {}" , payment_id.data);
+				GULPS_LOG_L1("Encrypted payment ID: " , payment_id);
 			}
 		}
 	}
@@ -360,14 +360,14 @@ bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std
 	//   - there's only one destination which is a subaddress
 	bool need_additional_txkeys = num_subaddresses > 0 && (num_stdaddresses > 0 || num_subaddresses > 1);
 	if(need_additional_txkeys)
-		CHECK_AND_ASSERT_MES(destinations.size() == additional_tx_keys.size(), false, "Wrong amount of additional tx keys");
+		GULPS_CHECK_AND_ASSERT_MES(destinations.size() == additional_tx_keys.size(), false, "Wrong amount of additional tx keys");
 
 	uint64_t summary_outs_money = 0;
 	//fill outputs
 	size_t output_index = 0;
 	for(const tx_destination_entry &dst_entr : destinations)
 	{
-		CHECK_AND_ASSERT_MES(dst_entr.amount > 0 || tx.version >= 2, false, "Destination with wrong amount: " << dst_entr.amount);
+		GULPS_CHECK_AND_ASSERT_MES(dst_entr.amount > 0 || tx.version >= 2, false, "Destination with wrong amount: " , dst_entr.amount);
 		crypto::key_derivation derivation;
 		crypto::public_key out_eph_public_key;
 
@@ -387,13 +387,13 @@ bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std
 		{
 			// sending change to yourself; derivation = a*R
 			r = hwdev.generate_key_derivation(txkey_pub, sender_account_keys.m_view_secret_key, derivation);
-			CHECK_AND_ASSERT_MES(r, false, "at creation outs: failed to generate_key_derivation(" << txkey_pub << ", " << sender_account_keys.m_view_secret_key << ")");
+			GULPS_CHECK_AND_ASSERT_MES(r, false, "at creation outs: failed to generate_key_derivation(" , txkey_pub , ", " , sender_account_keys.m_view_secret_key , ")");
 		}
 		else
 		{
 			// sending to the recipient; derivation = r*A (or s*C in the subaddress scheme)
 			r = hwdev.generate_key_derivation(dst_entr.addr.m_view_public_key, dst_entr.is_subaddress && need_additional_txkeys ? additional_txkey.sec : tx_key, derivation);
-			CHECK_AND_ASSERT_MES(r, false, "at creation outs: failed to generate_key_derivation(" << dst_entr.addr.m_view_public_key << ", " << (dst_entr.is_subaddress && need_additional_txkeys ? additional_txkey.sec : tx_key) << ")");
+			GULPS_CHECK_AND_ASSERT_MES(r, false, "at creation outs: failed to generate_key_derivation(" , dst_entr.addr.m_view_public_key , ", " , (dst_entr.is_subaddress && need_additional_txkeys ? additional_txkey.sec : tx_key) , ")");
 		}
 
 		if(need_additional_txkeys)
@@ -406,7 +406,7 @@ bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std
 		amount_keys.push_back(rct::sk2rct(scalar1));
 
 		r = hwdev.derive_public_key(derivation, output_index, dst_entr.addr.m_spend_public_key, out_eph_public_key);
-		CHECK_AND_ASSERT_MES(r, false, "at creation outs: failed to derive_public_key(" << derivation << ", " << output_index << ", " << dst_entr.addr.m_spend_public_key << ")");
+		GULPS_CHECK_AND_ASSERT_MES(r, false, "at creation outs: failed to derive_public_key(" , derivation , ", " , output_index , ", " , dst_entr.addr.m_spend_public_key , ")");
 
 		hwdev.add_output_key_mapping(dst_entr.addr.m_view_public_key, dst_entr.addr.m_spend_public_key, dst_entr.is_subaddress, output_index, amount_keys.back(), out_eph_public_key);
 
@@ -419,7 +419,7 @@ bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std
 		output_index++;
 		summary_outs_money += dst_entr.amount;
 	}
-	CHECK_AND_ASSERT_MES(additional_tx_public_keys.size() == additional_tx_keys.size(), false, "Internal error creating additional public keys");
+	GULPS_CHECK_AND_ASSERT_MES(additional_tx_public_keys.size() == additional_tx_keys.size(), false, "Internal error creating additional public keys");
 
 	remove_field_from_tx_extra(tx.extra, typeid(tx_extra_additional_pub_keys));
 
@@ -554,9 +554,9 @@ bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std
 	else
 		tx.rct_signatures = rct::genRct(rct::hash2rct(tx_prefix_hash), inSk, destinations_keyV, outamounts, mixRing, amount_keys, msout ? &kLRki[0] : NULL, msout, sources[0].real_output, outSk, bulletproof, hwdev); // same index assumption
 
-	CHECK_AND_ASSERT_MES(tx.vout.size() == outSk.size(), false, "outSk size does not match vout");
+	GULPS_CHECK_AND_ASSERT_MES(tx.vout.size() == outSk.size(), false, "outSk size does not match vout");
 
-	GULPS_CATF_INFO("construct_tx", "transaction_created: {}\n{}\n",  get_transaction_hash(tx).data, obj_to_json_str(tx));
+	GULPS_CAT_INFO("construct_tx", "transaction_created: ", get_transaction_hash(tx), "\n", obj_to_json_str(tx), "\n");
 
 	tx.invalidate_hashes();
 
@@ -605,9 +605,9 @@ bool generate_genesis_block(block &bl, std::string const &genesis_tx, uint32_t n
 
 	blobdata tx_bl;
 	bool r = string_tools::parse_hexstr_to_binbuff(genesis_tx, tx_bl);
-	CHECK_AND_ASSERT_MES(r, false, "failed to parse coinbase tx from hard coded blob");
+	GULPS_CHECK_AND_ASSERT_MES(r, false, "failed to parse coinbase tx from hard coded blob");
 	r = parse_and_validate_tx_from_blob(tx_bl, bl.miner_tx);
-	CHECK_AND_ASSERT_MES(r, false, "failed to parse coinbase tx from hard coded blob");
+	GULPS_CHECK_AND_ASSERT_MES(r, false, "failed to parse coinbase tx from hard coded blob");
 	bl.major_version = 1;
 	bl.minor_version = 1;
 	bl.timestamp = 0;

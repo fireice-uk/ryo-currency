@@ -242,7 +242,7 @@ int main(int argc, char *argv[])
 	}
 	r = core_storage->init(db, opt_testnet ? cryptonote::TESTNET : opt_stagenet ? cryptonote::STAGENET : cryptonote::MAINNET);
 
-	CHECK_AND_ASSERT_MES(r, 1, "Failed to initialize source blockchain storage");
+	GULPS_CHECK_AND_ASSERT_MES(r, 1, "Failed to initialize source blockchain storage");
 	GULPS_PRINT("Source blockchain storage initialized OK");
 	GULPS_PRINT("Exporting blockchain raw data...");
 
@@ -256,7 +256,7 @@ int main(int argc, char *argv[])
 		BootstrapFile bootstrap;
 		r = bootstrap.store_blockchain_raw(core_storage, NULL, output_file_path, block_stop);
 	}
-	CHECK_AND_ASSERT_MES(r, 1, "Failed to export blockchain raw data");
+	GULPS_CHECK_AND_ASSERT_MES(r, 1, "Failed to export blockchain raw data");
 	GULPS_PRINT("Blockchain raw data exported OK");
 	return 0;
 

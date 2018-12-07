@@ -32,7 +32,6 @@
 
 #include "enableable.h"
 #include "keyvalue_serialization_overloads.h"
-#include "misc_log_ex.h"
 #include <boost/foreach.hpp>
 #include <boost/utility/value_init.hpp>
 

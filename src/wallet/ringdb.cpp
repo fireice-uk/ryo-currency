@@ -319,7 +319,7 @@ bool ringdb::remove_rings(const crypto::chacha_key &chacha_key, const cryptonote
 			continue;
 		THROW_WALLET_EXCEPTION_IF(data.mv_size <= 0, tools::error::wallet_internal_error, "Invalid ring data size");
 
-		GULPS_LOGF_L1("Removing ring data for key image {}", txin.k_image.data);
+		GULPS_LOG_L1("Removing ring data for key image ", txin.k_image);
 		dbr = mdb_del(txn, dbi_rings, &key, NULL);
 		THROW_WALLET_EXCEPTION_IF(dbr, tools::error::wallet_internal_error, "Failed to remove ring to database: " + std::string(mdb_strerror(dbr)));
 	}
@@ -355,7 +355,7 @@ bool ringdb::get_ring(const crypto::chacha_key &chacha_key, const crypto::key_im
 
 	std::string data_plaintext = decrypt(std::string((const char *)data.mv_data, data.mv_size), key_image, chacha_key);
 	outs = decompress_ring(data_plaintext);
-	GULPS_LOGF_L1("Found ring for key image {}:", key_image.data );
+	GULPS_LOG_L1("Found ring for key image :", key_image);
 	GULPS_LOGF_L1("Relative: {}", boost::join(outs | boost::adaptors::transformed([](uint64_t out) { return std::to_string(out); }), " "));
 	outs = cryptonote::relative_output_offsets_to_absolute(outs);
 	GULPS_LOGF_L1("Absolute: {}", boost::join(outs | boost::adaptors::transformed([](uint64_t out) { return std::to_string(out); }), " "));

@@ -61,7 +61,6 @@
 #include <dlfcn.h>
 #endif
 #include "common/stack_trace.h"
-#include "misc_log_ex.h"
 #include <boost/algorithm/string.hpp>
 
 #include "common/gulps.hpp"

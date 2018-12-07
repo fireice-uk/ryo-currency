@@ -679,7 +679,6 @@ void DaemonHandler::handle(const SetLogLevel::Request &req, SetLogLevel::Respons
 	else
 	{
 		res.status = Message::STATUS_OK;
-		mlog_set_log_level(req.level);
 	}
 }
 

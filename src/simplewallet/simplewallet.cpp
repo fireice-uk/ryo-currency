@@ -520,11 +520,11 @@ bool parse_priority(const std::string &arg, uint32_t &priority)
 std::string simple_wallet::get_commands_str()
 {
 	std::stringstream ss;
-	ss << tr("Commands: ") << ENDL;
+	ss << tr("Commands: ") << "\n";
 	std::string usage = m_cmd_binder.get_usage();
 	boost::replace_all(usage, "\n", "\n  ");
 	usage.insert(0, "  ");
-	ss << usage << ENDL;
+	ss << usage << "\n";
 	return ss.str();
 }
 
@@ -541,10 +541,10 @@ std::string simple_wallet::get_command_usage(const std::vector<std::string> &arg
 		std::string usage = documentation.second.empty() ? args.front() : documentation.first;
 		std::string description = documentation.second.empty() ? documentation.first : documentation.second;
 		usage.insert(0, "  ");
-		ss << tr("Command usage: ") << ENDL << usage << ENDL << ENDL;
+		ss << tr("Command usage: ") << "\n" << usage << "\n" << "\n";
 		boost::replace_all(description, "\n", "\n  ");
 		description.insert(0, "  ");
-		ss << tr("Command description: ") << ENDL << description << ENDL;
+		ss << tr("Command description: ") << "\n" << description << "\n";
 	}
 	return ss.str();
 }
@@ -2453,9 +2453,9 @@ bool simple_wallet::set_log(const std::vector<std::string> &args)
 		GULPS_PRINT_FAIL(tr("usage: set_log <log_level_number_0-4> | <categories>"));
 		return true;
 	}
-	if(!args.empty())
-		mlog_set_log(args[0].c_str());
-	GULPS_PRINT_OK("New log categories: ", mlog_get_categories());
+	//if(!args.empty())
+	//	mlog_set_log(args[0].c_str());
+	//GULPS_PRINT_OK("New log categories: ", mlog_get_categories());
 	return true;
 }
 //----------------------------------------------------------------------------------------------------
@@ -2726,7 +2726,7 @@ bool simple_wallet::init(const boost::program_options::variables_map &vm)
 			}
 
 			bool r = new_wallet(vm, info.address, boost::none, viewkey);
-			CHECK_AND_ASSERT_MES(r, false, tr("account creation failed"));
+			GULPS_CHECK_AND_ASSERT_MES(r, false, tr("account creation failed"));
 		}
 		else if(!m_generate_from_spend_key.empty())
 		{
@@ -2748,7 +2748,7 @@ bool simple_wallet::init(const boost::program_options::variables_map &vm)
 				return false;
 			}
 			bool r = restore_legacy_wallet(vm, get_mnemonic_language(false), recovery_key);
-			CHECK_AND_ASSERT_MES(r, false, tr("account creation failed"));
+			GULPS_CHECK_AND_ASSERT_MES(r, false, tr("account creation failed"));
 		}
 		else if(!m_generate_from_keys.empty())
 		{
@@ -2833,7 +2833,7 @@ bool simple_wallet::init(const boost::program_options::variables_map &vm)
 				return false;
 			}
 			bool r = new_wallet(vm, info.address, spendkey, viewkey);
-			CHECK_AND_ASSERT_MES(r, false, tr("account creation failed"));
+			GULPS_CHECK_AND_ASSERT_MES(r, false, tr("account creation failed"));
 		}
 
 		// Asks user for all the data required to merge secret keys from multisig wallets into one master wallet, which then gets full control of the multisig wallet. The resulting wallet will be the same as any other regular wallet.
@@ -2968,7 +2968,7 @@ bool simple_wallet::init(const boost::program_options::variables_map &vm)
 
 			// create wallet
 			bool r = new_wallet(vm, info.address, spendkey, viewkey);
-			CHECK_AND_ASSERT_MES(r, false, tr("account creation failed"));
+			GULPS_CHECK_AND_ASSERT_MES(r, false, tr("account creation failed"));
 		}
 
 		else if(!m_generate_from_json.empty())
@@ -2991,7 +2991,7 @@ bool simple_wallet::init(const boost::program_options::variables_map &vm)
 			m_wallet_file = m_generate_from_device;
 			// create wallet
 			bool r = new_wallet_dev(vm, "Ledger");
-			CHECK_AND_ASSERT_MES(r, false, tr("account creation failed"));
+			GULPS_CHECK_AND_ASSERT_MES(r, false, tr("account creation failed"));
 			// if no block_height is specified, assume its a new account and start it "now"
 			if(m_wallet->get_refresh_from_block_height() == 0)
 			{
@@ -3001,7 +3001,7 @@ bool simple_wallet::init(const boost::program_options::variables_map &vm)
 				
 				std::string confirm = input_line(tr("Is this okay?  (Y/Yes/N/No): "));
 				if(std::cin.eof() || !command_line::is_yes(confirm))
-					CHECK_AND_ASSERT_MES(false, false, tr("account creation aborted"));
+					GULPS_CHECK_AND_ASSERT_MES(false, false, tr("account creation aborted"));
 
 				m_wallet->set_refresh_from_block_height(m_wallet->estimate_blockchain_height() - 1);
 				m_wallet->explicit_refresh_from_block_height(true);
@@ -3029,7 +3029,7 @@ bool simple_wallet::init(const boost::program_options::variables_map &vm)
 				else
 					r = new_wallet_from_seed(vm, m_electrum_seed);
 			}
-			CHECK_AND_ASSERT_MES(r, false, tr("account creation failed"));
+			GULPS_CHECK_AND_ASSERT_MES(r, false, tr("account creation failed"));
 		}
 
 		if(m_restoring && m_generate_from_json.empty() && m_generate_from_device.empty())
@@ -3121,7 +3121,7 @@ bool simple_wallet::init(const boost::program_options::variables_map &vm)
 			return false;
 		}
 		bool r = open_wallet(vm);
-		CHECK_AND_ASSERT_MES(r, false, tr("failed to open account"));
+		GULPS_CHECK_AND_ASSERT_MES(r, false, tr("failed to open account"));
 	}
 	if(!m_wallet)
 	{
@@ -3134,7 +3134,7 @@ bool simple_wallet::init(const boost::program_options::variables_map &vm)
 	{
 		if(tools::is_local_address(m_wallet->get_daemon_address()))
 		{
-			MINFO(tr("Daemon is local, assuming trusted"));
+			GULPS_INFO(tr("Daemon is local, assuming trusted"));
 			m_trusted_daemon = true;
 		}
 	}
@@ -4393,7 +4393,7 @@ bool simple_wallet::print_ring_members(const std::vector<tools::wallet2::pending
 				 << (are_keys_from_same_tx ? tr("the same transaction") : tr("blocks that are temporally very close"))
 				 << tr(", which can break the anonymity of ring signature. Make sure this is intentional!");
 		}
-		ostr << ENDL;
+		ostr << "\n";
 	}
 	return true;
 }
@@ -4634,7 +4634,7 @@ bool simple_wallet::transfer_main(int transfer_type, const std::vector<std::stri
 			}
 			catch(const std::exception &e)
 			{
-				prompt << tr("Failed to check for backlog: ") << e.what() << ENDL << tr("Is this okay anyway?  (Y/Yes/N/No): ");
+				prompt << tr("Failed to check for backlog: ") << e.what() << "\n" << tr("Is this okay anyway?  (Y/Yes/N/No): ");
 			}
 
 			std::string prompt_str = prompt.str();
@@ -4697,7 +4697,7 @@ bool simple_wallet::transfer_main(int transfer_type, const std::vector<std::stri
 			if(dust_in_fee != 0)
 				prompt << fmt::format(tr(", of which {} is dust from change"), print_money(dust_in_fee));
 			if(dust_not_in_fee != 0)
-				prompt << tr(".") << ENDL << fmt::format(tr("A total of {} from dust change will be sent to dust address"), print_money(dust_not_in_fee));
+				prompt << tr(".") << "\n" << fmt::format(tr("A total of {} from dust change will be sent to dust address"), print_money(dust_not_in_fee));
 			if(transfer_type == TransferLocked)
 			{
 				float days = float(locked_blocks * cryptonote::common_config::DIFFICULTY_TARGET) / (24.0f * 60.0f * 60.0f);
@@ -4725,7 +4725,7 @@ bool simple_wallet::transfer_main(int transfer_type, const std::vector<std::stri
 			{
 				prompt << tr("WARNING: this is a non default ring size, which may harm your privacy. Default is recommended.");
 			}
-			prompt << ENDL << tr("Is this okay?  (Y/Yes/N/No): ");
+			prompt << "\n" << tr("Is this okay?  (Y/Yes/N/No): ");
 
 			std::string accepted = input_line(prompt.str());
 			if(std::cin.eof())
@@ -7626,7 +7626,7 @@ int main(int argc, char *argv[])
 
 	cryptonote::simple_wallet w;
 	const bool r = w.init(*vm);
-	CHECK_AND_ASSERT_MES(r, 1, sw::tr("Failed to initialize wallet"));
+	GULPS_CHECK_AND_ASSERT_MES(r, 1, sw::tr("Failed to initialize wallet"));
 
 	std::vector<std::string> command = command_line::get_arg(*vm, arg_command);
 	if(!command.empty())

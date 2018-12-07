@@ -237,7 +237,7 @@ static cryptonote::blobdata get_pruned_tx_blob(cryptonote::transaction &tx)
 	std::stringstream ss;
 	binary_archive<true> ba(ss);
 	bool r = tx.serialize_base(ba);
-	CHECK_AND_ASSERT_MES(r, cryptonote::blobdata(), "Failed to serialize rct signatures base");
+	GULPS_CHECK_AND_ASSERT_MES(r, cryptonote::blobdata(), "Failed to serialize rct signatures base");
 	return ss.str();
 }
 //------------------------------------------------------------------------------------------------------------------------------
@@ -429,11 +429,11 @@ bool core_rpc_server::on_get_random_outs(const COMMAND_RPC_GET_RANDOM_OUTPUTS_FO
 	typedef COMMAND_RPC_GET_RANDOM_OUTPUTS_FOR_AMOUNTS::out_entry out_entry;
 	std::for_each(res.outs.begin(), res.outs.end(), [&](outs_for_amount &ofa) {
 		ss << "[" << ofa.amount << "]:";
-		CHECK_AND_ASSERT_MES(ofa.outs.size(), ;, "internal error: ofa.outs.size() is empty for amount " << ofa.amount);
+		GULPS_CHECK_AND_ASSERT_MES(ofa.outs.size(), ;, "internal error: ofa.outs.size() is empty for amount " , ofa.amount);
 		std::for_each(ofa.outs.begin(), ofa.outs.end(), [&](out_entry &oe) {
 			ss << oe.global_amount_index << " ";
 		});
-		ss << ENDL;
+		ss << "\n";
 	});
 	std::string s = ss.str();
 	GULPS_LOGF_L2("COMMAND_RPC_GET_RANDOM_OUTPUTS_FOR_AMOUNTS: \n{}", s);
@@ -526,11 +526,11 @@ bool core_rpc_server::on_get_random_rct_outs(const COMMAND_RPC_GET_RANDOM_RCT_OU
 	res.status = CORE_RPC_STATUS_OK;
 	std::stringstream ss;
 	typedef COMMAND_RPC_GET_RANDOM_RCT_OUTPUTS::out_entry out_entry;
-	CHECK_AND_ASSERT_MES(res.outs.size(), true, "internal error: res.outs.size() is empty");
+	GULPS_CHECK_AND_ASSERT_MES(res.outs.size(), true, "internal error: res.outs.size() is empty");
 	std::for_each(res.outs.begin(), res.outs.end(), [&](out_entry &oe) {
 		ss << oe.global_amount_index << " ";
 	});
-	ss << ENDL;
+	ss << "\n";
 	std::string s = ss.str();
 	GULPS_LOGF_L2("COMMAND_RPC_GET_RANDOM_RCT_OUTPUTS: \n{}", s);
 	res.status = CORE_RPC_STATUS_OK;

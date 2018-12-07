@@ -76,7 +76,7 @@ static void print_extra_fields(const std::vector<cryptonote::tx_extra_field> &fi
 		else if(typeid(cryptonote::tx_extra_merge_mining_tag) == fields[n].type())
 			GULPS_PRINTF("extra merge mining tag: depth {}, merkle root {}", boost::get<cryptonote::tx_extra_merge_mining_tag>(fields[n]).depth ,  boost::get<cryptonote::tx_extra_merge_mining_tag>(fields[n]).merkle_root);
 		else if(typeid(cryptonote::tx_extra_mysterious_minergate) == fields[n].type())
-			GULPS_PRINTF("extra minergate custom: {}",  epee::string_tools::buff_to_hex_nodelimer(boost::get<cryptonote::tx_extra_mysterious_minergate>(fields[n]).data));
+			GULPS_PRINT("extra minergate custom: ",  epee::string_tools::buff_to_hex_nodelimer(boost::get<cryptonote::tx_extra_mysterious_minergate>(fields[n])));
 		else
 			GULPS_PRINT("unknown");
 	}

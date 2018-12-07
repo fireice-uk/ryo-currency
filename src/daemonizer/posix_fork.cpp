@@ -6,7 +6,6 @@
 #define GULPS_CAT_MAJOR "posix_fork"
 
 #include "daemonizer/posix_fork.h"
-#include "misc_log_ex.h"
 
 #include <cstdlib>
 #include <fcntl.h>

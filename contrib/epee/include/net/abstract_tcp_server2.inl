@@ -839,7 +839,7 @@ bool boosted_tcp_server<t_protocol_handler>::worker_thread()
 	uint32_t local_thr_index = boost::interprocess::ipcdetail::atomic_inc32(&m_thread_index);
 	std::string thread_name = std::string("[") + m_thread_name_prefix;
 	thread_name += boost::to_string(local_thr_index) + "]";
-	MLOG_SET_THREAD_NAME(thread_name);
+	GULPS_SET_THREAD_NAME(thread_name);
 	//   GULPS_LOG_L1("Thread name: ", m_thread_name_prefix);
 	while(!m_stop_signal_sent)
 	{
@@ -884,7 +884,7 @@ bool boosted_tcp_server<t_protocol_handler>::run_server(size_t threads_count, bo
 	TRY_ENTRY();
 	m_threads_count = threads_count;
 	m_main_thread_id = boost::this_thread::get_id();
-	MLOG_SET_THREAD_NAME("[SRV_MAIN]");
+	GULPS_SET_THREAD_NAME("[SRV_MAIN]");
 	while(!m_stop_signal_sent)
 	{
 

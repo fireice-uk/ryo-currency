@@ -41,7 +41,6 @@
 #ifndef LANGUAGE_BASE_H
 #define LANGUAGE_BASE_H
 
-#include "misc_log_ex.h"
 #include <string>
 #include <unordered_map>
 #include <vector>

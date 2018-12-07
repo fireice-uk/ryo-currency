@@ -364,7 +364,7 @@ bool core::init(const boost::program_options::variables_map &vm, const char *con
 		folder /= "fake";
 
 	// make sure the data directory exists, and try to lock it
-	CHECK_AND_ASSERT_MES(boost::filesystem::exists(folder) || boost::filesystem::create_directories(folder), false,
+	GULPS_CHECK_AND_ASSERT_MES(boost::filesystem::exists(folder) || boost::filesystem::create_directories(folder), false,
 						 std::string("Failed to create directory ").append(folder.string()).c_str());
 
 	std::unique_ptr<BlockchainDB> db(new_db(db_type));
@@ -462,7 +462,7 @@ bool core::init(const boost::program_options::variables_map &vm, const char *con
 	r = m_blockchain_storage.init(db.release(), m_nettype, m_offline, test_options);
 
 	r = m_mempool.init(max_txpool_size);
-	CHECK_AND_ASSERT_MES(r, false, "Failed to initialize memory pool");
+	GULPS_CHECK_AND_ASSERT_MES(r, false, "Failed to initialize memory pool");
 
 	// now that we have a valid m_blockchain_storage, we can clean out any
 	// transactions in the pool that do not conform to the current fork
@@ -470,7 +470,7 @@ bool core::init(const boost::program_options::variables_map &vm, const char *con
 
 	bool show_time_stats = command_line::get_arg(vm, arg_show_time_stats) != 0;
 	m_blockchain_storage.set_show_time_stats(show_time_stats);
-	CHECK_AND_ASSERT_MES(r, false, "Failed to initialize blockchain storage");
+	GULPS_CHECK_AND_ASSERT_MES(r, false, "Failed to initialize blockchain storage");
 
 	block_sync_size = command_line::get_arg(vm, arg_block_sync_size);
 
@@ -478,7 +478,7 @@ bool core::init(const boost::program_options::variables_map &vm, const char *con
 
 	// load json & DNS checkpoints, and verify them
 	// with respect to what blocks we already have
-	CHECK_AND_ASSERT_MES(update_checkpoints(), false, "One or more checkpoints loaded from json or dns conflicted with existing checkpoints.");
+	GULPS_CHECK_AND_ASSERT_MES(update_checkpoints(), false, "One or more checkpoints loaded from json or dns conflicted with existing checkpoints.");
 
 	// DNS versions checking
 	if(check_updates_string == "disabled")
@@ -496,7 +496,7 @@ bool core::init(const boost::program_options::variables_map &vm, const char *con
 	}
 
 	r = m_miner.init(vm, m_nettype);
-	CHECK_AND_ASSERT_MES(r, false, "Failed to initialize miner instance");
+	GULPS_CHECK_AND_ASSERT_MES(r, false, "Failed to initialize miner instance");
 
 	return load_state_data();
 }
@@ -1092,7 +1092,7 @@ bool core::handle_block_found(block &b)
 	update_miner_block_template();
 	m_miner.resume();
 
-	CHECK_AND_ASSERT_MES(!bvc.m_verifivation_failed, false, "mined block failed verification");
+	GULPS_CHECK_AND_ASSERT_MES(!bvc.m_verifivation_failed, false, "mined block failed verification");
 	if(bvc.m_added_to_main_chain)
 	{
 		cryptonote_connection_context exclude_context = boost::value_initialized<cryptonote_connection_context>();
@@ -1106,8 +1106,8 @@ bool core::handle_block_found(block &b)
 			GULPS_LOG_L1("Block found but, seems that reorganize just happened after that, do not relay this block");
 			return true;
 		}
-		CHECK_AND_ASSERT_MES(txs.size() == b.tx_hashes.size() && !missed_txs.size(), false, "can't find some transactions in found block:" << get_block_hash(b) << " txs.size()=" << txs.size()
-																																		   << ", b.tx_hashes.size()=" << b.tx_hashes.size() << ", missed_txs.size()" << missed_txs.size());
+		GULPS_CHECK_AND_ASSERT_MES(txs.size() == b.tx_hashes.size() && !missed_txs.size(), false, "can't find some transactions in found block:" , get_block_hash(b) , " txs.size()=" , txs.size()
+																																		   , ", b.tx_hashes.size()=" , b.tx_hashes.size() , ", missed_txs.size()" , missed_txs.size());
 
 		block_to_blob(b, arg.b.block);
 		//pack transactions
@@ -1164,7 +1164,7 @@ bool core::handle_incoming_block(const blobdata &block_blob, block_verification_
 
 	// load json & DNS checkpoints every 10min/hour respectively,
 	// and verify them with respect to what blocks we already have
-	CHECK_AND_ASSERT_MES(update_checkpoints(), false, "One or more checkpoints loaded from json or dns conflicted with existing checkpoints.");
+	GULPS_CHECK_AND_ASSERT_MES(update_checkpoints(), false, "One or more checkpoints loaded from json or dns conflicted with existing checkpoints.");
 
 	bvc = boost::value_initialized<block_verification_context>();
 	if(block_blob.size() > common_config::BLOCK_SIZE_LIMIT_ABSOLUTE)

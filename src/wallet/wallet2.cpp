@@ -59,7 +59,6 @@
 #include <tuple>
 #include <regex>
 
-using namespace epee;
 
 #include "common/apply_permutation.h"
 #include "common/base58.h"
@@ -98,6 +97,7 @@ extern "C" {
 using namespace std;
 using namespace crypto;
 using namespace cryptonote;
+using namespace epee;
 
 // used to choose when to stop adding outputs to a tx
 #define APPROXIMATE_INPUT_BYTES 80
@@ -602,7 +602,7 @@ crypto::hash8 get_short_payment_id(const tools::wallet2::pending_tx &ptx, hw::de
 		{
 			if(ptx.dests.empty())
 			{
-				MWARNING("Encrypted payment id found, but no destinations public key, cannot decrypt");
+				GULPS_WARN("Encrypted payment id found, but no destinations public key, cannot decrypt");
 				return crypto::null_hash8;
 			}
 			hwdev.decrypt_payment_id(payment_id8, ptx.dests[0].addr.m_view_public_key, ptx.tx_key);
@@ -1167,7 +1167,7 @@ void wallet2::process_new_transaction(const crypto::hash &txid, const cryptonote
 		hwdev.set_mode(hw::device::TRANSACTION_PARSE);
 		if(!hwdev.generate_key_derivation(tx_pub_key, keys.m_view_secret_key, derivation))
 		{
-			MWARNING("Failed to generate key derivation from tx pubkey, skipping");
+			GULPS_WARN("Failed to generate key derivation from tx pubkey, skipping");
 			static_assert(sizeof(derivation) == sizeof(rct::key), "Mismatched sizes of key_derivation and rct::key");
 			memcpy(&derivation, rct::identity().bytes, sizeof(derivation));
 		}
@@ -1184,7 +1184,7 @@ void wallet2::process_new_transaction(const crypto::hash &txid, const cryptonote
 				additional_derivations.push_back({});
 				if(!hwdev.generate_key_derivation(additional_tx_pub_keys[i], keys.m_view_secret_key, additional_derivations.back()))
 				{
-					MWARNING("Failed to generate key derivation from tx pubkey, skipping");
+					GULPS_WARN("Failed to generate key derivation from tx pubkey, skipping");
 					additional_derivations.pop_back();
 				}
 			}
@@ -1534,11 +1534,10 @@ void wallet2::process_new_transaction(const crypto::hash &txid, const cryptonote
 			total_received_acc_control += i.second;
 		if (total_received_acc != total_received_acc_control)
 		{
-			const el::Level level = el::Level::Warning;
-			MCLOG_RED(level, "global", "**********************************************************************");
-			MCLOG_RED(level, "global", "Consistency failure in amounts received");
-			MCLOG_RED(level, "global", "Check transaction " << txid);
-			MCLOG_RED(level, "global", "**********************************************************************");
+			GULPS_CAT_WARN("global", "**********************************************************************");
+			GULPS_CAT_WARN("global", "Consistency failure in amounts received");
+			GULPS_CAT_WARN("global", "Check transaction ", txid);
+			GULPS_CAT_WARN("global", "**********************************************************************");
 			exit(1);
 			return;
 		}
@@ -2424,27 +2423,27 @@ bool wallet2::get_output_distribution(uint64_t &start_height, std::vector<uint64
 	m_daemon_rpc_mutex.unlock();
 	if(!r)
 	{
-		MWARNING("Failed to request output distribution: no connection to daemon");
+		GULPS_WARN("Failed to request output distribution: no connection to daemon");
 		return false;
 	}
 	if(res.status == CORE_RPC_STATUS_BUSY)
 	{
-		MWARNING("Failed to request output distribution: daemon is busy");
+		GULPS_WARN("Failed to request output distribution: daemon is busy");
 		return false;
 	}
 	if(res.status != CORE_RPC_STATUS_OK)
 	{
-		MWARNING("Failed to request output distribution: " << res.status);
+		GULPS_WARN("Failed to request output distribution: {}", res.status);
 		return false;
 	}
 	if(res.distributions.size() != 1)
 	{
-		MWARNING("Failed to request output distribution: not the expected single result");
+		GULPS_WARN("Failed to request output distribution: not the expected single result");
 		return false;
 	}
 	if(res.distributions[0].amount != 0)
 	{
-		MWARNING("Failed to request output distribution: results are not for amount 0");
+		GULPS_WARN("Failed to request output distribution: results are not for amount 0");
 		return false;
 	}
 	start_height = res.distributions[0].start_height;
@@ -2560,7 +2559,7 @@ bool wallet2::store_keys(const std::string &keys_file_name, const epee::wipeable
 	if(watch_only)
 		account.forget_spend_key();
 	bool r = epee::serialization::store_t_to_binary(account, account_data);
-	CHECK_AND_ASSERT_MES(r, false, "failed to serialize wallet keys");
+	GULPS_CHECK_AND_ASSERT_MES(r, false, "failed to serialize wallet keys");
 	wallet2::keys_file_data keys_file_data = boost::value_initialized<wallet2::keys_file_data>();
 
 	// Create a JSON object with "key_data" and "seed_language" as keys.
@@ -2592,7 +2591,7 @@ bool wallet2::store_keys(const std::string &keys_file_name, const epee::wipeable
 	if(m_multisig)
 	{
 		bool r = ::serialization::dump_binary(m_multisig_signers, multisig_signers);
-		CHECK_AND_ASSERT_MES(r, false, "failed to serialize wallet multisig signers");
+		GULPS_CHECK_AND_ASSERT_MES(r, false, "failed to serialize wallet multisig signers");
 		value.SetString(multisig_signers.c_str(), multisig_signers.length());
 		json.AddMember("multisig_signers", value, json.GetAllocator());
 	}
@@ -2694,7 +2693,7 @@ bool wallet2::store_keys(const std::string &keys_file_name, const epee::wipeable
 	std::string buf;
 	r = ::serialization::dump_binary(keys_file_data, buf);
 	r = r && epee::file_io_utils::save_string_to_file(keys_file_name, buf); //and never touch wallet_keys_file again, only read
-	CHECK_AND_ASSERT_MES(r, false, "failed to generate wallet keys file " << keys_file_name);
+	GULPS_CHECK_AND_ASSERT_MES(r, false, "failed to generate wallet keys file " , keys_file_name);
 
 	return true;
 }
@@ -4415,8 +4414,8 @@ namespace
 template <typename T>
 T pop_index(std::vector<T> &vec, size_t idx)
 {
-	CHECK_AND_ASSERT_MES(!vec.empty(), T(), "Vector must be non-empty");
-	CHECK_AND_ASSERT_MES(idx < vec.size(), T(), "idx out of bounds");
+	GULPS_CHECK_AND_ASSERT_MES(!vec.empty(), T(), "Vector must be non-empty");
+	GULPS_CHECK_AND_ASSERT_MES(idx < vec.size(), T(), "idx out of bounds");
 
 	T res = vec[idx];
 	if(idx + 1 != vec.size())
@@ -4431,7 +4430,7 @@ T pop_index(std::vector<T> &vec, size_t idx)
 template <typename T>
 T pop_random_value(std::vector<T> &vec)
 {
-	CHECK_AND_ASSERT_MES(!vec.empty(), T(), "Vector must be non-empty");
+	GULPS_CHECK_AND_ASSERT_MES(!vec.empty(), T(), "Vector must be non-empty");
 
 	size_t idx = crypto::rand<size_t>() % vec.size();
 	return pop_index(vec, idx);
@@ -4440,7 +4439,7 @@ T pop_random_value(std::vector<T> &vec)
 template <typename T>
 T pop_back(std::vector<T> &vec)
 {
-	CHECK_AND_ASSERT_MES(!vec.empty(), T(), "Vector must be non-empty");
+	GULPS_CHECK_AND_ASSERT_MES(!vec.empty(), T(), "Vector must be non-empty");
 
 	T res = vec.back();
 	vec.pop_back();
@@ -4605,7 +4604,7 @@ crypto::hash wallet2::get_payment_id(const pending_tx &ptx) const
 		{
 			if(ptx.dests.empty())
 			{
-				MWARNING("Encrypted payment id found, but no destinations public key, cannot decrypt");
+				GULPS_WARN("Encrypted payment id found, but no destinations public key, cannot decrypt");
 				return crypto::null_hash;
 			}
 			if(m_account.get_device().decrypt_payment_id(payment_id8, ptx.dests[0].addr.m_view_public_key, ptx.tx_key))
@@ -5132,13 +5131,13 @@ bool wallet2::load_multisig_tx(cryptonote::blobdata s, multisig_tx_set &exported
 	// sanity checks
 	for(const auto &ptx : exported_txs.m_ptx)
 	{
-		CHECK_AND_ASSERT_MES(ptx.selected_transfers.size() == ptx.tx.vin.size(), false, "Mismatched selected_transfers/vin sizes");
+		GULPS_CHECK_AND_ASSERT_MES(ptx.selected_transfers.size() == ptx.tx.vin.size(), false, "Mismatched selected_transfers/vin sizes");
 		for(size_t idx : ptx.selected_transfers)
-			CHECK_AND_ASSERT_MES(idx < m_transfers.size(), false, "Transfer index out of range");
-		CHECK_AND_ASSERT_MES(ptx.construction_data.selected_transfers.size() == ptx.tx.vin.size(), false, "Mismatched cd selected_transfers/vin sizes");
+			GULPS_CHECK_AND_ASSERT_MES(idx < m_transfers.size(), false, "Transfer index out of range");
+		GULPS_CHECK_AND_ASSERT_MES(ptx.construction_data.selected_transfers.size() == ptx.tx.vin.size(), false, "Mismatched cd selected_transfers/vin sizes");
 		for(size_t idx : ptx.construction_data.selected_transfers)
-			CHECK_AND_ASSERT_MES(idx < m_transfers.size(), false, "Transfer index out of range");
-		CHECK_AND_ASSERT_MES(ptx.construction_data.sources.size() == ptx.tx.vin.size(), false, "Mismatched sources/vin sizes");
+			GULPS_CHECK_AND_ASSERT_MES(idx < m_transfers.size(), false, "Transfer index out of range");
+		GULPS_CHECK_AND_ASSERT_MES(ptx.construction_data.sources.size() == ptx.tx.vin.size(), false, "Mismatched sources/vin sizes");
 	}
 
 	GULPS_LOG_L1("Loaded multisig tx unsigned data from binary: ", exported_txs.m_ptx.size(), " transactions");
@@ -5338,7 +5337,7 @@ uint64_t wallet2::adjust_mixin(uint64_t mixin) const
 {
 	if(mixin < DEFAULT_MIXIN)
 	{
-		MWARNING("Requested ring size " << (mixin + 1) << " too low using" << DEFAULT_MIXIN);
+		GULPS_WARN("Requested ring size {} too low using{}", (mixin + 1) , DEFAULT_MIXIN);
 		mixin = DEFAULT_MIXIN;
 	}
 	return mixin;
@@ -5700,7 +5699,7 @@ bool wallet2::tx_add_fake_output(std::vector<std::vector<tools::wallet2::get_out
 	if(global_index == real_index) // don't re-add real one
 		return false;
 	auto item = std::make_tuple(global_index, output_public_key, mask);
-	CHECK_AND_ASSERT_MES(!outs.empty(), false, "internal error: outs is empty");
+	GULPS_CHECK_AND_ASSERT_MES(!outs.empty(), false, "internal error: outs is empty");
 	if(std::find(outs.back().begin(), outs.back().end(), item) != outs.back().end()) // don't add duplicates
 		return false;
 	if(is_output_blackballed(output_public_key)) // don't add blackballed outputs
@@ -9571,7 +9570,7 @@ std::vector<std::pair<uint64_t, uint64_t>> wallet2::estimate_backlog(const std::
 		{
 			if(i.blob_size == 0)
 			{
-				MWARNING("Got 0 sized blob from txpool, ignored");
+				GULPS_WARN("Got 0 sized blob from txpool, ignored");
 				continue;
 			}
 			double this_fee_byte = i.fee / (double)i.blob_size;

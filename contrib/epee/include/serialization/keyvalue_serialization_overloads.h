@@ -33,7 +33,6 @@
 #include <set>
 #include <vector>
 #include "common/gulps.hpp"
-#include "misc_log_ex.h"
 
 namespace epee
 {

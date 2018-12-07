@@ -85,7 +85,7 @@ static void download_thread(download_async_handle control)
 {
 	static std::atomic<unsigned int> thread_id(0);
 
-	MLOG_SET_THREAD_NAME("DL" + std::to_string(thread_id++));
+	GULPS_SET_THREAD_NAME("DL" + std::to_string(thread_id++));
 
 	struct stopped_setter
 	{
@@ -297,21 +297,21 @@ download_async_handle download_async(const std::string &path, const std::string 
 
 bool download_finished(const download_async_handle &control)
 {
-	CHECK_AND_ASSERT_MES(control != 0, false, "NULL async download handle");
+	GULPS_CHECK_AND_ASSERT_MES(control != 0, false, "NULL async download handle");
 	boost::lock_guard<boost::mutex> lock(control->mutex);
 	return control->stopped;
 }
 
 bool download_error(const download_async_handle &control)
 {
-	CHECK_AND_ASSERT_MES(control != 0, false, "NULL async download handle");
+	GULPS_CHECK_AND_ASSERT_MES(control != 0, false, "NULL async download handle");
 	boost::lock_guard<boost::mutex> lock(control->mutex);
 	return !control->success;
 }
 
 bool download_wait(const download_async_handle &control)
 {
-	CHECK_AND_ASSERT_MES(control != 0, false, "NULL async download handle");
+	GULPS_CHECK_AND_ASSERT_MES(control != 0, false, "NULL async download handle");
 	{
 		boost::lock_guard<boost::mutex> lock(control->mutex);
 		if(control->stopped)
@@ -323,7 +323,7 @@ bool download_wait(const download_async_handle &control)
 
 bool download_cancel(const download_async_handle &control)
 {
-	CHECK_AND_ASSERT_MES(control != 0, false, "NULL async download handle");
+	GULPS_CHECK_AND_ASSERT_MES(control != 0, false, "NULL async download handle");
 	{
 		boost::lock_guard<boost::mutex> lock(control->mutex);
 		if(control->stopped)

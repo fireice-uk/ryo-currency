@@ -805,13 +805,13 @@ bool t_rpc_command_executor::print_transaction(crypto::hash transaction_hash,
 			}
 			else
 			{
-				GULPS_PRINT_CLR( gulps::COLOR_GREEN,  cryptonote::obj_to_json_str(tx) );
+				GULPS_PRINTF_CLR( gulps::COLOR_GREEN, cryptonote::obj_to_json_str(tx) );
 			}
 		}
 	}
 	else
 	{
-		GULPS_PRINT_FAIL( "Transaction wasn't found: {}", transaction_hash);
+		GULPS_PRINT_FAIL( "Transaction wasn't found: ", transaction_hash);
 	}
 
 	return true;

@@ -57,7 +57,6 @@
 #include "daemon/daemon.h"
 #include "daemon/executor.h"
 #include "daemonizer/daemonizer.h"
-#include "misc_log_ex.h"
 #include "p2p/net_node.h"
 #include "rpc/core_rpc_server.h"
 #include "rpc/rpc_args.h"
@@ -93,7 +92,7 @@ int main(int argc, char* argv[])
 
 	// Temporary output
 	std::unique_ptr<gulps::gulps_output> gout_ptr(new gulps::gulps_print_output(true, gulps::COLOR_WHITE));
-	gout_ptr->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return !printed; });
+	gout_ptr->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { if(msg.lvl != gulps::LEVEL_INFO ) return !printed; return false; });
 	uint64_t temp_out_id = gulps::inst().add_output(std::move(gout_ptr));
 
 	try

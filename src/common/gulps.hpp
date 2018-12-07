@@ -58,6 +58,7 @@
 #include <fmt/format.h>
 #include <fmt/time.h>
 #include <boost/algorithm/string.hpp>
+#include "easylogging++.h"
 
 #if defined(WIN32)
 #include <windows.h>
@@ -773,21 +774,8 @@ public:
 #define GULPS_DEBUG2(fstr, ...) GULPS_OUTPUT(gulps::LEVEL_DEBUG_2, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, fmt::color::white, fstr, __VA_ARGS__)
 #define GULPS_PRINT(clr, fstr, ...) GULPS_OUTPUT(gulps::LEVEL_OUTPUT_0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, clr, fstr, __VA_ARGS__)*/
 
-#ifdef CHECK_AND_ASSERT_MES
-	#undef CHECK_AND_ASSERT_MES
-#endif
-#define CHECK_AND_ASSERT_MES(expr, fail_ret_val, message) \
-	do                                                    \
-	{                                                     \
-		if(!(expr))                                       \
-		{                                                 \
-			std::stringstream ss;						\
-			ss << message;			\
-			GULPS_LOG_ERROR(ss.str());                           \
-			return fail_ret_val;                          \
-		};                                                \
-	} while(0)
-		
+#define GULPS_SET_THREAD_NAME(x) el::Helpers::setThreadName(x)
+	
 #ifndef LOCAL_ASSERT
 #include <assert.h>
 #if(defined _MSC_VER)
@@ -844,7 +832,17 @@ public:
 		GULPS_LOG_ERROR(ss.str());                 \
 		throw std::runtime_error(ss.str()); \
 	}
-	
+
+#define GULPS_CHECK_AND_ASSERT_MES(expr, fail_ret_val, ...) \
+	do                                                    \
+	{                                                     \
+		if(!(expr))                                       \
+		{                                                 \
+			GULPS_LOG_ERROR(__VA_ARGS__);                           \
+			return fail_ret_val;                          \
+		};                                                \
+	} while(0)
+
 #ifndef CHECK_AND_ASSERT_THROW_MES
 #define CHECK_AND_ASSERT_THROW_MES(expr, message) \
 	do                                            \
