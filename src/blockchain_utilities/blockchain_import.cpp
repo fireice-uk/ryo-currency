@@ -62,8 +62,7 @@
 
 #include "common/gulps.hpp"
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "bcutil"
+
 
 namespace
 {
@@ -579,7 +578,7 @@ int main(int argc, char *argv[])
 	}
 #endif
 
-	TRY_ENTRY();
+	GULPS_TRY_ENTRY();
 
 	epee::string_tools::set_module_name_and_folder(argv[0]);
 
@@ -831,5 +830,5 @@ int main(int argc, char *argv[])
 
 	return 0;
 
-	CATCH_ENTRY("Import error", 1);
+	GULPS_CATCH_ENTRY("Import error", 1);
 }

@@ -60,8 +60,7 @@
 
 #include "common/gulps.hpp"	
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "daemon"
+
 
 #define GULPS_PRINT_FAIL(...) GULPS_ERROR("Error: ", __VA_ARGS__)
 #define GULPS_PRINT_SUCCESS(...) GULPS_PRINT_CLR(gulps::COLOR_BOLD_GREEN, __VA_ARGS__)

@@ -65,8 +65,7 @@
 
 #include "common/gulps.hpp"
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "txpool"
+
 
 DISABLE_VS_WARNINGS(4244 4345 4503) //'boost::foreach_detail_::or_' : decorated name length exceeded, name was truncated
 

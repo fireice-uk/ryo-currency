@@ -46,8 +46,7 @@
 
 #include "common/gulps.hpp"	
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "net"
+
 
 #define LEVIN_DEFAULT_DATA_BUFF_SIZE 2000
 

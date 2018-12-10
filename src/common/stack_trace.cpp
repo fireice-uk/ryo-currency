@@ -65,8 +65,7 @@
 
 #include "common/gulps.hpp"
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "stacktrace"
+
 
 #define ST_LOG(x) GULPS_LOGF_L0(x);
 

@@ -54,8 +54,8 @@
 using namespace crypto;
 using namespace std;
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "ringct"
+//undef RYO_DEFAULT_LOG_CATEGORY
+//#define RYO_DEFAULT_LOG_CATEGORY
 
 #define CHECK_AND_ASSERT_MES_L1(expr, ret, message) \
 	{                                               \

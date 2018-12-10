@@ -1070,8 +1070,8 @@ bool find_or_add_t_multiparametred(const std::string &sql_select_statment, const
 		{
 			//last time try to select
 			res = select_helper_multiparam(c.get_db_connection(), sql_select_statment, params, result_table);
-			CHECK_AND_ASSERT_MES(res, false, "Failed to execute statment: " << sql_select_statment);
-			CHECK_AND_ASSERT_MES(result_table.size(), false, "No records returned from statment: " << sql_select_statment);
+			GULPS_CHECK_AND_ASSERT_MES(res, false, "Failed to execute statment: " , sql_select_statment);
+			GULPS_CHECK_AND_ASSERT_MES(result_table.size(), false, "No records returned from statment: " , sql_select_statment);
 		}
 		else
 		{

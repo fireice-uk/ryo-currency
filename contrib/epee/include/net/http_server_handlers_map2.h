@@ -36,8 +36,7 @@
 
 #include "common/gulps.hpp"	
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "net.http"
+
 
 #define CHAIN_HTTP_TO_MAP2(context_type)                                                                                                         \
 	bool handle_http_request(const epee::net_utils::http::http_request_info &query_info,                                                         \
@@ -76,8 +75,8 @@
 		uint64_t ticks = misc_utils::get_tick_count();                                                                         \
 		boost::value_initialized<command_type::request> req;                                                                   \
 		bool parse_res = epee::serialization::load_t_from_json(static_cast<command_type::request &>(req), query_info.m_body);  \
-		CHECK_AND_ASSERT_MES(parse_res, false, "Failed to parse json: \r\n"                                                    \
-												   << query_info.m_body);                                                      \
+		GULPS_CHECK_AND_ASSERT_MES(parse_res, false, "Failed to parse json: \r\n"                                                    \
+												   , query_info.m_body);                                                      \
 		uint64_t ticks1 = epee::misc_utils::get_tick_count();                                                                  \
 		boost::value_initialized<command_type::response> resp;                                                                 \
 		if(!callback_f(static_cast<command_type::request &>(req), static_cast<command_type::response &>(resp)))                \
@@ -104,7 +103,7 @@
 		uint64_t ticks = misc_utils::get_tick_count();                                                                           \
 		boost::value_initialized<command_type::request> req;                                                                     \
 		bool parse_res = epee::serialization::load_t_from_binary(static_cast<command_type::request &>(req), query_info.m_body);  \
-		CHECK_AND_ASSERT_MES(parse_res, false, "Failed to parse bin body data, body size=" << query_info.m_body.size());         \
+		GULPS_CHECK_AND_ASSERT_MES(parse_res, false, "Failed to parse bin body data, body size=" , query_info.m_body.size());         \
 		uint64_t ticks1 = misc_utils::get_tick_count();                                                                          \
 		boost::value_initialized<command_type::response> resp;                                                                   \
 		if(!callback_f(static_cast<command_type::request &>(req), static_cast<command_type::response &>(resp)))                  \

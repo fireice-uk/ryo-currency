@@ -65,8 +65,7 @@
 #include "cryptonote_basic/cryptonote_basic_impl.h"
 #include "wallet/wallet2.h"
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "wallet.simplewallet"
+
 
 /*!
  * \namespace cryptonote

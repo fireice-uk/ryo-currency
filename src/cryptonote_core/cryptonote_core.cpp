@@ -75,8 +75,7 @@ using namespace epee;
 #include "common/gulps.hpp"
 
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "cn"
+
 
 DISABLE_VS_WARNINGS(4355)
 
@@ -633,7 +632,7 @@ bool core::handle_incoming_tx_post(const blobdata &tx_blob, tx_verification_cont
 //-----------------------------------------------------------------------------------------------
 bool core::handle_incoming_txs(const std::list<blobdata> &tx_blobs, std::vector<tx_verification_context> &tvc, bool keeped_by_block, bool relayed, bool do_not_relay)
 {
-	TRY_ENTRY();
+	GULPS_TRY_ENTRY();
 
 	struct result
 	{
@@ -719,7 +718,7 @@ bool core::handle_incoming_txs(const std::list<blobdata> &tx_blobs, std::vector<
 	}
 	return ok;
 
-	CATCH_ENTRY_L0("core::handle_incoming_txs()", false);
+	GULPS_CATCH_ENTRY_L0("core::handle_incoming_txs()", false);
 }
 //-----------------------------------------------------------------------------------------------
 bool core::handle_incoming_tx(const blobdata &tx_blob, tx_verification_context &tvc, bool keeped_by_block, bool relayed, bool do_not_relay)
@@ -1065,7 +1064,7 @@ block_complete_entry get_block_complete_entry(block &b, tx_memory_pool &pool)
 	for(const auto &tx_hash : b.tx_hashes)
 	{
 		cryptonote::blobdata txblob;
-		CHECK_AND_ASSERT_THROW_MES(pool.get_transaction(tx_hash, txblob), "Transaction not found in pool");
+		GULPS_CHECK_AND_ASSERT_THROW_MES(pool.get_transaction(tx_hash, txblob), "Transaction not found in pool");
 		bce.txs.push_back(txblob);
 	}
 	return bce;
@@ -1160,7 +1159,7 @@ bool core::cleanup_handle_incoming_blocks(bool force_sync)
 //-----------------------------------------------------------------------------------------------
 bool core::handle_incoming_block(const blobdata &block_blob, block_verification_context &bvc, bool update_miner_blocktemplate)
 {
-	TRY_ENTRY();
+	GULPS_TRY_ENTRY();
 
 	// load json & DNS checkpoints every 10min/hour respectively,
 	// and verify them with respect to what blocks we already have
@@ -1186,7 +1185,7 @@ bool core::handle_incoming_block(const blobdata &block_blob, block_verification_
 		update_miner_block_template();
 	return true;
 
-	CATCH_ENTRY_L0("core::handle_incoming_block()", false);
+	GULPS_CATCH_ENTRY_L0("core::handle_incoming_block()", false);
 }
 //-----------------------------------------------------------------------------------------------
 // Used by the RPC server to check the size of an incoming

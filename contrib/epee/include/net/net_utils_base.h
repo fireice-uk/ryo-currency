@@ -39,8 +39,7 @@
 
 #include "common/gulps.hpp"	
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "net"
+
 
 #ifndef MAKE_IP
 #define MAKE_IP(a1, a2, a3, a4) (a1 | (a2 << 8) | (a3 << 16) | (a4 << 24))
@@ -364,7 +363,7 @@ inline MAKE_LOGGABLE(connection_context_base, ct, os)
 #define LOG_PRINT_CCONTEXT_L3(message) LOG_PRINT_CC_L3(context, message)
 #define LOG_ERROR_CCONTEXT(message) LOG_ERROR_CC(context, message)
 
-#define CHECK_AND_ASSERT_MES_CC(condition, return_val, err_message) CHECK_AND_ASSERT_MES(condition, return_val, "[" << epee::net_utils::print_connection_context_short(context) << "]" << err_message)
+#define CHECK_AND_ASSERT_MES_CC(condition, return_val, ...)	GULPS_CHECK_AND_ASSERT_MES(condition, return_val, "[", epee::net_utils::print_connection_context_short(context), "]", __VA_ARGS__)
 }
 }
 

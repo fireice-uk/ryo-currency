@@ -45,7 +45,6 @@
 
 #include "ringdb.h"
 #include "misc_language.h"
-#include "misc_log_ex.h"
 #include "wallet_errors.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
@@ -53,9 +52,6 @@
 #include <lmdb.h>
 
 #include "common/gulps.hpp"	
-
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "wallet.ringdb"
 
 static const char zerokey[8] = {0};
 static const MDB_val zerokeyval = {sizeof(zerokey), (void *)zerokey};

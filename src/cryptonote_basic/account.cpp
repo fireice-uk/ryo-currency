@@ -64,8 +64,7 @@ extern "C" {
 #include "common/gulps.hpp"
 
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "account"
+
 
 using namespace std;
 
@@ -225,7 +224,7 @@ std::string account_base::get_public_address_str(network_type nettype) const
 	case STAGENET:
 		return get_public_address_as_str<STAGENET>(false, m_keys.m_account_address);
 	default:
-		CHECK_AND_ASSERT_THROW_MES(false, "Unknown nettype");
+		GULPS_CHECK_AND_ASSERT_THROW_MES(false, "Unknown nettype");
 	}
 }
 //-----------------------------------------------------------------
@@ -240,7 +239,7 @@ std::string account_base::get_public_integrated_address_str(const crypto::hash8 
 	case STAGENET:
 		return get_account_integrated_address_as_str<STAGENET>(m_keys.m_account_address, payment_id);
 	default:
-		CHECK_AND_ASSERT_THROW_MES(false, "Unknown nettype");
+		GULPS_CHECK_AND_ASSERT_THROW_MES(false, "Unknown nettype");
 	}
 }
 //-----------------------------------------------------------------

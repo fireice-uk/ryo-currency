@@ -63,8 +63,7 @@
 
 #include "common/gulps.hpp"
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "cn"
+
 
 #define ENCRYPTED_PAYMENT_ID_TAIL 0x8d
 
@@ -102,12 +101,14 @@ static std::atomic<uint64_t> tx_hashes_cached_count(0);
 static std::atomic<uint64_t> block_hashes_calculated_count(0);
 static std::atomic<uint64_t> block_hashes_cached_count(0);
 
-#define CHECK_AND_ASSERT_THROW_MES_L1(expr, message) \
+#define CHECK_AND_ASSERT_THROW_MES_L1(expr, ...) \
 	{                                                \
 		if(!(expr))                                  \
 		{                                            \
-			GULPS_WARN(message);                       \
-			throw std::runtime_error(message);       \
+			std::stringstream ss ;	\
+			ss << stream_writer::write(__VA_ARGS__);	\
+			GULPS_WARN(__VA_ARGS__);                       \
+			throw std::runtime_error(ss.str());       \
 		}                                            \
 	}
 
@@ -383,14 +384,14 @@ bool parse_tx_extra(const std::vector<uint8_t> &tx_extra, std::vector<tx_extra_f
 	{
 		tx_extra_field field;
 		bool r = ::do_serialize(ar, field);
-		CHECK_AND_NO_ASSERT_MES_L1(r, false, "failed to deserialize extra field. extra = " << string_tools::buff_to_hex_nodelimer(std::string(reinterpret_cast<const char *>(tx_extra.data()), tx_extra.size())));
+		GULPS_CHECK_AND_NO_ASSERT_MES_L1(r, false, "failed to deserialize extra field. extra = ", string_tools::buff_to_hex_nodelimer(std::string(reinterpret_cast<const char *>(tx_extra.data()), tx_extra.size())));
 		tx_extra_fields.push_back(field);
 
 		std::ios_base::iostate state = iss.rdstate();
 		eof = (EOF == iss.peek());
 		iss.clear(state);
 	}
-	CHECK_AND_NO_ASSERT_MES_L1(::serialization::check_stream_state(ar), false, "failed to deserialize extra field. extra = " << string_tools::buff_to_hex_nodelimer(std::string(reinterpret_cast<const char *>(tx_extra.data()), tx_extra.size())));
+	GULPS_CHECK_AND_NO_ASSERT_MES_L1(::serialization::check_stream_state(ar), false, "failed to deserialize extra field. extra = " , string_tools::buff_to_hex_nodelimer(std::string(reinterpret_cast<const char *>(tx_extra.data()), tx_extra.size())));
 
 	return true;
 }
@@ -460,7 +461,7 @@ bool add_additional_tx_pub_keys_to_extra(std::vector<uint8_t> &tx_extra, const s
 	std::ostringstream oss;
 	binary_archive<true> ar(oss);
 	bool r = ::do_serialize(ar, field);
-	CHECK_AND_NO_ASSERT_MES_L1(r, false, "failed to serialize tx extra additional tx pub keys");
+	GULPS_CHECK_AND_NO_ASSERT_MES_L1(r, false, "failed to serialize tx extra additional tx pub keys");
 	// append
 	std::string tx_extra_str = oss.str();
 	size_t pos = tx_extra.size();
@@ -500,7 +501,7 @@ bool remove_field_from_tx_extra(std::vector<uint8_t> &tx_extra, const std::type_
 	{
 		tx_extra_field field;
 		bool r = ::do_serialize(ar, field);
-		CHECK_AND_NO_ASSERT_MES_L1(r, false, "failed to deserialize extra field. extra = " << string_tools::buff_to_hex_nodelimer(std::string(reinterpret_cast<const char *>(tx_extra.data()), tx_extra.size())));
+		GULPS_CHECK_AND_NO_ASSERT_MES_L1(r, false, "failed to deserialize extra field. extra = " , string_tools::buff_to_hex_nodelimer(std::string(reinterpret_cast<const char *>(tx_extra.data()), tx_extra.size())));
 		if(field.type() != type)
 			::do_serialize(newar, field);
 
@@ -508,7 +509,7 @@ bool remove_field_from_tx_extra(std::vector<uint8_t> &tx_extra, const std::type_
 		eof = (EOF == iss.peek());
 		iss.clear(state);
 	}
-	CHECK_AND_NO_ASSERT_MES_L1(::serialization::check_stream_state(ar), false, "failed to deserialize extra field. extra = " << string_tools::buff_to_hex_nodelimer(std::string(reinterpret_cast<const char *>(tx_extra.data()), tx_extra.size())));
+	GULPS_CHECK_AND_NO_ASSERT_MES_L1(::serialization::check_stream_state(ar), false, "failed to deserialize extra field. extra = " , string_tools::buff_to_hex_nodelimer(std::string(reinterpret_cast<const char *>(tx_extra.data()), tx_extra.size())));
 	tx_extra.clear();
 	std::string s = oss.str();
 	tx_extra.reserve(s.size());
@@ -728,7 +729,7 @@ void set_default_decimal_point(unsigned int decimal_point)
 		default_decimal_point = decimal_point;
 		break;
 	default:
-		ASSERT_MES_AND_THROW("Invalid decimal point specification: " << decimal_point);
+		GULPS_ASSERT_MES_AND_THROW("Invalid decimal point specification: ", decimal_point);
 	}
 }
 //---------------------------------------------------------------
@@ -752,7 +753,7 @@ std::string get_unit(unsigned int decimal_point)
 	case 0:
 		return "nanoryo";
 	default:
-		ASSERT_MES_AND_THROW("Invalid decimal point specification: " << default_decimal_point);
+		GULPS_ASSERT_MES_AND_THROW("Invalid decimal point specification: ", std::to_string(default_decimal_point));
 	}
 }
 //---------------------------------------------------------------
@@ -849,7 +850,7 @@ bool get_transaction_hash(const transaction &t, crypto::hash &res, size_t *blob_
 	if(t.is_hash_valid())
 	{
 #ifdef ENABLE_HASH_CASH_INTEGRITY_CHECK
-		CHECK_AND_ASSERT_THROW_MES(!calculate_transaction_hash(t, res, blob_size) || t.hash == res, "tx hash cash integrity failure");
+		GULPS_CHECK_AND_ASSERT_THROW_MES(!calculate_transaction_hash(t, res, blob_size) || t.hash == res, "tx hash cash integrity failure");
 #endif
 		res = t.hash;
 		if(blob_size)
@@ -904,7 +905,7 @@ bool get_block_hash(const block &b, crypto::hash &res)
 	if(b.is_hash_valid())
 	{
 #ifdef ENABLE_HASH_CASH_INTEGRITY_CHECK
-		CHECK_AND_ASSERT_THROW_MES(!calculate_block_hash(b, res) || b.hash == res, "block hash cash integrity failure");
+		GULPS_CHECK_AND_ASSERT_THROW_MES(!calculate_block_hash(b, res) || b.hash == res, "block hash cash integrity failure");
 #endif
 		res = b.hash;
 		++block_hashes_cached_count;

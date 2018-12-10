@@ -55,8 +55,8 @@ extern "C" {
 #include "bulletproofs.h"
 #include "rctOps.h"
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "bulletproofs"
+//undef RYO_DEFAULT_LOG_CATEGORY
+//#define RYO_DEFAULT_LOG_CATEGORY
 
 //#define DEBUG_BP
 

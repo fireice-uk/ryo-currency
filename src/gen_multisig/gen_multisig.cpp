@@ -76,8 +76,7 @@ using namespace cryptonote;
 using boost::lexical_cast;
 namespace po = boost::program_options;
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "wallet.gen_multisig"
+
 
 namespace genms
 {
@@ -292,5 +291,5 @@ int main(int argc, char *argv[])
 		return 1;
 
 	return 0;
-	//CATCH_ENTRY_L0("main", 1);
+	//GULPS_CATCH_ENTRY_L0("main", 1);
 }

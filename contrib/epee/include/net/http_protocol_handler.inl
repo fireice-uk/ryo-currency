@@ -38,8 +38,7 @@
 
 #include "common/gulps.hpp"	
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "net.http"
+
 
 #define HTTP_MAX_URI_LEN 9000
 #define HTTP_MAX_HEADER_LEN 100000
@@ -323,7 +322,7 @@ bool simple_http_connection_handler<t_connection_context>::handle_buff_in(std::s
 //--------------------------------------------------------------------------------------------
 inline bool analize_http_method(const boost::smatch &result, http::http_method &method, int &http_ver_major, int &http_ver_minor)
 {
-	CHECK_AND_ASSERT_MES(result[0].matched, false, "simple_http_connection_handler::analize_http_method() assert failed...");
+	GULPS_CHECK_AND_ASSERT_MES(result[0].matched, false, "simple_http_connection_handler::analize_http_method() assert failed...");
 	http_ver_major = boost::lexical_cast<int>(result[11]);
 	http_ver_minor = boost::lexical_cast<int>(result[12]);
 
@@ -561,7 +560,7 @@ template <class t_connection_context>
 bool simple_http_connection_handler<t_connection_context>::handle_request_and_send_response(const http::http_request_info &query_info)
 {
 	http_response_info response{};
-	//CHECK_AND_ASSERT_MES(res, res, "handle_request(query_info, response) returned false" );
+	//	GULPS_CHECK_AND_ASSERT_MES(res, res, "handle_request(query_info, response) returned false" );
 	bool res = true;
 
 	if(query_info.m_http_method != http::http_method_options)

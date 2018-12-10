@@ -44,14 +44,13 @@
 #ifdef GULPS_CAT_MAJOR
     #undef GULPS_CAT_MAJOR
 #endif
-#define GULPS_CAT_MAJOR "scpd_msg_wtr"
+#define GULPS_CAT_MAJOR "scpd_msg_wrt"
 
 #pragma once
 
 #include "readline_buffer.h"
 #include <iostream>
 
-#include "misc_log_ex.h" //TEMP BEFORE WE CLEAN THINGS DOWN HERE
 #include "common/gulps.hpp"
 
 namespace tools
@@ -65,13 +64,13 @@ class scoped_message_writer
   private:
 	bool m_flush;
 	std::stringstream m_oss;
-	epee::console_colors m_color;
+	gulps::color m_color;
 	bool m_bright;
-	el::Level m_log_level;
+	gulps::level m_log_level;
 
   public:
 	scoped_message_writer(
-		epee::console_colors color = epee::console_color_default, bool bright = false, std::string &&prefix = std::string(), el::Level log_level = el::Level::Info)
+		gulps::color color = gulps::COLOR_WHITE, bool bright = false, std::string &&prefix = std::string(), gulps::level log_level = gulps::LEVEL_INFO)
 		: m_flush(true), m_color(color), m_bright(bright), m_log_level(log_level)
 	{
 		m_oss << prefix;
@@ -110,36 +109,25 @@ class scoped_message_writer
 		{
 			m_flush = false;
 
-			//TODO SHOULD WE LOG BASED ON GIVEN LEVEL?
-			GULPS_CAT_LOG_L0("msgwriter", m_oss.str());
-
-			if(epee::console_color_default == m_color)
-			{
-				GULPS_PRINT(m_oss.str());
-			}
-			else
-			{
-				PAUSE_READLINE();
-			//TODO m_color
-				GULPS_PRINT_CLR(/*m_color*/ gulps::COLOR_WHITE, m_oss.str());
-			}
+			GULPS_OUTPUT(gulps::OUT_LOG_0, m_log_level, GULPS_CAT_MAJOR, "msgwriter", m_color, m_oss.str());
+			GULPS_PRINT_CLR(m_color, m_oss.str());
 		}
 	}
 };
 
 inline scoped_message_writer success_msg_writer(bool color = true)
 {
-	return scoped_message_writer(color ? epee::console_color_green : epee::console_color_default, false, std::string(), el::Level::Info);
+	return scoped_message_writer(color ? gulps::COLOR_GREEN : gulps::COLOR_WHITE, false, std::string(), gulps::LEVEL_PRINT);
 }
 
-inline scoped_message_writer msg_writer(epee::console_colors color = epee::console_color_default)
+inline scoped_message_writer msg_writer(gulps::color color = gulps::COLOR_WHITE)
 {
-	return scoped_message_writer(color, false, std::string(), el::Level::Info);
+	return scoped_message_writer(color, false, std::string(), gulps::LEVEL_PRINT);
 }
 
 inline scoped_message_writer fail_msg_writer()
 {
-	return scoped_message_writer(epee::console_color_red, true, "Error: ", el::Level::Error);
+	return scoped_message_writer(gulps::COLOR_RED, true, "Error: ", gulps::LEVEL_ERROR);
 }
 
 } // namespace tools

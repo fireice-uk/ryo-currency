@@ -58,8 +58,7 @@ namespace bf = boost::filesystem;
 
 #include "common/gulps.hpp"
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "net.dns"
+
 
 static const char *DEFAULT_DNS_PUBLIC_ADDR[] =
 {

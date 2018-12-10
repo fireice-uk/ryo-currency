@@ -54,8 +54,7 @@ namespace hw
 namespace ledger
 {
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "device.ledger"
+//undef RYO_DEFAULT_LOG_CATEGORY
 
 void buffer_to_str(char *to_buff, size_t to_len, const char *buff, size_t len)
 {

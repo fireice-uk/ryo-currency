@@ -153,7 +153,7 @@ class jsonrpc2_connection_handler
 	}
 	bool handle_request_and_send_response(const std::string &request_data)
 	{
-		CHECK_AND_ASSERT_MES(m_config.m_phandler, false, "m_config.m_phandler is NULL!!!!");
+		GULPS_CHECK_AND_ASSERT_MES(m_config.m_phandler, false, "m_config.m_phandler is NULL!!!!");
 		std::string response_data;
 
 		GULPS_LOGF_L3("JSONRPC2_REQUEST: >> \r\n{}", request_data);

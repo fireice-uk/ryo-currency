@@ -109,8 +109,7 @@ using boost::lexical_cast;
 namespace po = boost::program_options;
 typedef cryptonote::simple_wallet sw;
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "wallet.simplewallet"
+
 
 #define EXTENDED_LOGS_FILE "wallet_details.log"
 
@@ -7663,5 +7662,5 @@ int main(int argc, char *argv[])
 		w.deinit();
 	}
 	return 0;
-	//CATCH_ENTRY_L0("main", 1);
+	//GULPS_CATCH_ENTRY_L0("main", 1);
 }

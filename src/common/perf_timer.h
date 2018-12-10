@@ -49,8 +49,7 @@
 #include <stdio.h>
 #include <string>
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "perf"
+
 
 namespace tools
 {

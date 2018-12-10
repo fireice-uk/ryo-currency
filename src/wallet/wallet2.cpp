@@ -3387,10 +3387,10 @@ std::string wallet2::make_multisig(const epee::wipeable_string &password,
 								   const std::vector<crypto::public_key> &spend_keys,
 								   uint32_t threshold)
 {
-	CHECK_AND_ASSERT_THROW_MES(!view_keys.empty(), "empty view keys");
-	CHECK_AND_ASSERT_THROW_MES(view_keys.size() == spend_keys.size(), "Mismatched view/spend key sizes");
-	CHECK_AND_ASSERT_THROW_MES(threshold > 1 && threshold <= spend_keys.size() + 1, "Invalid threshold");
-	CHECK_AND_ASSERT_THROW_MES(threshold == spend_keys.size() || threshold == spend_keys.size() + 1, "Unsupported threshold case");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(!view_keys.empty(), "empty view keys");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(view_keys.size() == spend_keys.size(), "Mismatched view/spend key sizes");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(threshold > 1 && threshold <= spend_keys.size() + 1, "Invalid threshold");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(threshold == spend_keys.size() || threshold == spend_keys.size() + 1, "Unsupported threshold case");
 
 	std::string extra_multisig_info;
 	crypto::hash hash;
@@ -3412,7 +3412,7 @@ std::string wallet2::make_multisig(const epee::wipeable_string &password,
 		// we know about, and make a signed string out of them
 		std::string data;
 		crypto::public_key signer;
-		CHECK_AND_ASSERT_THROW_MES(crypto::secret_key_to_public_key(rct::rct2sk(spend_skey), signer), "Failed to derive public spend key");
+		GULPS_CHECK_AND_ASSERT_THROW_MES(crypto::secret_key_to_public_key(rct::rct2sk(spend_skey), signer), "Failed to derive public spend key");
 		data += std::string((const char *)&signer, sizeof(crypto::public_key));
 
 		for(const auto &msk : multisig_keys)
@@ -3430,7 +3430,7 @@ std::string wallet2::make_multisig(const epee::wipeable_string &password,
 	}
 	else
 	{
-		CHECK_AND_ASSERT_THROW_MES(false, "Unsupported threshold case");
+		GULPS_CHECK_AND_ASSERT_THROW_MES(false, "Unsupported threshold case");
 	}
 
 	// the multisig view key is shared by all, make one all can derive
@@ -3438,7 +3438,7 @@ std::string wallet2::make_multisig(const epee::wipeable_string &password,
 	crypto::secret_key view_skey = cryptonote::generate_multisig_view_secret_key(get_account().get_keys().m_view_secret_key, view_keys);
 
 	GULPS_LOG_L0("Creating multisig address...");
-	CHECK_AND_ASSERT_THROW_MES(m_account.make_multisig(view_skey, rct::rct2sk(spend_skey), rct::rct2pk(spend_pkey), multisig_keys),
+	GULPS_CHECK_AND_ASSERT_THROW_MES(m_account.make_multisig(view_skey, rct::rct2sk(spend_skey), rct::rct2pk(spend_pkey), multisig_keys),
 							   "Failed to create multisig wallet due to bad keys");
 
 	m_account_public_address = m_account.get_keys().m_account_address;
@@ -3537,11 +3537,11 @@ std::string wallet2::make_multisig(const epee::wipeable_string &password,
 
 bool wallet2::finalize_multisig(const epee::wipeable_string &password, std::unordered_set<crypto::public_key> pkeys, std::vector<crypto::public_key> signers)
 {
-	CHECK_AND_ASSERT_THROW_MES(!pkeys.empty(), "empty pkeys");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(!pkeys.empty(), "empty pkeys");
 
 	// add ours if not included
 	crypto::public_key local_signer;
-	CHECK_AND_ASSERT_THROW_MES(crypto::secret_key_to_public_key(get_account().get_keys().m_spend_secret_key, local_signer),
+	GULPS_CHECK_AND_ASSERT_THROW_MES(crypto::secret_key_to_public_key(get_account().get_keys().m_spend_secret_key, local_signer),
 							   "Failed to derive public spend key");
 	if(std::find(signers.begin(), signers.end(), local_signer) == signers.end())
 	{
@@ -3552,7 +3552,7 @@ bool wallet2::finalize_multisig(const epee::wipeable_string &password, std::unor
 		}
 	}
 
-	CHECK_AND_ASSERT_THROW_MES(signers.size() == m_multisig_signers.size(), "Bad signers size");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(signers.size() == m_multisig_signers.size(), "Bad signers size");
 
 	crypto::public_key spend_public_key = cryptonote::generate_multisig_N1_N_spend_public_key(std::vector<crypto::public_key>(pkeys.begin(), pkeys.end()));
 	m_account_public_address.m_spend_public_key = spend_public_key;
@@ -8951,31 +8951,31 @@ crypto::public_key wallet2::get_multisig_signer_public_key(const crypto::secret_
 //----------------------------------------------------------------------------------------------------
 crypto::public_key wallet2::get_multisig_signer_public_key() const
 {
-	CHECK_AND_ASSERT_THROW_MES(m_multisig, "Wallet is not multisig");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(m_multisig, "Wallet is not multisig");
 	crypto::public_key signer;
-	CHECK_AND_ASSERT_THROW_MES(crypto::secret_key_to_public_key(get_account().get_keys().m_spend_secret_key, signer), "Failed to generate signer public key");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(crypto::secret_key_to_public_key(get_account().get_keys().m_spend_secret_key, signer), "Failed to generate signer public key");
 	return signer;
 }
 //----------------------------------------------------------------------------------------------------
 crypto::public_key wallet2::get_multisig_signing_public_key(const crypto::secret_key &msk) const
 {
-	CHECK_AND_ASSERT_THROW_MES(m_multisig, "Wallet is not multisig");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(m_multisig, "Wallet is not multisig");
 	crypto::public_key pkey;
-	CHECK_AND_ASSERT_THROW_MES(crypto::secret_key_to_public_key(msk, pkey), "Failed to derive public key");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(crypto::secret_key_to_public_key(msk, pkey), "Failed to derive public key");
 	return pkey;
 }
 //----------------------------------------------------------------------------------------------------
 crypto::public_key wallet2::get_multisig_signing_public_key(size_t idx) const
 {
-	CHECK_AND_ASSERT_THROW_MES(m_multisig, "Wallet is not multisig");
-	CHECK_AND_ASSERT_THROW_MES(idx < get_account().get_multisig_keys().size(), "Multisig signing key index out of range");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(m_multisig, "Wallet is not multisig");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(idx < get_account().get_multisig_keys().size(), "Multisig signing key index out of range");
 	return get_multisig_signing_public_key(get_account().get_multisig_keys()[idx]);
 }
 //----------------------------------------------------------------------------------------------------
 rct::key wallet2::get_multisig_k(size_t idx, const std::unordered_set<rct::key> &used_L) const
 {
-	CHECK_AND_ASSERT_THROW_MES(m_multisig, "Wallet is not multisig");
-	CHECK_AND_ASSERT_THROW_MES(idx < m_transfers.size(), "idx out of range");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(m_multisig, "Wallet is not multisig");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(idx < m_transfers.size(), "idx out of range");
 	for(const auto &k : m_transfers[idx].m_multisig_k)
 	{
 		rct::key L;
@@ -8989,7 +8989,7 @@ rct::key wallet2::get_multisig_k(size_t idx, const std::unordered_set<rct::key> 
 //----------------------------------------------------------------------------------------------------
 rct::multisig_kLRki wallet2::get_multisig_kLRki(size_t n, const rct::key &k) const
 {
-	CHECK_AND_ASSERT_THROW_MES(n < m_transfers.size(), "Bad m_transfers index");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(n < m_transfers.size(), "Bad m_transfers index");
 	rct::multisig_kLRki kLRki;
 	kLRki.k = k;
 	cryptonote::generate_multisig_LR(m_transfers[n].get_public_key(), rct::rct2sk(kLRki.k), (crypto::public_key &)kLRki.L, (crypto::public_key &)kLRki.R);
@@ -8999,7 +8999,7 @@ rct::multisig_kLRki wallet2::get_multisig_kLRki(size_t n, const rct::key &k) con
 //----------------------------------------------------------------------------------------------------
 rct::multisig_kLRki wallet2::get_multisig_composite_kLRki(size_t n, const crypto::public_key &ignore, std::unordered_set<rct::key> &used_L, std::unordered_set<rct::key> &new_used_L) const
 {
-	CHECK_AND_ASSERT_THROW_MES(n < m_transfers.size(), "Bad transfer index");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(n < m_transfers.size(), "Bad transfer index");
 
 	const transfer_details &td = m_transfers[n];
 	rct::multisig_kLRki kLRki = get_multisig_kLRki(n, rct::skGen());
@@ -9022,14 +9022,14 @@ rct::multisig_kLRki wallet2::get_multisig_composite_kLRki(size_t n, const crypto
 			break;
 		}
 	}
-	CHECK_AND_ASSERT_THROW_MES(n_signers_used >= m_multisig_threshold, "LR not found for enough participants");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(n_signers_used >= m_multisig_threshold, "LR not found for enough participants");
 
 	return kLRki;
 }
 //----------------------------------------------------------------------------------------------------
 crypto::key_image wallet2::get_multisig_composite_key_image(size_t n) const
 {
-	CHECK_AND_ASSERT_THROW_MES(n < m_transfers.size(), "Bad output index");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(n < m_transfers.size(), "Bad output index");
 
 	const transfer_details &td = m_transfers[n];
 	const crypto::public_key tx_key = get_tx_pub_key_from_received_outs(td);
@@ -9064,7 +9064,7 @@ cryptonote::blobdata wallet2::export_multisig()
 		{
 			// we want to export the partial key image, not the full one, so we can't use td.m_key_image
 			bool r = generate_multisig_key_image(get_account().get_keys(), m, td.get_public_key(), ki);
-			CHECK_AND_ASSERT_THROW_MES(r, "Failed to generate key image");
+			GULPS_CHECK_AND_ASSERT_THROW_MES(r, "Failed to generate key image");
 			info[n].m_partial_key_images.push_back(ki);
 		}
 
@@ -9096,15 +9096,15 @@ cryptonote::blobdata wallet2::export_multisig()
 //----------------------------------------------------------------------------------------------------
 void wallet2::update_multisig_rescan_info(const std::vector<std::vector<rct::key>> &multisig_k, const std::vector<std::vector<tools::wallet2::multisig_info>> &info, size_t n)
 {
-	CHECK_AND_ASSERT_THROW_MES(n < m_transfers.size(), "Bad index in update_multisig_info");
-	CHECK_AND_ASSERT_THROW_MES(multisig_k.size() >= m_transfers.size(), "Mismatched sizes of multisig_k and info");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(n < m_transfers.size(), "Bad index in update_multisig_info");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(multisig_k.size() >= m_transfers.size(), "Mismatched sizes of multisig_k and info");
 
 	GULPS_LOG_L1("update_multisig_rescan_info: updating index ", n);
 	transfer_details &td = m_transfers[n];
 	td.m_multisig_info.clear();
 	for(const auto &pi : info)
 	{
-		CHECK_AND_ASSERT_THROW_MES(n < pi.size(), "Bad pi size");
+		GULPS_CHECK_AND_ASSERT_THROW_MES(n < pi.size(), "Bad pi size");
 		td.m_multisig_info.push_back(pi[n]);
 	}
 	m_key_images.erase(td.m_key_image);
@@ -9117,7 +9117,7 @@ void wallet2::update_multisig_rescan_info(const std::vector<std::vector<rct::key
 //----------------------------------------------------------------------------------------------------
 size_t wallet2::import_multisig(std::vector<cryptonote::blobdata> blobs)
 {
-	CHECK_AND_ASSERT_THROW_MES(m_multisig, "Wallet is not multisig");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(m_multisig, "Wallet is not multisig");
 
 	std::vector<std::vector<tools::wallet2::multisig_info>> info;
 	std::unordered_set<crypto::public_key> seen;
@@ -9159,7 +9159,7 @@ size_t wallet2::import_multisig(std::vector<cryptonote::blobdata> blobs)
 		info.push_back(std::move(i));
 	}
 
-	CHECK_AND_ASSERT_THROW_MES(info.size() + 1 <= m_multisig_signers.size() && info.size() + 1 >= m_multisig_threshold, "Wrong number of multisig sources");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(info.size() + 1 <= m_multisig_signers.size() && info.size() + 1 >= m_multisig_threshold, "Wrong number of multisig sources");
 
 	std::vector<std::vector<rct::key>> k;
 	k.reserve(m_transfers.size());
@@ -9178,10 +9178,10 @@ size_t wallet2::import_multisig(std::vector<cryptonote::blobdata> blobs)
 	// check signers are consistent
 	for(const auto &pi : info)
 	{
-		CHECK_AND_ASSERT_THROW_MES(std::find(m_multisig_signers.begin(), m_multisig_signers.end(), pi[0].m_signer) != m_multisig_signers.end(),
+		GULPS_CHECK_AND_ASSERT_THROW_MES(std::find(m_multisig_signers.begin(), m_multisig_signers.end(), pi[0].m_signer) != m_multisig_signers.end(),
 								   "Signer is not a member of this multisig wallet");
 		for(size_t n = 1; n < n_outputs; ++n)
-			CHECK_AND_ASSERT_THROW_MES(pi[n].m_signer == pi[0].m_signer, "Mismatched signers in imported multisig info");
+			GULPS_CHECK_AND_ASSERT_THROW_MES(pi[n].m_signer == pi[0].m_signer, "Mismatched signers in imported multisig info");
 	}
 
 	// trim data we don't have info for from all participants

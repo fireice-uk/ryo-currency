@@ -67,8 +67,7 @@
 
 #include "common/gulps.hpp"	
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "net.cn"
+
 
 #define context_str std::string("[" + epee::net_utils::print_connection_context_short(context) + "]")
 
@@ -121,7 +120,7 @@ template <class t_core>
 bool t_cryptonote_protocol_handler<t_core>::on_callback(cryptonote_connection_context &context)
 {
 	GULPS_LOG_L1(context_str, " callback fired");
-	CHECK_AND_ASSERT_MES_CC(context.m_callback_request_count > 0, false, "false callback fired, but context.m_callback_request_count=" << context.m_callback_request_count);
+	CHECK_AND_ASSERT_MES_CC(context.m_callback_request_count > 0, false, "false callback fired, but context.m_callback_request_count=", context.m_callback_request_count);
 	--context.m_callback_request_count;
 
 	if(context.m_state == cryptonote_connection_context::state_synchronizing)

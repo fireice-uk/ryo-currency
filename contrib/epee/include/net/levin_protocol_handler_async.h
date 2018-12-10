@@ -47,8 +47,7 @@
 
 #include "common/gulps.hpp"	
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "net"
+
 
 #ifndef MIN_BYTES_WANTED
 #define MIN_BYTES_WANTED 512
@@ -291,7 +290,7 @@ class async_protocol_handler
 		{
 			misc_utils::sleep_no_w(100);
 		}
-		CHECK_AND_ASSERT_MES_NO_RET(0 == boost::interprocess::ipcdetail::atomic_read32(&m_wait_count), "Failed to wait for operation completion. m_wait_count = " << m_wait_count);
+		GULPS_CHECK_AND_ASSERT_MES_NO_RET(0 == boost::interprocess::ipcdetail::atomic_read32(&m_wait_count), "Failed to wait for operation completion. m_wait_count = " , m_wait_count);
 
 		GULPS_LOG_L2(m_connection_context, "~async_protocol_handler()");
 	}

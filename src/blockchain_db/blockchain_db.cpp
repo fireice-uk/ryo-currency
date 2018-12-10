@@ -65,8 +65,7 @@ static const char *db_types[] = {
 #endif
 	NULL};
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "blockchain.db"
+
 
 using epee::string_tools::pod_to_hex;
 

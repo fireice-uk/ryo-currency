@@ -87,8 +87,7 @@
 #include <unistd.h>
 #endif
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "miner"
+
 
 using namespace epee;
 

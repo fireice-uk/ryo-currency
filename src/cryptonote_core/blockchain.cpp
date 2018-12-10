@@ -81,8 +81,7 @@
 
 #include "common/gulps.hpp"
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "blockchain"
+
 
 #define FIND_BLOCKCHAIN_SUPPLEMENT_MAX_SIZE (100 * 1024 * 1024) // 100 MB
 
@@ -3506,7 +3505,7 @@ bool Blockchain::handle_block_to_main_chain(const block &bl, const crypto::hash 
 		// ND: this is not needed, db->add_block() checks for duplicate k_images and fails accordingly.
 		// if (!check_for_double_spend(tx, keys))
 		// {
-		//     GULPS_VERIFYF_ERR_BLK("Double spend detected in transaction (id: " << tx_id);
+		//     GULPS_VERIFYF_ERR_BLK("Double spend detected in transaction (id: " , tx_id);
 		//     bvc.m_verifivation_failed = true;
 		//     break;
 		// }

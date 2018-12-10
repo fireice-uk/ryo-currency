@@ -57,8 +57,7 @@
 
 #include "common/gulps.hpp"
 
-//#undef RYO_DEFAULT_GULPS_LOGF_L1("{}", );_CATEGORY
-//#define RYO_DEFAULT_GULPS_LOGF_L1("{}", );_CATEGORY "checkpoints"
+
 
 namespace cryptonote
 {

@@ -60,4 +60,3 @@
 #define ENABLE_RELEASE_LOGGING
 #include "log_opt_defs.h"
 #include "common/gulps.hpp"
-#include "misc_log_ex.h"

@@ -51,7 +51,7 @@
 #include <map>
 #include <vector>
 
-#define ADD_CHECKPOINT(h, hash) CHECK_AND_ASSERT(add_checkpoint(h, hash), false);
+#define ADD_CHECKPOINT(h, hash) GULPS_CHECK_AND_ASSERT(add_checkpoint(h, hash), false);
 #define JSON_HASH_FILE_NAME "checkpoints.json"
 
 namespace cryptonote

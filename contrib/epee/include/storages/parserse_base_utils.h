@@ -157,7 +157,7 @@ inline void match_string2(std::string::const_iterator &star_end_string, std::str
 			val.push_back(*it);
 		}
 	}
-	ASSERT_MES_AND_THROW("Failed to match string in json entry: " << std::string(star_end_string, buf_end));
+	GULPS_ASSERT_MES_AND_THROW("Failed to match string in json entry: ", std::string(star_end_string, buf_end));
 }
 inline bool match_string(std::string::const_iterator &star_end_string, std::string::const_iterator buf_end, std::string &val)
 {
@@ -194,10 +194,10 @@ inline void match_number2(std::string::const_iterator &star_end_string, std::str
 				return;
 			}
 			else
-				ASSERT_MES_AND_THROW("wrong number in json entry: " << std::string(star_end_string, buf_end));
+				GULPS_ASSERT_MES_AND_THROW("wrong number in json entry: ", std::string(star_end_string, buf_end));
 		}
 	}
-	ASSERT_MES_AND_THROW("wrong number in json entry: " << std::string(star_end_string, buf_end));
+	GULPS_ASSERT_MES_AND_THROW("wrong number in json entry: ", std::string(star_end_string, buf_end));
 }
 inline bool match_number(std::string::const_iterator &star_end_string, std::string::const_iterator buf_end, std::string &val)
 {
@@ -228,10 +228,10 @@ inline void match_word2(std::string::const_iterator &star_end_string, std::strin
 				return;
 			}
 			else
-				ASSERT_MES_AND_THROW("failed to match word number in json entry: " << std::string(star_end_string, buf_end));
+				GULPS_ASSERT_MES_AND_THROW("failed to match word number in json entry: ", std::string(star_end_string, buf_end));
 		}
 	}
-	ASSERT_MES_AND_THROW("failed to match word number in json entry: " << std::string(star_end_string, buf_end));
+	GULPS_ASSERT_MES_AND_THROW("failed to match word number in json entry: ", std::string(star_end_string, buf_end));
 }
 inline bool match_word(std::string::const_iterator &star_end_string, std::string::const_iterator buf_end, std::string &val)
 {

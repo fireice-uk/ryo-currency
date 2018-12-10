@@ -77,8 +77,7 @@
 
 #define contextx_str(x) std::string("[" + epee::net_utils::print_connection_context_short(x) + "]")
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "net.p2p"
+
 
 #define NET_MAKE_IP(b1, b2, b3, b4) ((LPARAM)(((DWORD)(b1) << 24) + ((DWORD)(b2) << 16) + ((DWORD)(b3) << 8) + ((DWORD)(b4))))
 
@@ -112,7 +111,7 @@ template <class t_payload_net_handler>
 bool node_server<t_payload_net_handler>::init_config()
 {
 	//
-	TRY_ENTRY();
+	GULPS_TRY_ENTRY();
 	std::string state_file_path = m_config_folder + "/" + P2P_NET_DATA_FILENAME;
 	std::ifstream p2p_data;
 	p2p_data.open(state_file_path, std::ios_base::binary | std::ios_base::in);
@@ -168,7 +167,7 @@ bool node_server<t_payload_net_handler>::init_config()
 	m_config.m_support_flags = P2P_SUPPORT_FLAGS;
 
 	m_first_connection_maker_call = true;
-	CATCH_ENTRY_L0("node_server::init_config", false);
+	GULPS_CATCH_ENTRY_L0("node_server::init_config", false);
 	return true;
 }
 //-----------------------------------------------------------------------------------
@@ -350,7 +349,7 @@ inline void append_net_address(
 	using namespace boost::asio;
 
 	size_t pos = addr.find_last_of(':');
-	CHECK_AND_ASSERT_MES_NO_RET(std::string::npos != pos && addr.length() - 1 != pos && 0 != pos, "Failed to parse seed address from string: '" << addr << '\'');
+	GULPS_CHECK_AND_ASSERT_MES_NO_RET(std::string::npos != pos && addr.length() - 1 != pos && 0 != pos, "Failed to parse seed address from string: '" , addr , '\'');
 	std::string host = addr.substr(0, pos);
 	std::string port = addr.substr(pos + 1);
 
@@ -359,7 +358,7 @@ inline void append_net_address(
 	ip::tcp::resolver::query query(host, port, boost::asio::ip::tcp::resolver::query::canonical_name);
 	boost::system::error_code ec;
 	ip::tcp::resolver::iterator i = resolver.resolve(query, ec);
-	CHECK_AND_ASSERT_MES_NO_RET(!ec, "Failed to resolve host name '" << host << "': " << ec.message() << ':' << ec.value());
+	GULPS_CHECK_AND_ASSERT_MES_NO_RET(!ec, "Failed to resolve host name '" , host , "': " , ec.message() , ':' , ec.value());
 
 	ip::tcp::resolver::iterator iend;
 	for(; i != iend; ++i)
@@ -642,7 +641,7 @@ template <class t_payload_net_handler>
 bool node_server<t_payload_net_handler>::store_config()
 {
 
-	TRY_ENTRY();
+	GULPS_TRY_ENTRY();
 	if(!tools::create_directories_if_necessary(m_config_folder))
 	{
 		GULPS_WARNF("Failed to create data directory: {}", m_config_folder);
@@ -661,7 +660,7 @@ bool node_server<t_payload_net_handler>::store_config()
 	boost::archive::portable_binary_oarchive a(p2p_data);
 	a << *this;
 	return true;
-	CATCH_ENTRY_L0("blockchain_storage::save", false);
+	GULPS_CATCH_ENTRY_L0("blockchain_storage::save", false);
 
 	return true;
 }

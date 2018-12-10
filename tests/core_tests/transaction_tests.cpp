@@ -33,6 +33,7 @@
 #include "cryptonote_core/cryptonote_tx_utils.h"
 #include "include_base_utils.h"
 #include "misc_language.h"
+#include "misc_log_ex.h"
 
 using namespace cryptonote;
 

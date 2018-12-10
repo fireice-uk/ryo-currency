@@ -104,7 +104,7 @@ inline service_impl_base *&service_impl_base::instance()
 //-----------------------------------------------------------------------------
 inline bool service_impl_base::install()
 {
-	CHECK_AND_ASSERT(!m_service, false);
+	GULPS_CHECK_AND_ASSERT(!m_service, false);
 	const char *psz_descr = get_description();
 	SERVICE_FAILURE_ACTIONSA *fail_acts = get_failure_actions();
 
@@ -165,7 +165,7 @@ inline bool service_impl_base::install()
 //-----------------------------------------------------------------------------
 inline bool service_impl_base::remove()
 {
-	CHECK_AND_ASSERT(!m_service, false);
+	GULPS_CHECK_AND_ASSERT(!m_service, false);
 
 	while(TRUE)
 	{
@@ -225,7 +225,7 @@ inline bool service_impl_base::init()
 //-----------------------------------------------------------------------------
 inline bool service_impl_base::run_service()
 {
-	CHECK_AND_ASSERT(!m_service, false);
+	GULPS_CHECK_AND_ASSERT(!m_service, false);
 
 	long error_code = 0;
 
@@ -255,7 +255,7 @@ inline bool service_impl_base::run_service()
 inline DWORD __stdcall service_impl_base::_service_handler(DWORD control,
 														   DWORD event, void *pdata, void *pcontext)
 {
-	CHECK_AND_ASSERT(pcontext, ERROR_CALL_NOT_IMPLEMENTED);
+	GULPS_CHECK_AND_ASSERT(pcontext, ERROR_CALL_NOT_IMPLEMENTED);
 
 	service_impl_base *pservice = (service_impl_base *)pcontext;
 	return pservice->service_handler(control, event, pdata);
