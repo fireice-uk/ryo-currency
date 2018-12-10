@@ -91,7 +91,7 @@ inline bool unpack(std::string &target)
 		ret = inflate(&zstream, Z_NO_FLUSH);
 		if(ret != Z_OK)
 		{
-			LOCAL_ASSERT(0);
+			GULPS_LOCAL_ASSERT(0);
 			return false;
 		}
 
@@ -101,7 +101,7 @@ inline bool unpack(std::string &target)
 		ret = inflate(&zstream, Z_SYNC_FLUSH);
 		if(ret != Z_OK && ret != Z_STREAM_END)
 		{
-			LOCAL_ASSERT(0);
+			GULPS_LOCAL_ASSERT(0);
 			return false;
 		}
 

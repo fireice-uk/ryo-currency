@@ -120,7 +120,7 @@ template <class t_core>
 bool t_cryptonote_protocol_handler<t_core>::on_callback(cryptonote_connection_context &context)
 {
 	GULPS_LOG_L1(context_str, " callback fired");
-	CHECK_AND_ASSERT_MES_CC(context.m_callback_request_count > 0, false, "false callback fired, but context.m_callback_request_count=", context.m_callback_request_count);
+	GULPS_CHECK_AND_ASSERT_MES_CONTEXT(context.m_callback_request_count > 0, false, "false callback fired, but context.m_callback_request_count=", context.m_callback_request_count);
 	--context.m_callback_request_count;
 
 	if(context.m_state == cryptonote_connection_context::state_synchronizing)

@@ -126,7 +126,7 @@ class content_encoding_gzip : public i_sub_handler
 				ret = inflate(&m_zstream_in, Z_NO_FLUSH);
 				if(ret != Z_OK)
 				{
-					LOCAL_ASSERT(0);
+					GULPS_LOCAL_ASSERT(0);
 					m_pre_decode.swap(piece_of_transfer);
 					return false;
 				}
@@ -136,7 +136,7 @@ class content_encoding_gzip : public i_sub_handler
 				ret = inflate(&m_zstream_in, Z_NO_FLUSH);
 				if(ret != Z_OK)
 				{
-					LOCAL_ASSERT(0);
+					GULPS_LOCAL_ASSERT(0);
 					m_pre_decode.swap(piece_of_transfer);
 					return false;
 				}

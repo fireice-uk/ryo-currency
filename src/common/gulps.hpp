@@ -882,6 +882,7 @@ do                                             \
 		};                                   \
 	} while(0)
 
+#define GULPS_CHECK_AND_ASSERT_MES_CONTEXT(condition, return_val, ...) GULPS_CHECK_AND_ASSERT_MES(condition, return_val, "[", epee::net_utils::print_connection_context_short(context), "] ", __VA_ARGS__)
 
 
 
