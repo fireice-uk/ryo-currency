@@ -1,5 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
-// Portions copyright (c) 2014-2018, The Monero Project
+// Copyright (c) 2018, Ryo Currency Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
 // All rights reserved.
@@ -30,7 +29,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2019
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -42,66 +41,80 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#pragma once
+#pragma once 
 
-#include "common/gulps.hpp"
-#include <memory>
-#include <stdio.h>
-#include <string>
+#include <queue>
+#include <list>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 
-namespace tools
+template <typename T>
+class thdq
 {
+public:
+	thdq() : lck_(mutex_, std::defer_lock) {}
+	
+	bool pop(T& item)
+	{
+		std::unique_lock<std::mutex> mlock(mutex_);
+		while (queue_.empty() && !finish) { cond_.wait(mlock); }
+		bool ret = false;
+		if(!queue_.empty())
+		{
+			item = std::move(queue_.front());
+			queue_.pop();
+			ret = true;
+		}
+		return ret;
+	}
 
-class PerformanceTimer;
+	bool wait_for_pop()
+	{
+		lck_.lock();
+		while (queue_.empty() && !finish) { cond_.wait(lck_); }
+		bool has_pop = !queue_.empty();
+		if(!has_pop) lck_.unlock();
+		return has_pop;
+	}
 
-extern el::Level performance_timer_log_level;
+	T pop()
+	{
+		T item = std::move(queue_.front());
+		queue_.pop();
+		lck_.unlock();
+		return item;
+	}
 
-uint64_t get_tick_count();
-uint64_t get_ticks_per_ns();
-uint64_t ticks_to_ns(uint64_t ticks);
+	void push(const T& item)
+	{
+		std::unique_lock<std::mutex> mlock(mutex_);
+		if(finish) return;
+		queue_.push(item);
+		mlock.unlock();
+		cond_.notify_one();
+	}
 
-class PerformanceTimer
-{
-  public:
-	PerformanceTimer(bool paused = false);
-	~PerformanceTimer();
-	void pause();
-	void resume();
+	void push(T&& item)
+	{
+		std::unique_lock<std::mutex> mlock(mutex_);
+		if(finish) return;
+		queue_.push(std::move(item));
+		mlock.unlock();
+		cond_.notify_one();
+	}
 
-	uint64_t value() const { return ticks; }
+	void set_finish_flag()
+	{
+		std::unique_lock<std::mutex> mlock(mutex_);
+		finish = true;
+		cond_.notify_one();
+	}
 
-  protected:
-	uint64_t ticks;
-	bool started;
-	bool paused;
+private:
+	std::queue<T> queue_;
+	std::mutex mutex_;
+	std::condition_variable cond_;
+	std::unique_lock<std::mutex> lck_;
+	bool finish = false;
 };
-
-class LoggingPerformanceTimer : public PerformanceTimer
-{
-  public:
-	LoggingPerformanceTimer(const std::string &s, const std::string &cat, uint64_t unit, el::Level l = el::Level::Debug);
-	~LoggingPerformanceTimer();
-
-  private:
-	std::string name;
-	std::string cat;
-	uint64_t unit;
-	el::Level level;
-};
-
-void set_performance_timer_log_level(el::Level level);
-
-#define PERF_TIMER_UNIT(name, unit) tools::LoggingPerformanceTimer pt_##name(#name, "perf.oldlog", unit, tools::performance_timer_log_level)
-#define PERF_TIMER_UNIT_L(name, unit, l) tools::LoggingPerformanceTimer pt_##name(#name, "perf.oldlog", unit, l)
-#define PERF_TIMER(name) PERF_TIMER_UNIT(name, 1000000)
-#define PERF_TIMER_L(name, l) PERF_TIMER_UNIT_L(name, 1000000, l)
-#define PERF_TIMER_START_UNIT(name, unit) std::unique_ptr<tools::LoggingPerformanceTimer> pt_##name(new tools::LoggingPerformanceTimer(#name, "perf.oldlog", unit, el::Level::Info))
-#define PERF_TIMER_START(name) PERF_TIMER_START_UNIT(name, 1000000)
-#define PERF_TIMER_STOP(name)  \
-	do                         \
-	{                          \
-		pt_##name.reset(NULL); \
-	} while(0)
-#define PERF_TIMER_PAUSE(name) pt_##name->pause()
-#define PERF_TIMER_RESUME(name) pt_##name->resume()
-}

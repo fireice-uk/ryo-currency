@@ -370,6 +370,19 @@ const static crypto::public_key null_pkey = boost::value_initialized<crypto::pub
 const static crypto::secret_key null_skey = boost::value_initialized<crypto::secret_key>();
 }
 
+namespace fmt 
+{
+template <>
+struct formatter<crypto::public_key> : formatter<string_view>
+{
+	template <typename FormatContext>
+	auto format(const crypto::public_key &pk, FormatContext &ctx)  -> decltype(ctx.out())  
+	{
+		return formatter<string_view>::format(epee::string_tools::pod_to_hex(pk), ctx);
+	}
+};
+}
+
 CRYPTO_MAKE_HASHABLE(public_key)
 CRYPTO_MAKE_HASHABLE(secret_key)
 CRYPTO_MAKE_HASHABLE(secret_key_16)

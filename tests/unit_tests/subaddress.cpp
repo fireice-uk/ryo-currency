@@ -36,6 +36,7 @@
 #include "include_base_utils.h"
 #include "wallet/api/subaddress.h"
 #include "wallet/wallet2.h"
+#include "misc_log_ex.h"
 
 class WalletSubaddress : public ::testing::Test
 {

@@ -43,6 +43,7 @@
 #include "p2p/net_node.inl"
 #include "string_tools.h"
 #include "unit_tests_utils.h"
+#include "misc_log_ex.h"
 
 namespace po = boost::program_options;
 

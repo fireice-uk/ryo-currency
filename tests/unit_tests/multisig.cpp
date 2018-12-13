@@ -31,6 +31,7 @@
 #include <cstdint>
 
 #include "wallet/wallet2.h"
+#include "misc_log_ex.h"
 
 static const struct
 {

@@ -71,10 +71,10 @@ const command_line::arg_descriptor<std::string, false, true, 2> arg_log_file = {
         return (daemonizer::get_default_data_dir() / "stagenet" /
                 std::string(CRYPTONOTE_NAME ".log")).string();
       return val; }};
-const command_line::arg_descriptor<std::size_t> arg_max_log_file_size = {
-	"max-log-file-size", "Specify maximum log file size [B]", MAX_LOG_FILE_SIZE};
 const command_line::arg_descriptor<std::string> arg_log_level = {
-	"log-level", "", ""};
+	"log-level", "Screen log level", ""};
+const command_line::arg_descriptor<std::string> arg_log_file_level = {
+	"file-log-level", "File log level", ""};
 const command_line::arg_descriptor<std::vector<std::string>> arg_command = {
 	"daemon_command", "Hidden"};
 const command_line::arg_descriptor<bool> arg_os_version = {

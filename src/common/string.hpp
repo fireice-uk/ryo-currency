@@ -1,5 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
-// Portions copyright (c) 2014-2018, The Monero Project
+// Copyright (c) 2018, Ryo Currency Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
 // All rights reserved.
@@ -30,7 +29,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2019
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -44,64 +43,12 @@
 
 #pragma once
 
-#include "common/gulps.hpp"
-#include <memory>
-#include <stdio.h>
 #include <string>
 
-namespace tools
-{
-
-class PerformanceTimer;
-
-extern el::Level performance_timer_log_level;
-
-uint64_t get_tick_count();
-uint64_t get_ticks_per_ns();
-uint64_t ticks_to_ns(uint64_t ticks);
-
-class PerformanceTimer
-{
-  public:
-	PerformanceTimer(bool paused = false);
-	~PerformanceTimer();
-	void pause();
-	void resume();
-
-	uint64_t value() const { return ticks; }
-
-  protected:
-	uint64_t ticks;
-	bool started;
-	bool paused;
-};
-
-class LoggingPerformanceTimer : public PerformanceTimer
-{
-  public:
-	LoggingPerformanceTimer(const std::string &s, const std::string &cat, uint64_t unit, el::Level l = el::Level::Debug);
-	~LoggingPerformanceTimer();
-
-  private:
-	std::string name;
-	std::string cat;
-	uint64_t unit;
-	el::Level level;
-};
-
-void set_performance_timer_log_level(el::Level level);
-
-#define PERF_TIMER_UNIT(name, unit) tools::LoggingPerformanceTimer pt_##name(#name, "perf.oldlog", unit, tools::performance_timer_log_level)
-#define PERF_TIMER_UNIT_L(name, unit, l) tools::LoggingPerformanceTimer pt_##name(#name, "perf.oldlog", unit, l)
-#define PERF_TIMER(name) PERF_TIMER_UNIT(name, 1000000)
-#define PERF_TIMER_L(name, l) PERF_TIMER_UNIT_L(name, 1000000, l)
-#define PERF_TIMER_START_UNIT(name, unit) std::unique_ptr<tools::LoggingPerformanceTimer> pt_##name(new tools::LoggingPerformanceTimer(#name, "perf.oldlog", unit, el::Level::Info))
-#define PERF_TIMER_START(name) PERF_TIMER_START_UNIT(name, 1000000)
-#define PERF_TIMER_STOP(name)  \
-	do                         \
-	{                          \
-		pt_##name.reset(NULL); \
-	} while(0)
-#define PERF_TIMER_PAUSE(name) pt_##name->pause()
-#define PERF_TIMER_RESUME(name) pt_##name->resume()
-}
+/** convert a C string into a C++ std::string
+ *
+ * @code{cpp}
+ * auto foo = "Hello World!"_s; // type of foo is std::string
+ * @endcode
+ */
+std::string operator ""_s(const char * str, size_t len);

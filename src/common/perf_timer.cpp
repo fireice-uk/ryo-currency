@@ -41,6 +41,8 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#define GULPS_CAT_MAJOR "perf_timer"
+
 
 #include "perf_timer.h"
 #include "misc_os_dependent.h"
@@ -107,7 +109,7 @@ void set_performance_timer_log_level(el::Level level)
 {
 	if(level != el::Level::Debug && level != el::Level::Trace && level != el::Level::Info && level != el::Level::Warning && level != el::Level::Error && level != el::Level::Fatal)
 	{
-		MERROR("Wrong log level: " << el::LevelHelper::convertToString(level) << ", using Debug");
+		GULPS_ERRORF("Wrong log level: {}, using Debug", el::LevelHelper::convertToString(level));
 		level = el::Level::Debug;
 	}
 	performance_timer_log_level = level;

@@ -41,6 +41,8 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#define GULPS_CAT_MAJOR "stk_trace"
+
 
 #if !defined __GNUC__ || defined __MINGW32__ || defined __MINGW64__ || defined __ANDROID__
 #define USE_UNWIND
@@ -59,13 +61,13 @@
 #include <dlfcn.h>
 #endif
 #include "common/stack_trace.h"
-#include "misc_log_ex.h"
 #include <boost/algorithm/string.hpp>
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "stacktrace"
+#include "common/gulps.hpp"
 
-#define ST_LOG(x) CINFO(el::base::Writer, el::base::DispatchAction::FileOnlyLog, RYO_DEFAULT_LOG_CATEGORY) << x
+
+
+#define ST_LOG(x) GULPS_LOGF_L0(x);
 
 // from http://stackoverflow.com/questions/11665829/how-can-i-print-stack-trace-for-caught-exceptions-in-c-code-injection-in-c
 

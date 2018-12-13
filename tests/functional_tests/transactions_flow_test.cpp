@@ -33,6 +33,7 @@
 #include <unordered_map>
 
 #include "include_base_utils.h"
+#include "misc_log_ex.h"
 using namespace epee;
 #include "wallet/wallet2.h"
 using namespace cryptonote;

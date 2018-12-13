@@ -30,7 +30,7 @@
 #include <string>
 
 #include "easylogging++.h"
-
+	
 #define RYO_DEFAULT_LOG_CATEGORY "default"
 #define MAX_LOG_FILE_SIZE 104850000 // 100 MB - 7600 bytes
 
@@ -132,21 +132,21 @@ inline bool get_set_enable_assert(bool set = false, bool v = false)
 #define ENDL std::endl
 
 #define TRY_ENTRY() \
-	try             \
-	{
+try             \
+{
 #define CATCH_ENTRY(location, return_val)                                          \
-	}                                                                              \
-	catch(const std::exception &ex)                                                \
-	{                                                                              \
-		(void)(ex);                                                                \
-		LOG_ERROR("Exception at [" << location << "], what=" << ex.what());        \
-		return return_val;                                                         \
-	}                                                                              \
-	catch(...)                                                                     \
-	{                                                                              \
-		LOG_ERROR("Exception at [" << location << "], generic exception \"...\""); \
-		return return_val;                                                         \
-	}
+}                                                                              \
+catch(const std::exception &ex)                                                \
+{                                                                              \
+	(void)(ex);                                                                \
+	LOG_ERROR("Exception at [" << location << "], what=" << ex.what());        \
+	return return_val;                                                         \
+}                                                                              \
+catch(...)                                                                     \
+{                                                                              \
+	LOG_ERROR("Exception at [" << location << "], generic exception \"...\""); \
+	return return_val;                                                         \
+}
 
 #define CATCH_ENTRY_L0(lacation, return_val) CATCH_ENTRY(lacation, return_val)
 #define CATCH_ENTRY_L1(lacation, return_val) CATCH_ENTRY(lacation, return_val)
@@ -155,20 +155,20 @@ inline bool get_set_enable_assert(bool set = false, bool v = false)
 #define CATCH_ENTRY_L4(lacation, return_val) CATCH_ENTRY(lacation, return_val)
 
 #define ASSERT_MES_AND_THROW(message)       \
-	{                                       \
-		LOG_ERROR(message);                 \
-		std::stringstream ss;               \
-		ss << message;                      \
-		throw std::runtime_error(ss.str()); \
-	}
-#define CHECK_AND_ASSERT_THROW_MES(expr, message) \
-	do                                            \
-	{                                             \
-		if(!(expr))                               \
-			ASSERT_MES_AND_THROW(message);        \
-	} while(0)
+{                                       \
+	LOG_ERROR(message);                 \
+	std::stringstream ss;               \
+	ss << message;                      \
+	throw std::runtime_error(ss.str()); \
+}
 
-#ifndef CHECK_AND_ASSERT
+#define CHECK_AND_ASSERT_THROW_MES(expr, message) \
+do                                            \
+{                                             \
+	if(!(expr))                               \
+		ASSERT_MES_AND_THROW(message);        \
+} while(0)
+
 #define CHECK_AND_ASSERT(expr, fail_ret_val) \
 	do                                       \
 	{                                        \
@@ -178,9 +178,8 @@ inline bool get_set_enable_assert(bool set = false, bool v = false)
 			return fail_ret_val;             \
 		};                                   \
 	} while(0)
-#endif
 
-#ifndef CHECK_AND_ASSERT_MES
+
 #define CHECK_AND_ASSERT_MES(expr, fail_ret_val, message) \
 	do                                                    \
 	{                                                     \
@@ -190,9 +189,7 @@ inline bool get_set_enable_assert(bool set = false, bool v = false)
 			return fail_ret_val;                          \
 		};                                                \
 	} while(0)
-#endif
 
-#ifndef CHECK_AND_NO_ASSERT_MES_L
 #define CHECK_AND_NO_ASSERT_MES_L(expr, fail_ret_val, l, message) \
 	do                                                            \
 	{                                                             \
@@ -202,17 +199,11 @@ inline bool get_set_enable_assert(bool set = false, bool v = false)
 			return fail_ret_val;                                  \
 		};                                                        \
 	} while(0)
-#endif
 
-#ifndef CHECK_AND_NO_ASSERT_MES
 #define CHECK_AND_NO_ASSERT_MES(expr, fail_ret_val, message) CHECK_AND_NO_ASSERT_MES_L(expr, fail_ret_val, 0, message)
-#endif
 
-#ifndef CHECK_AND_NO_ASSERT_MES_L1
 #define CHECK_AND_NO_ASSERT_MES_L1(expr, fail_ret_val, message) CHECK_AND_NO_ASSERT_MES_L(expr, fail_ret_val, 1, message)
-#endif
 
-#ifndef CHECK_AND_ASSERT_MES_NO_RET
 #define CHECK_AND_ASSERT_MES_NO_RET(expr, message) \
 	do                                             \
 	{                                              \
@@ -222,9 +213,7 @@ inline bool get_set_enable_assert(bool set = false, bool v = false)
 			return;                                \
 		};                                         \
 	} while(0)
-#endif
 
-#ifndef CHECK_AND_ASSERT_MES2
 #define CHECK_AND_ASSERT_MES2(expr, message) \
 	do                                       \
 	{                                        \
@@ -233,7 +222,6 @@ inline bool get_set_enable_assert(bool set = false, bool v = false)
 			LOG_ERROR(message);              \
 		};                                   \
 	} while(0)
-#endif
 
 enum console_colors
 {
