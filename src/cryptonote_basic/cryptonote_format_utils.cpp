@@ -168,7 +168,7 @@ bool expand_transaction_1(transaction &tx, bool base_only)
 	rct::rctSig &rv = tx.rct_signatures;
 	if(rv.outPk.size() != tx.vout.size())
 	{
-		LOG_PRINT_L1("Failed to parse transaction from blob, bad outPk size in tx " << get_transaction_hash(tx));
+		GULPS_LOG_L1("Failed to parse transaction from blob, bad outPk size in tx ", get_transaction_hash(tx));
 		return false;
 	}
 
@@ -179,25 +179,25 @@ bool expand_transaction_1(transaction &tx, bool base_only)
 	{
 		if (rv.p.bulletproofs.size() != 1)
 		{
-			LOG_PRINT_L1("Failed to parse transaction from blob, bad bulletproofs size in tx " << get_transaction_hash(tx));
+			GULPS_LOG_L1("Failed to parse transaction from blob, bad bulletproofs size in tx ", get_transaction_hash(tx));
 			return false;
 		}
 
 		if (rv.p.bulletproofs[0].L.size() < 6)
 		{
-			LOG_PRINT_L1("Failed to parse transaction from blob, bad bulletproofs L size in tx " << get_transaction_hash(tx));
+			GULPS_LOG_L1("Failed to parse transaction from blob, bad bulletproofs L size in tx ", get_transaction_hash(tx));
 			return false;
 		}
 
 		const size_t max_outputs = 1 << (rv.p.bulletproofs[0].L.size() - 6);
 		if (max_outputs < tx.vout.size())
 		{
-			LOG_PRINT_L1("Failed to parse transaction from blob, bad bulletproofs max outputs in tx " << get_transaction_hash(tx));
+			GULPS_LOG_L1("Failed to parse transaction from blob, bad bulletproofs max outputs in tx ", get_transaction_hash(tx));
 			return false;
 		}
 
 		const size_t n_amounts = tx.vout.size();
-		CHECK_AND_ASSERT_MES(n_amounts == rv.outPk.size(), false, "Internal error filling out V");
+		GULPS_CHECK_AND_ASSERT_MES(n_amounts == rv.outPk.size(), false, "Internal error filling out V");
 		rv.p.bulletproofs[0].V.resize(n_amounts);
 
 		for (size_t i = 0; i < n_amounts; ++i)
@@ -397,7 +397,7 @@ bool parse_tx_extra(const std::vector<uint8_t> &tx_extra, std::vector<tx_extra_f
 		tx_extra_field field;
 		bool r = ::do_serialize(ar, field);
 
-		CHECK_AND_NO_ASSERT_MES_L1(r, false, "failed to deserialize extra field! n= " << tx_extra_fields.size() << " extra = " <<
+		GULPS_CHECK_AND_NO_ASSERT_MES_L1(r, false, "failed to deserialize extra field! n= ", tx_extra_fields.size(), " extra = ", 
 			string_tools::buff_to_hex_nodelimer(std::string(reinterpret_cast<const char *>(tx_extra.data()), tx_extra.size())));
 
 		tx_extra_fields.push_back(field);

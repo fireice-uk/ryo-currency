@@ -4197,8 +4197,8 @@ class CrashHandler
 } // namespace debug
 } // namespace base
 extern base::debug::CrashHandler elCrashHandler;
-#define MAKE_LOGGABLE(ClassType, ClassInstance, OutputStreamInstance) \
-	el::base::type::ostream_t &operator<<(el::base::type::ostream_t &OutputStreamInstance, const ClassType &ClassInstance)
+//#define MAKE_LOGGABLE(ClassType, ClassInstance, OutputStreamInstance) 
+//	el::base::type::ostream_t &operator<<(el::base::type::ostream_t &OutputStreamInstance, const ClassType &ClassInstance)
 /// @brief Initializes syslog with process ID, options and facility. calls closelog() on d'tor
 class SysLogInitializer
 {

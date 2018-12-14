@@ -66,9 +66,6 @@
 #include "common/gulps.hpp"
 
 
-
-#define ST_LOG(x) GULPS_LOGF_L0(x);
-
 // from http://stackoverflow.com/questions/11665829/how-can-i-print-stack-trace-for-caught-exceptions-in-c-code-injection-in-c
 
 // The decl of __cxa_throw in /usr/include/.../cxxabi.h uses
@@ -138,18 +135,18 @@ void log_stack_trace(const char *msg)
 #endif
 
 	if(msg)
-		ST_LOG(msg);
-	ST_LOG("Unwound call stack:");
+		GULPS_LOG_L0(msg);
+	GULPS_LOG_L0("Unwound call stack:");
 
 #ifdef USE_UNWIND
 	if(unw_getcontext(&ctx) < 0)
 	{
-		ST_LOG("Failed to create unwind context");
+		GULPS_LOG_L0("Failed to create unwind context");
 		return;
 	}
 	if(unw_init_local(&cur, &ctx) < 0)
 	{
-		ST_LOG("Failed to find the first unwind frame");
+		GULPS_LOG_L0("Failed to find the first unwind frame");
 		return;
 	}
 	for(level = 1; level < 999; ++level)
@@ -157,34 +154,28 @@ void log_stack_trace(const char *msg)
 		int ret = unw_step(&cur);
 		if(ret < 0)
 		{
-			ST_LOG("Failed to find the next frame");
+			GULPS_LOG_L0("Failed to find the next frame");
 			return;
 		}
 		if(ret == 0)
 			break;
 		if(unw_get_reg(&cur, UNW_REG_IP, &ip) < 0)
 		{
-			ST_LOG("  " << std::setw(4) << level);
+			GULPS_LOGF_L0("{:<4}", level);
 			continue;
 		}
 		if(unw_get_proc_name(&cur, sym, sizeof(sym), &off) < 0)
 		{
-			ST_LOG("  " << std::setw(4) << level << std::setbase(16) << std::setw(20) << "0x" << ip);
+			GULPS_LOGF_L0("{:<4}{:<20#0.x}", level, ip);
 			continue;
 		}
 		dsym = abi::__cxa_demangle(sym, NULL, NULL, &status);
-		ST_LOG("  " << std::setw(4) << level << std::setbase(16) << std::setw(20) << "0x" << ip << " " << (!status && dsym ? dsym : sym) << " + "
-					<< "0x" << off);
+		GULPS_LOGF_L0("{:<4}{:<20#0.x} {#0.x} + {#0.x}", level, ip, (!status && dsym ? dsym : sym), off);
 		free(dsym);
 	}
 #else
-	std::stringstream ss;
-	ss << el::base::debug::StackTrace();
-	std::vector<std::string> lines;
-	std::string s = ss.str();
-	boost::split(lines, s, boost::is_any_of("\n"));
-	for(const auto &line : lines)
-		ST_LOG(line);
+	//TODO PRINTING STACK
+	GULPS_LOG_L0("");
 #endif
 }
 

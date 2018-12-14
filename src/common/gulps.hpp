@@ -58,7 +58,6 @@
 #include <fmt/format.h>
 #include <fmt/time.h>
 #include <boost/algorithm/string.hpp>
-#include "easylogging++.h"
 
 #if defined(WIN32)
 #include <windows.h>
@@ -669,6 +668,17 @@ public:
 	}
 };
 
+namespace debug
+{
+	inline bool get_set_enable_assert(bool set = false, bool v = false)
+	{
+		static bool e = true;
+		if(set)
+			e = v;
+		return e;
+	};
+};
+
 #ifndef GULPS_CAT_MAJOR
 #define GULPS_CAT_MAJOR "default"
 #endif
@@ -774,14 +784,15 @@ public:
 #define GULPS_DEBUG2(fstr, ...) GULPS_OUTPUT(gulps::LEVEL_DEBUG_2, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, fmt::color::white, fstr, __VA_ARGS__)
 #define GULPS_PRINT(clr, fstr, ...) GULPS_OUTPUT(gulps::LEVEL_OUTPUT_0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, clr, fstr, __VA_ARGS__)*/
 
-#define GULPS_SET_THREAD_NAME(x) el::Helpers::setThreadName(x)
+//TODO?
+#define GULPS_SET_THREAD_NAME(x) 
 	
 #ifndef GULPS_LOCAL_ASSERT
 #include <assert.h>
 #if(defined _MSC_VER)
 #define GULPS_LOCAL_ASSERT(expr)                       \
 	{                                            \
-		if(epee::debug::get_set_enable_assert()) \
+		if(debug::get_set_enable_assert()) \
 		{                                        \
 			_ASSERTE(expr);                      \
 		}                                        \

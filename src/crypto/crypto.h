@@ -55,6 +55,7 @@
 #include <type_traits>
 #include <vector>
 
+#include "fmt/format.h"
 #include "common/util.h"
 #include "generic-ops.h"
 #include "hash.h"

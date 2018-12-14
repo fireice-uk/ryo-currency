@@ -2626,21 +2626,21 @@ bool Blockchain::check_tx_outputs(const transaction &tx, tx_verification_context
 	bool has_bulletproofs = tx.rct_signatures.type == rct::RCTTypeBulletproof;
 	if((has_bulletproofs && tx.rct_signatures.p.bulletproofs.empty()) || (!has_bulletproofs && !tx.rct_signatures.p.bulletproofs.empty()))
 	{
-		MERROR("Invalid signature semantics");
+		GULPS_ERROR("Invalid signature semantics");
 		tvc.m_invalid_output = true;
 		return false;
 	}
 
 	if(has_bulletproofs && !check_hard_fork_feature(FORK_BULLETPROOFS))
 	{
-		MERROR("Bulletproofs are not allowed yet");
+		GULPS_ERROR("Bulletproofs are not allowed yet");
 		tvc.m_invalid_output = true;
 		return false;
 	}
 
 	if(!has_bulletproofs && check_hard_fork_feature(FORK_BULLETPROOFS_REQ))
 	{
-		MERROR("Bulletproofs are required");
+		GULPS_ERROR("Bulletproofs are required");
 		tvc.m_invalid_output = true;
 		return false;
 	}
@@ -2763,7 +2763,7 @@ bool Blockchain::check_tx_inputs(transaction &tx, tx_verification_context &tvc, 
 
 		if(vin_mixin > cryptonote::common_config::MAX_MIXIN)
 		{
-			MERROR_VER("Tx " << get_transaction_hash(tx) << " has too high ring size (" << vin_mixin << "), max = " << cryptonote::common_config::MAX_MIXIN + 1);
+			GULPS_VERIFY_ERR_TX("Tx ", get_transaction_hash(tx), " has too high ring size (", vin_mixin, "), max = ", cryptonote::common_config::MAX_MIXIN + 1);
 			tvc.m_verifivation_failed = true;
 			return false;
 		}
@@ -2829,7 +2829,7 @@ bool Blockchain::check_tx_inputs(transaction &tx, tx_verification_context &tvc, 
 			{
 				if(has_uniform_pid)
 				{
-					MERROR_VER("Tx has a duplicate uniform pid field.");
+					GULPS_VERIFY_ERR_TX("Tx has a duplicate uniform pid field.");
 					tvc.m_verifivation_failed = true;
 					return false;
 				}
@@ -2839,7 +2839,7 @@ bool Blockchain::check_tx_inputs(transaction &tx, tx_verification_context &tvc, 
 
 		if(uids_required && !has_uniform_pid)
 		{
-			MERROR_VER("Transaction has no uniform pid field.");
+			GULPS_VERIFY_ERR_TX("Transaction has no uniform pid field.");
 			tvc.m_verifivation_failed = true;
 			return false;
 		}

@@ -39,8 +39,6 @@
 
 #include "common/gulps.hpp"	
 
-
-
 #ifndef MAKE_IP
 #define MAKE_IP(a1, a2, a3, a4) (a1 | (a2 << 8) | (a3 << 16) | (a4 << 24))
 #endif
@@ -338,10 +336,13 @@ struct i_service_endpoint
 std::string print_connection_context(const connection_context_base &ctx);
 std::string print_connection_context_short(const connection_context_base &ctx);
 
-inline MAKE_LOGGABLE(connection_context_base, ct, os)
-{
-	os << "[" << epee::net_utils::print_connection_context_short(ct) << "] ";
-	return os;
+#define MAKE_LOGGABLE(ClassType, ClassInstance, OutputStreamInstance) \
+	std::ostream &operator<<(std::ostream &OutputStreamInstance, const ClassType &ClassInstance)
+	
+inline MAKE_LOGGABLE(connection_context_base, ct, os)	
+{	
+	os << "[" << epee::net_utils::print_connection_context_short(ct).c_str() << "] ";	
+	return os;	
 }
 
 }

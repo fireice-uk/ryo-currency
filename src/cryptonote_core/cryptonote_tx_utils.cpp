@@ -128,7 +128,7 @@ bool construct_miner_tx(cryptonote::network_type nettype, size_t height, size_t 
 
 	tx_out out = { block_reward, txout_to_key(out_eph_public_key) };
 	tx.vout.push_back(out);
-	
+
 	uint64_t dev_fund_amount;
 	if(get_dev_fund_amount(nettype, height, dev_fund_amount))
 	{
@@ -138,10 +138,10 @@ bool construct_miner_tx(cryptonote::network_type nettype, size_t height, size_t 
 
 		r = crypto::generate_key_derivation(dev_addr.address.m_view_public_key, txkey.sec, derivation);
 		GULPS_CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to generate_key_derivation(" , dev_addr.address.m_view_public_key , ", " , txkey.sec , ")");
-		
+
 		r = crypto::derive_public_key(derivation, 1, dev_addr.address.m_spend_public_key, out_eph_public_key);
 		GULPS_CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to derive_public_key(" , derivation , ", 1, " , dev_addr.address.m_spend_public_key , ")");
-		
+
 		out = { dev_fund_amount, txout_to_key(out_eph_public_key) };
 		tx.vout.push_back(out);
 	}
@@ -162,10 +162,10 @@ bool construct_miner_tx(cryptonote::network_type nettype, size_t height, size_t 
 }
 //---------------------------------------------------------------
 crypto::public_key get_destination_view_key_pub(const std::vector<tx_destination_entry> &destinations, const boost::optional<cryptonote::account_public_address> &change_addr, bool allow_any_key)
-{	
+{
 	if(allow_any_key && change_addr)
 		return change_addr->m_view_public_key;
-  
+
 	account_public_address addr = {null_pkey, null_pkey};
 	size_t count = 0;
 	for(const auto &i : destinations)
@@ -214,7 +214,7 @@ bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std
 
 	if(bulletproof && destinations.size() > common_config::BULLETPROOF_MAX_OUTPUTS)
 	{
-		LOG_ERROR("Current bulletproof implementation supports up to 16 outputs (15 + change).");
+		GULPS_ERROR("Current bulletproof implementation supports up to 16 outputs (15 + change).");
 		return false;
 	}
 
@@ -374,7 +374,7 @@ bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std
 	}
 	GULPS_CHECK_AND_ASSERT_MES(additional_tx_public_keys.size() == additional_tx_keys.size(), false, "Internal error creating additional public keys");
 
-	LOG_PRINT_L2("tx pubkey: " << txkey_pub);
+	GULPS_LOG_L2("tx pubkey: ", txkey_pub);
 	if(need_additional_txkeys)
 	{
 		GULPS_LOG_L2("additional tx pubkeys: ");
@@ -383,42 +383,42 @@ bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std
 		add_additional_tx_pub_keys_to_extra(tx.extra, additional_tx_public_keys);
 	}
 
-	
+
 	tx_extra_uniform_payment_id pid;
 	//Add payment id after pubkeys
 	if(payment_id != nullptr)
 	{
 		if(payment_id->zero != 0)
 		{
-			LOG_ERROR("Internal error. Invalid payment id.");
+			GULPS_ERROR("Internal error. Invalid payment id.");
 			return false;
 		}
 
 		pid.pid = *payment_id;
 	}
 
-	LOG_PRINT_L2("Encrypting payment id " << pid.pid.payment_id);
+	GULPS_LOG_L2("Encrypting payment id " << pid.pid.payment_id);
 
 	crypto::public_key view_key_pub = get_destination_view_key_pub(destinations, change_addr, payment_id == nullptr);
 	if(view_key_pub == null_pkey)
 	{
-		LOG_ERROR("Destinations have to have exactly one output to support encrypted payment ids");
+		GULPS_ERROR("Destinations have to have exactly one output to support encrypted payment ids");
 		return false;
 	}
 
 	if(!hwdev.encrypt_payment_id(pid.pid, view_key_pub, tx_key))
 	{
-		LOG_ERROR("Failed to encrypt payment id");
+		GULPS_ERROR("Failed to encrypt payment id");
 		return false;
 	}
 
 	if(!add_payment_id_to_tx_extra(tx.extra, pid))
 	{
-		LOG_ERROR("Failed to add encrypted payment id to tx extra");
+		GULPS_ERROR("Failed to add encrypted payment id to tx extra");
 		return false;
 	}
 
-	LOG_PRINT_L1("Encrypted payment ID: " << pid.pid.payment_id);
+	GULPS_LOGF_L1("Encrypted payment ID: {}", pid.pid.payment_id);
 
 	//check money
 	if(summary_outs_money > summary_inputs_money)
@@ -571,7 +571,7 @@ bool construct_tx_and_get_tx_key(const account_keys &sender_account_keys, const 
 			additional_tx_keys.push_back(keypair::generate(sender_account_keys.get_device()).sec);
 	}
 
-	bool r = construct_tx_with_tx_key(sender_account_keys, subaddresses, sources, destinations, change_addr, 
+	bool r = construct_tx_with_tx_key(sender_account_keys, subaddresses, sources, destinations, change_addr,
 		payment_id, tx, unlock_time, tx_key, additional_tx_keys, bulletproof, msout);
 
 	hwdev.close_tx();

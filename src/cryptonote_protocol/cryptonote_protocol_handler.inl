@@ -1139,12 +1139,10 @@ int t_cryptonote_protocol_handler<t_core>::try_add_next_blocks(cryptonote_connec
 				if(m_core.get_current_blockchain_height() > previous_height)
 				{
 					const boost::posix_time::time_duration dt = boost::posix_time::microsec_clock::universal_time() - start;
-					std::string timing_message = "";
-					if(ELPP->vRegistry()->allowed(el::Level::Info, "sync-info"))
-						timing_message = std::string(" (") + std::to_string(dt.total_microseconds() / 1e6) + " sec, " + std::to_string((m_core.get_current_blockchain_height() - previous_height) * 1e6 / dt.total_microseconds()) + " blocks/sec), " + std::to_string(m_block_queue.get_data_size() / 1048576.f) + " MB queued";
-					if(ELPP->vRegistry()->allowed(el::Level::Debug, "sync-info"))
-						timing_message += std::string(": ") + m_block_queue.get_overview();
-					GULPS_GLOBALF_PRINT_CLR(gulps::COLOR_YELLOW, "{} Synced {}/{} {}", context_str, m_core.get_current_blockchain_height(), m_core.get_target_blockchain_height(), timing_message);
+					GULPS_GLOBALF_PRINT_CLR(gulps::COLOR_YELLOW, "{} Synced {}/{}", context_str, m_core.get_current_blockchain_height(), m_core.get_target_blockchain_height());
+					GULPS_CATF_INFO("global", "({}sec, {} blocks/sec), {} MB queued", std::to_string(dt.total_microseconds() / 1e6), std::to_string((m_core.get_current_blockchain_height() - previous_height) * 1e6 / dt.total_microseconds()),
+									     std::to_string(m_block_queue.get_data_size() / 1048576.f));
+					GULPS_CAT_LOG_L1("global","", m_block_queue.get_overview());
 				}
 			}
 		}

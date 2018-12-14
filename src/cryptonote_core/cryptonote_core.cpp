@@ -764,7 +764,7 @@ bool core::check_tx_semantic(const transaction &tx, bool keeped_by_block) const
 
 	if(tx.rct_signatures.outPk.size() != tx.vout.size())
 	{
-		MERROR_VER("tx with mismatched vout/outPk count, rejected for tx id= " << get_transaction_hash(tx));
+		GULPS_VERIFY_ERR_TX("tx with mismatched vout/outPk count, rejected for tx id= ", get_transaction_hash(tx));
 		return false;
 	}
 
@@ -806,7 +806,7 @@ bool core::check_tx_semantic(const transaction &tx, bool keeped_by_block) const
 	{
 	case rct::RCTTypeNull:
 		// coinbase should not come here, so we reject for all other types
-		MERROR_VER("Unexpected Null rctSig type");
+		GULPS_VERIFY_ERR_TX("Unexpected Null rctSig type");
 		return false;
 	case rct::RCTTypeSimple:
 	case rct::RCTTypeBulletproof:
@@ -814,19 +814,19 @@ bool core::check_tx_semantic(const transaction &tx, bool keeped_by_block) const
 		// and there is very little point in polishing turds
 		if(!rct::verRctSemanticsSimple(rv))
 		{
-			MERROR_VER("rct signature semantics check failed");
+			GULPS_VERIFY_ERR_TX("rct signature semantics check failed");
 			return false;
 		}
 		break;
 	case rct::RCTTypeFull:
 		if(!rct::verRct(rv, true))
 		{
-			MERROR_VER("rct signature semantics check failed");
+			GULPS_VERIFY_ERR_TX("rct signature semantics check failed");
 			return false;
 		}
 		break;
 	default:
-		MERROR_VER("Unknown rct type: " << rv.type);
+		GULPS_VERIFY_ERR_TX("Unknown rct type: ", rv.type);
 		return false;
 	}
 
@@ -1326,19 +1326,18 @@ bool core::on_idle()
 bool core::check_fork_time()
 {
 	HardFork::State state = m_blockchain_storage.get_hard_fork_state();
-	const el::Level level = el::Level::Warning;
 	switch(state)
 	{
 	case HardFork::LikelyForked:
-		GULPS_CAT_PRINT_CLR(gulps::COLOR_RED, "global", "**********************************************************************");
-		GULPS_CAT_PRINT_CLR(gulps::COLOR_RED, "global", "Last scheduled hard fork is too far in the past.");
-		GULPS_CAT_PRINT_CLR(gulps::COLOR_RED, "global", "We are most likely forked from the network. Daemon update needed now.");
-		GULPS_CAT_PRINT_CLR(gulps::COLOR_RED, "global", "**********************************************************************");
+		GULPS_CAT_WARN("global", "**********************************************************************");
+		GULPS_CAT_WARN("global", "Last scheduled hard fork is too far in the past.");
+		GULPS_CAT_WARN("global", "We are most likely forked from the network. Daemon update needed now.");
+		GULPS_CAT_WARN("global", "**********************************************************************");
 		break;
 	case HardFork::UpdateNeeded:
-		GULPS_CAT_PRINT_CLR(gulps::COLOR_RED, "global", "**********************************************************************");
-		GULPS_CAT_PRINT_CLR(gulps::COLOR_RED, "global", "Last scheduled hard fork time shows a daemon update is needed soon.");
-		GULPS_CAT_PRINT_CLR(gulps::COLOR_RED, "global", "**********************************************************************");
+		GULPS_CAT_WARN("global", "**********************************************************************");
+		GULPS_CAT_WARN("global", "Last scheduled hard fork time shows a daemon update is needed soon.");
+		GULPS_CAT_WARN("global", "**********************************************************************");
 		break;
 	default:
 		break;

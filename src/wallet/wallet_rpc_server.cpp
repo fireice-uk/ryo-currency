@@ -2492,7 +2492,7 @@ bool wallet_rpc_server::on_change_wallet_password(const wallet_rpc::COMMAND_RPC_
 		{
 			m_wallet->rewrite(m_wallet->get_wallet_file(), req.new_password);
 			m_wallet->store();
-			LOG_PRINT_L0("Wallet password changed.");
+			GULPS_PRINT("Wallet password changed.");
 		}
 		catch(const std::exception& e)
 		{

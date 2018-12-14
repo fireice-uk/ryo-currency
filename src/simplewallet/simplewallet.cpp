@@ -739,9 +739,9 @@ bool simple_wallet::print_fee_info(const std::vector<std::string> &args /* = std
 
 	using namespace cryptonote;
 	constexpr uint64_t typical_size_kb = 15;
-	message_writer() << (boost::format(tr("Current fee is %s %s per kB and %s %s per ring member.")) %
-		print_money(common_config::FEE_PER_KB) % get_unit(get_default_decimal_point()) %
-		print_money(common_config::FEE_PER_RING_MEMBER) % get_unit(get_default_decimal_point()));
+	GULPS_PRINTF_OK(tr("Current fee is {} {} per kB and {} {} per ring member."),
+		print_money(common_config::FEE_PER_KB) , get_unit(get_default_decimal_point()),
+		print_money(common_config::FEE_PER_RING_MEMBER), get_unit(get_default_decimal_point()));
 
 	std::vector<uint64_t> fees;
 	for(uint32_t priority = 1; priority <= 4; ++priority)
@@ -1664,7 +1664,7 @@ bool simple_wallet::set_default_ring_size(const std::vector<std::string> &args /
 		}
 
 		if(ring_size != 0 && ring_size != get_min_ring_size())
-			message_writer() << tr("WARNING: this is a non default ring size, which may harm your privacy. Default is recommended.");
+			GULPS_PRINT_OK(tr("WARNING: this is a non default ring size, which may harm your privacy. Default is recommended."));
 
 		const auto pwd_container = get_and_verify_password();
 		if(pwd_container)

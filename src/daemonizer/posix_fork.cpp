@@ -13,6 +13,7 @@
 #include <string>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <signal.h>
 
 #ifndef TMPDIR
 #define TMPDIR "/tmp"
