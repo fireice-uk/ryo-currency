@@ -1653,13 +1653,13 @@ bool simple_wallet::set_default_ring_size(const std::vector<std::string> &args /
 	{
 		if(strchr(args[1].c_str(), '-'))
 		{
-			fail_msg_writer() << tr("ring size must be an integer >= ") << get_min_ring_size();
+			GULPS_PRINT_FAIL(tr("ring size must be an integer >= "), get_min_ring_size());
 			return true;
 		}
 		uint32_t ring_size = boost::lexical_cast<uint32_t>(args[1]);
 		if(ring_size < get_min_ring_size() && ring_size != 0)
 		{
-			fail_msg_writer() << tr("ring size must be an integer >= ") << get_min_ring_size();
+			GULPS_PRINT_FAIL(tr("ring size must be an integer >= "), get_min_ring_size());
 			return true;
 		}
 
@@ -1676,7 +1676,7 @@ bool simple_wallet::set_default_ring_size(const std::vector<std::string> &args /
 	}
 	catch(const boost::bad_lexical_cast &)
 	{
-		fail_msg_writer() << tr("ring size must be an integer >= ") << get_min_ring_size();
+		GULPS_PRINT_FAIL(tr("ring size must be an integer >= "), get_min_ring_size());
 		return true;
 	}
 	catch(...)
@@ -2408,30 +2408,35 @@ bool simple_wallet::set_variable(const std::vector<std::string> &args)
 				return true;
 			}
 		}
-		CHECK_SIMPLE_VARIABLE("always-confirm-transfers", set_always_confirm_transfers, tr("0 or 1"));
-		CHECK_SIMPLE_VARIABLE("print-ring-members", set_print_ring_members, tr("0 or 1"));
-		CHECK_SIMPLE_VARIABLE("store-tx-info", set_store_tx_info, tr("0 or 1"));
-		CHECK_SIMPLE_VARIABLE("default-ring-size", set_default_ring_size, tr("integer >= ") << get_min_ring_size());
-		CHECK_SIMPLE_VARIABLE("auto-refresh", set_auto_refresh, tr("0 or 1"));
-		CHECK_SIMPLE_VARIABLE("refresh-type", set_refresh_type, tr("full (slowest, no assumptions); optimize-coinbase (fast, assumes the whole coinbase is paid to a single address); no-coinbase (fastest, assumes we receive no coinbase transaction), default (same as optimize-coinbase)"));
-		CHECK_SIMPLE_VARIABLE("priority", set_default_priority, tr("0, 1, 2, 3, or 4"));
-		CHECK_SIMPLE_VARIABLE("confirm-missing-payment-id", set_confirm_missing_payment_id, tr("0 or 1"));
-		CHECK_SIMPLE_VARIABLE("ask-password", set_ask_password, tr("0 or 1"));
-		CHECK_SIMPLE_VARIABLE("unit", set_unit, tr("ryo, milliryo, microryo, nanoryo"));
-		CHECK_SIMPLE_VARIABLE("min-outputs-count", set_min_output_count, tr("unsigned integer"));
-		CHECK_SIMPLE_VARIABLE("min-outputs-value", set_min_output_value, tr("amount"));
-		CHECK_SIMPLE_VARIABLE("merge-destinations", set_merge_destinations, tr("0 or 1"));
-		CHECK_SIMPLE_VARIABLE("confirm-backlog", set_confirm_backlog, tr("0 or 1"));
-		CHECK_SIMPLE_VARIABLE("confirm-backlog-threshold", set_confirm_backlog_threshold, tr("unsigned integer"));
-		CHECK_SIMPLE_VARIABLE("confirm-export-overwrite", set_confirm_export_overwrite, tr("0 or 1"));
-		CHECK_SIMPLE_VARIABLE("refresh-from-block-height", set_refresh_from_block_height, tr("block height"));
-		CHECK_SIMPLE_VARIABLE("auto-low-priority", set_auto_low_priority, tr("0 or 1"));
-		CHECK_SIMPLE_VARIABLE("segregate-pre-fork-outputs", set_segregate_pre_fork_outputs, tr("0 or 1"));
-		CHECK_SIMPLE_VARIABLE("key-reuse-mitigation2", set_key_reuse_mitigation2, tr("0 or 1"));
-		CHECK_SIMPLE_VARIABLE("subaddress-lookahead", set_subaddress_lookahead, tr("<major>:<minor>"));
-		CHECK_SIMPLE_VARIABLE("segregation-height", set_segregation_height, tr("unsigned integer"));
+
+	#define CHECK_SIMPLE_VARIABLE(name, f, help) if(check_simple_variable(args, name, f, help)) return true
+
+		std::string rs = fmt::format(tr("integer >= {}"), get_min_ring_size());
+		CHECK_SIMPLE_VARIABLE("always-confirm-transfers", &simple_wallet::set_always_confirm_transfers, tr("0 or 1"));
+		CHECK_SIMPLE_VARIABLE("print-ring-members",  &simple_wallet::set_print_ring_members, tr("0 or 1"));
+		CHECK_SIMPLE_VARIABLE("store-tx-info",  &simple_wallet::set_store_tx_info, tr("0 or 1"));
+		CHECK_SIMPLE_VARIABLE("default-ring-size",  &simple_wallet::set_default_ring_size, rs.c_str());
+		CHECK_SIMPLE_VARIABLE("auto-refresh",  &simple_wallet::set_auto_refresh, tr("0 or 1"));
+		CHECK_SIMPLE_VARIABLE("refresh-type",  &simple_wallet::set_refresh_type, tr("full (slowest, no assumptions); optimize-coinbase (fast, assumes the whole coinbase is paid to a single address); no-coinbase (fastest, assumes we receive no coinbase transaction), default (same as optimize-coinbase)"));
+		CHECK_SIMPLE_VARIABLE("priority",  &simple_wallet::set_default_priority, tr("0, 1, 2, 3, or 4"));
+		CHECK_SIMPLE_VARIABLE("confirm-missing-payment-id",  &simple_wallet::set_confirm_missing_payment_id, tr("0 or 1"));
+		CHECK_SIMPLE_VARIABLE("ask-password",  &simple_wallet::set_ask_password, tr("0 or 1"));
+		CHECK_SIMPLE_VARIABLE("unit",  &simple_wallet::set_unit, tr("ryo, milliryo, microryo, nanoryo"));
+		CHECK_SIMPLE_VARIABLE("min-outputs-count",  &simple_wallet::set_min_output_count, tr("unsigned integer"));
+		CHECK_SIMPLE_VARIABLE("min-outputs-value",  &simple_wallet::set_min_output_value, tr("amount"));
+		CHECK_SIMPLE_VARIABLE("merge-destinations",  &simple_wallet::set_merge_destinations, tr("0 or 1"));
+		CHECK_SIMPLE_VARIABLE("confirm-backlog",  &simple_wallet::set_confirm_backlog, tr("0 or 1"));
+		CHECK_SIMPLE_VARIABLE("confirm-backlog-threshold",  &simple_wallet::set_confirm_backlog_threshold, tr("unsigned integer"));
+		CHECK_SIMPLE_VARIABLE("confirm-export-overwrite",  &simple_wallet::set_confirm_export_overwrite, tr("0 or 1"));
+		CHECK_SIMPLE_VARIABLE("refresh-from-block-height",  &simple_wallet::set_refresh_from_block_height, tr("block height"));
+		CHECK_SIMPLE_VARIABLE("auto-low-priority",  &simple_wallet::set_auto_low_priority, tr("0 or 1"));
+		CHECK_SIMPLE_VARIABLE("segregate-pre-fork-outputs",  &simple_wallet::set_segregate_pre_fork_outputs, tr("0 or 1"));
+		CHECK_SIMPLE_VARIABLE("key-reuse-mitigation2",  &simple_wallet::set_key_reuse_mitigation2, tr("0 or 1"));
+		CHECK_SIMPLE_VARIABLE("subaddress-lookahead",  &simple_wallet::set_subaddress_lookahead, tr("<major>:<minor>"));
+		CHECK_SIMPLE_VARIABLE("segregation-height",  &simple_wallet::set_segregation_height, tr("unsigned integer"));
+
 	}
-	fail_msg_writer() << tr("set: unrecognized argument(s)");
+	GULPS_PRINT_FAIL(tr("set: unrecognized argument(s)"));
 	return true;
 }
 
@@ -4177,7 +4182,7 @@ bool simple_wallet::show_payments(const std::vector<std::string> &args)
 			m_wallet->get_payments(payment_id, payments);
 			if(payments.empty())
 			{
-				success_msg_writer() << tr("No payments with id ") << payment_id.payment_id;
+				GULPS_PRINT_GREEN(tr("No payments with id "), payment_id.payment_id);
 				continue;
 			}
 
@@ -4187,13 +4192,13 @@ bool simple_wallet::show_payments(const std::vector<std::string> &args)
 				{
 					payments_found = true;
 				}
-				success_msg_writer(true) << boost::format("%68s%68s%12s%21s%16s%16s") %
-												payment_id.payment_id %
-												pd.m_tx_hash %
-												pd.m_block_height %
-												print_money(pd.m_amount) %
-												pd.m_unlock_time %
-												pd.m_subaddr_index.minor;
+				GULPS_PRINTF_CLR(gulps::COLOR_GREEN, "{}{}{}{}{}{}",
+												payment_id.payment_id,
+												pd.m_tx_hash,
+												pd.m_block_height,
+												print_money(pd.m_amount),
+												pd.m_unlock_time,
+												pd.m_subaddr_index.minor);
 			}
 		}
 		else
@@ -4826,7 +4831,7 @@ bool simple_wallet::sweep_main(uint64_t below, const std::vector<std::string> &a
 	{
 		if(!tools::wallet2::parse_payment_id(local_args.back(), pid) && local_args.size() == 3)
 		{
-			fail_msg_writer() << tr("payment id has invalid format, expected 16 or 64 character hex string: ") << local_args.back();
+			GULPS_PRINT_FAIL(tr("payment id has invalid format, expected 16 or 64 character hex string: "), local_args.back());
 			return true;
 		}
 
@@ -5005,7 +5010,7 @@ bool simple_wallet::sweep_single(const std::vector<std::string> &args_)
 	{
 		if(!tools::wallet2::parse_payment_id(local_args.back(), pid))
 		{
-			fail_msg_writer() << tr("payment id has invalid format, expected 16 or 64 character hex string: ") << local_args.back();
+			GULPS_PRINT_FAIL(tr("payment id has invalid format, expected 16 or 64 character hex string: "), local_args.back());
 			return true;
 		}
 		local_args.pop_back();
@@ -6712,7 +6717,7 @@ bool simple_wallet::print_integrated_address(const std::vector<std::string> &arg
 			return true;
 		}
 
-		success_msg_writer() << m_wallet->get_account().get_public_integrated_address_str(payment_id, m_wallet->nettype());
+		GULPS_PRINT_GREEN(m_wallet->get_account().get_public_integrated_address_str(payment_id, m_wallet->nettype()));
 		return true;
 	}
 	else

@@ -746,7 +746,7 @@ bool wallet_rpc_server::on_transfer(const wallet_rpc::COMMAND_RPC_TRANSFER::requ
 {
 	std::vector<cryptonote::tx_destination_entry> dsts;
 
-	LOG_PRINT_L3("on_transfer starts");
+	GULPS_LOG_L3("on_transfer starts");
 	if(!m_wallet)
 		return not_open(er);
 	if(m_wallet->restricted())
@@ -842,12 +842,12 @@ bool wallet_rpc_server::on_transfer_split(const wallet_rpc::COMMAND_RPC_TRANSFER
 			mixin = m_wallet->adjust_mixin(req.mixin);
 		}
 		uint32_t priority = m_wallet->adjust_priority(req.priority);
-		LOG_PRINT_L2("on_transfer_split calling create_transactions_2");
+		GULPS_LOG_L2("on_transfer_split calling create_transactions_2");
 		
 		std::vector<wallet2::pending_tx> ptx_vector = 
 			m_wallet->create_transactions_2(dsts, mixin, req.unlock_time, priority, check_pid(pid), req.account_index, req.subaddr_indices, m_trusted_daemon);
 		
-		LOG_PRINT_L2("on_transfer_split called create_transactions_2");
+		GULPS_LOG_L2("on_transfer_split called create_transactions_2");
 
 		return fill_response(ptx_vector, req.get_tx_keys, res.tx_key_list, res.amount_list, res.fee_list, res.multisig_txset, req.do_not_relay,
 							 res.tx_hash_list, req.get_tx_hex, res.tx_blob_list, req.get_tx_metadata, res.tx_metadata_list, er);

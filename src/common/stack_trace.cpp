@@ -49,7 +49,6 @@
 #else
 #define ELPP_FEATURE_CRASH_LOG 1
 #endif
-#include "easylogging++/easylogging++.h"
 
 #include <stdexcept>
 #ifdef USE_UNWIND
