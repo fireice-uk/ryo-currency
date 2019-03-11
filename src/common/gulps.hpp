@@ -58,6 +58,7 @@
 #include <fmt/format.h>
 #include <fmt/time.h>
 #include <boost/algorithm/string.hpp>
+#include "../cryptonote_config.h"
 
 #if defined(WIN32)
 #include <windows.h>
@@ -195,13 +196,19 @@ public:
 			time(std::time(nullptr)), lvl(lvl), out(out), cat_major(major), cat_minor(minor), src_path(path), src_line(line),
 			thread_id(gulps::inst().get_thread_tag()), text(std::move(txt)), clr(clr)
 		{
+			const std::string& pre = gulps::inst().get_path_prefix();
+
+			if(src_path.find(pre) == 0)
+				src_path.erase(0, pre.size());
+	
 			if(add_newline && text.back() != '\n')
 				text += '\n';
 		}
 
 		std::string print_message(bool inc_text = true) const
 		{
-			std::string sout = fmt::format("{}-{} [{}] {}.{} {}:{} ", fmt::localtime(time), level_to_str(lvl), out_to_str(out), thread_id, cat_major, cat_minor, src_path, src_line);
+			std::string sout = fmt::format("{:%Y-%m-%d %H:%M:%S} [{}/{}] {} {}.{} {}:{} ", 
+				fmt::localtime(time), level_to_str(lvl), out_to_str(out), thread_id, cat_major, cat_minor, src_path, src_line);
 
 			if(inc_text)
 				sout += text;
@@ -329,6 +336,7 @@ public:
 				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | bright);
 #else
 				std::cout << (bright ? "\033[1;97m" : "\033[0;97m");
+				std::cout.flush();
 #endif
 				break;
 			case COLOR_RED:
@@ -336,6 +344,7 @@ public:
 				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | bright);
 #else
 				std::cout << (bright ? "\033[1;31m" : "\033[0;31m");
+				std::cout.flush();
 #endif
 				break;
 			case COLOR_GREEN:
@@ -343,6 +352,7 @@ public:
 				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN | bright);
 #else
 				std::cout << (bright ? "\033[1;32m" : "\033[0;32m");
+				std::cout.flush();
 #endif
 				break;
 			case COLOR_BLUE:
@@ -350,6 +360,7 @@ public:
 				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_BLUE | bright);
 #else
 				std::cout << (bright ? "\033[1;34m" : "\033[0;34m");
+				std::cout.flush();
 #endif
 				break;
 			case COLOR_CYAN:
@@ -357,12 +368,14 @@ public:
 				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN | FOREGROUND_BLUE | bright);
 #else
 				std::cout << (bright ? "\033[1;36m" : "\033[0;36m");
+				std::cout.flush();
 #endif
 				break;
 			case COLOR_MAGENTA:
 #ifdef WIN32
 				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_BLUE | FOREGROUND_RED | bright);
 #else
+				std::cout << "set_magenta " << bright << std::endl;
 				std::cout << (bright ? "\033[1;35m" : "\033[0;35m");
 #endif
 				break;
@@ -371,6 +384,7 @@ public:
 				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_BLUE | FOREGROUND_RED | bright);
 #else
 				std::cout << (bright ? "\033[1;33m" : "\033[0;33m");
+				std::cout.flush();
 #endif
 				break;
 			}
@@ -506,9 +520,6 @@ public:
 		thdq<message> msg_q;
 		std::thread thd;
 	};
-
-	gulps() {}
-
 	inline const std::string& get_thread_tag() { return thread_tag(); }
 	inline void set_thread_tag(const std::string& tag) { thread_tag() = tag; }
 
@@ -548,13 +559,31 @@ public:
 			it.second->log(msg, printed, logged);
 	}
 
+	inline const std::string& get_path_prefix()
+	{
+		return path_prefix;
+	}
+
 private:
+	gulps() 
+	{
+		path_prefix = __FILE__;
+		size_t pos;
+		if((pos = path_prefix.find("src/common/gulps.hpp")) != std::string::npos)
+			path_prefix.erase(pos);
+		else if((pos = path_prefix.find("src\\common\\gulps.hpp")) != std::string::npos)
+			path_prefix.erase(pos);
+		else
+			assert(false);
+	}
+
 	inline std::string& thread_tag()
 	{
 		static thread_local std::string thread_tag;
 		return thread_tag;
 	}
 
+	std::string path_prefix;
 	uint64_t next_handle = 0;
 	std::mutex gulps_global;
 	std::map<uint64_t, std::unique_ptr<gulps_output>> outputs;
@@ -894,8 +923,3 @@ do                                             \
 	} while(0)
 
 #define GULPS_CHECK_AND_ASSERT_MES_CONTEXT(condition, return_val, ...) GULPS_CHECK_AND_ASSERT_MES(condition, return_val, "[", epee::net_utils::print_connection_context_short(context), "] ", __VA_ARGS__)
-
-
-
-
-

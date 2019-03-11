@@ -323,7 +323,7 @@ int main(int argc, char* argv[])
 		if(!command_line::is_arg_defaulted(vm, daemon_args::arg_max_concurrency))
 			tools::set_max_concurrency(command_line::get_arg(vm, daemon_args::arg_max_concurrency));
 
-		gout_ptr.reset(new gulps::gulps_print_output(true, gulps::COLOR_WHITE));
+		gout_ptr.reset(new gulps::gulps_print_output(false, gulps::COLOR_WHITE));
 		gout_ptr->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return log_scr.match_msg(msg); }); 
 		gulps::inst().add_output(std::move(gout_ptr));
 
