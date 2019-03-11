@@ -397,7 +397,7 @@ bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std
 		pid.pid = *payment_id;
 	}
 
-	GULPS_LOG_L2("Encrypting payment id " << pid.pid.payment_id);
+	GULPS_LOGF_L2("Encrypting payment id {}", pid.pid.payment_id);
 
 	crypto::public_key view_key_pub = get_destination_view_key_pub(destinations, change_addr, payment_id == nullptr);
 	if(view_key_pub == null_pkey)

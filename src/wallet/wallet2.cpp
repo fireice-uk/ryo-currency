@@ -6419,7 +6419,7 @@ std::vector<size_t> wallet2::pick_preferred_rct_inputs(uint64_t needed_money, ui
 	if(!sorted)
 		std::sort(pick_list.begin(), pick_list.end(), [](const pick_out& a, const pick_out& b) { return a.blk_height < b.blk_height; });
 	else
-		LOG_PRINT_L2("pick_preferred_rct_inputs: sort skipped, we are sorted already");
+		GULPS_LOG_L2("pick_preferred_rct_inputs: sort skipped, we are sorted already");
 
 	// then try to find two outputs
 	// this could be made better by picking one of the outputs to be a small one, since those
@@ -6846,7 +6846,7 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_2(std::vector<cryp
 				if(!bulletproof || tx.dsts.size() < cryptonote::common_config::BULLETPROOF_MAX_OUTPUTS-1)
 				{
 					// we can partially fill that destination
-					GULPS_LOG_L2("We can partially pay ", get_public_address_as_str(m_nettype, dsts[0].is_subaddress, dsts[0].addr), " for " << print_money(available_amount), "/", print_money(dsts[0].amount));
+					GULPS_LOG_L2("We can partially pay ", get_public_address_as_str(m_nettype, dsts[0].is_subaddress, dsts[0].addr), " for ", print_money(available_amount), "/", print_money(dsts[0].amount));
 					tx.add(dsts[0].addr, dsts[0].is_subaddress, available_amount, original_output_index, m_merge_destinations);
 					dsts[0].amount -= available_amount;
 					available_amount = 0;

@@ -4475,7 +4475,7 @@ bool simple_wallet::transfer_main(int transfer_type, const std::vector<std::stri
 		}
 
 		if(m_wallet->confirm_missing_payment_id())
-			message_writer() << tr("You included a PID. Normally this would be a privacy problem, however Ryo Uniform PID's fixed this.");
+			GULPS_PRINT_OK(tr("You included a PID. Normally this would be a privacy problem, however Ryo Uniform PID's fixed this."));
 	}
 
 	uint64_t locked_blocks = 0;
