@@ -177,7 +177,7 @@ class blocked_mode_client
 			}
 			else
 			{
-				GULPS_WARNF("Some problems at connect, message: {}", ec.message());
+				GULPS_LOGF_L1("Some problems at connect, message: {}", ec.message());
 				return false;
 			}
 		}

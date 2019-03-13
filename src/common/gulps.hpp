@@ -719,6 +719,9 @@ namespace debug
 #define GULPS_OUTPUT(out, lvl, maj, min, clr, ...) gulps::inst().log(gulps::message(out, lvl, maj, min, __FILE__, __LINE__, stream_writer::write(__VA_ARGS__), clr))
 #define GULPS_OUTPUTF(out, lvl, maj, min, clr, ...) gulps::inst().log(gulps::message(out, lvl, maj, min, __FILE__, __LINE__, fmt::format(__VA_ARGS__), clr))
 
+#define GULPS_PRINT_NOLF(...) gulps::inst().log(gulps::message(gulps::OUT_USER_0, gulps::LEVEL_PRINT, GULPS_CAT_MAJOR, "input_line",  \
+		__FILE__, __LINE__, stream_writer::write(__VA_ARGS__), gulps::COLOR_WHITE, false));
+
 #define GULPS_PRINT(...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_PRINT, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
 #define GULPS_PRINT_CLR(clr, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_PRINT,  GULPS_CAT_MAJOR, GULPS_CAT_MINOR, clr, __VA_ARGS__)
 #define GULPS_ERROR(...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_ERROR, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_BOLD_RED, __VA_ARGS__)

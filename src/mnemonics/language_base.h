@@ -45,7 +45,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 /*!
  * \namespace Language
@@ -107,7 +107,7 @@ class Base
 			if((*it).size() < unique_prefix_length)
 			{
 				if(flags & ALLOW_SHORT_WORDS)
-					GULPS_WARNF("{} word {}' is shorter than its prefix length, {}'", language_name,  *it, unique_prefix_length);
+					GULPS_LOG_L2("{} word {}' is shorter than its prefix length, {}'", language_name,  *it, unique_prefix_length);
 				else
 					throw std::runtime_error("Too short word in " + language_name + " word list: " + *it);
 			}

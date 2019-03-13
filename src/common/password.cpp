@@ -183,12 +183,12 @@ bool read_from_tty(const bool verify, const char *message, epee::wipeable_string
 	while(true)
 	{
 		if(message)
-			GULPS_PRINT(message, ": ");
+			GULPS_PRINT_NOLF(message, ": ");
 		if(!read_from_tty(pass1))
 			return false;
 		if(verify)
 		{
-			GULPS_PRINT("Confirm password: ");
+			GULPS_PRINT_NOLF("Confirm password: ");
 			if(!read_from_tty(pass2))
 				return false;
 			if(pass1 != pass2)

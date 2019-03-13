@@ -321,20 +321,19 @@ class async_console_handler
 		std::string prompt = m_prompt();
 		if(!prompt.empty())
 		{
-#ifdef HAVE_READLINE
+#if 0
+			// Disable readline prompt for now
 			std::string color_prompt = "\001\033[1;33m\002" + prompt;
 			if(' ' != prompt.back())
 				color_prompt += " ";
 			color_prompt += "\001\033[0m\002";
 			m_stdin_reader.get_readline_buffer().set_prompt(color_prompt);
-#else
-			epee::set_console_color(epee::console_color_yellow, true);
-			GULPS_PRINT(prompt);
-			if(' ' != prompt.back())
-				GULPS_PRINT(' ');
-			epee::reset_console_color();
-			std::cout.flush();
 #endif
+			if(prompt.back() != ' ')
+				prompt += ' ';
+
+			gulps::inst().log(gulps::message(gulps::OUT_USER_0, gulps::LEVEL_PRINT, GULPS_CAT_MAJOR, 
+					"cmd_prompt", __FILE__, __LINE__, std::move(prompt), gulps::COLOR_BOLD_YELLOW, false));
 		}
 	}
 

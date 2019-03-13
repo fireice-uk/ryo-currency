@@ -167,8 +167,7 @@ std::string input_line(const std::string &prompt)
 {
 	PAUSE_READLINE();
 
-	gulps::inst().log(gulps::message(gulps::OUT_USER_0, gulps::LEVEL_PRINT, GULPS_CAT_MAJOR, "input_line",  __FILE__, __LINE__,
-									 std::string(prompt), gulps::COLOR_WHITE, false));
+	GULPS_PRINT_NOLF(prompt);
 
 #ifdef WIN32
 	HANDLE hConIn = CreateFileW(L"CONIN$", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
@@ -7471,9 +7470,9 @@ int main(int argc, char *argv[])
 
 	//Ordinary output
 	out.reset(new gulps::gulps_print_output(true, gulps::COLOR_WHITE));
-	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return msg.out == gulps::OUT_USER_0; });
+	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return msg.out == gulps::OUT_USER_0 && msg.lvl <= gulps::LEVEL_WARN; });
 	gulps::inst().add_output(std::move(out));
-
+	
 	po::options_description desc_params(wallet_args::tr("Wallet options"));
 	tools::wallet2::init_options(desc_params);
 	command_line::add_arg(desc_params, arg_wallet_file);

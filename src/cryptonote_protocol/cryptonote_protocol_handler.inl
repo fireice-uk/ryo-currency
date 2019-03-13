@@ -928,7 +928,7 @@ int t_cryptonote_protocol_handler<t_core>::handle_response_get_objects(int comma
 	}
 
 	{
-		GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_DEBUG, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_YELLOW, "{} Got NEW BLOCKS inside of {}: size: {}, blocks: {} - {}", 
+		GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_DEBUG, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_BOLD_YELLOW, "{} Got NEW BLOCKS inside of {}: size: {}, blocks: {} - {}", 
 		 context_str, __FUNCTION__, arg.blocks.size(), start_height, (start_height + arg.blocks.size() - 1));
 
 		// add that new span to the block queue
@@ -1139,7 +1139,7 @@ int t_cryptonote_protocol_handler<t_core>::try_add_next_blocks(cryptonote_connec
 				if(m_core.get_current_blockchain_height() > previous_height)
 				{
 					const boost::posix_time::time_duration dt = boost::posix_time::microsec_clock::universal_time() - start;
-					GULPS_GLOBALF_PRINT_CLR(gulps::COLOR_YELLOW, "{} Synced {}/{}", context_str, m_core.get_current_blockchain_height(), m_core.get_target_blockchain_height());
+					GULPS_GLOBALF_PRINT_CLR(gulps::COLOR_BOLD_YELLOW, "{} Synced {}/{}", context_str, m_core.get_current_blockchain_height(), m_core.get_target_blockchain_height());
 					GULPS_CATF_INFO("global", "({}sec, {} blocks/sec), {} MB queued", std::to_string(dt.total_microseconds() / 1e6), std::to_string((m_core.get_current_blockchain_height() - previous_height) * 1e6 / dt.total_microseconds()),
 									     std::to_string(m_block_queue.get_data_size() / 1048576.f));
 					GULPS_CAT_LOG_L1("global","", m_block_queue.get_overview());
@@ -1547,7 +1547,7 @@ bool t_cryptonote_protocol_handler<t_core>::on_connection_synchronized()
 	bool val_expected = false;
 	if(m_synchronized.compare_exchange_strong(val_expected, true))
 	{
-		GULPS_GLOBAL_PRINT_CLR(gulps::COLOR_YELLOW, "\n**********************************************************************\n",
+		GULPS_GLOBAL_PRINT_CLR(gulps::COLOR_BOLD_YELLOW, "\n**********************************************************************\n",
 						   "You are now synchronized with the network. You may now start ryo-wallet-cli.\n\n",
 						   "Use the \"help\" command to see the list of available commands.\n",
 						   "**********************************************************************\n");
