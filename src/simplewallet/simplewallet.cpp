@@ -2545,7 +2545,7 @@ void simple_wallet::print_seed(std::string seed, bool short_seed)
 	GULPS_PRINT_GREEN("\n", tr("NOTE: the following "), short_seed ? "14" : "25",
 		tr(" words can be used to recover access to your wallet. "
 		"Write them down and store them somewhere safe and secure. Please do not store them in "
-		"your email or on file storage services outside of your immediate control.\n"));
+		"your email or on file storage services outside of your immediate control.\n\n"));
 
 	if(short_seed)
 	{
@@ -3395,7 +3395,7 @@ bool simple_wallet::new_wallet(const boost::program_options::variables_map &vm, 
 						"Use \"help <command>\" to see a command's documentation.\n"
 						"Always use the \"exit\" command when closing ryo-wallet-cli to save \n"
 						"your current session's state. Otherwise, you might need to synchronize \n"
-						"your wallet again (your wallet keys are NOT at risk in any case).\n"));
+						"your wallet again (your wallet keys are NOT at risk in any case).\n\n"));
 
 	print_seed(electrum_words, true);
 
@@ -3446,7 +3446,7 @@ bool simple_wallet::restore_legacy_wallet(const boost::program_options::variable
 						"Use \"help <command>\" to see a command's documentation.\n"
 						"Always use the \"exit\" command when closing ryo-wallet-cli to save \n"
 						"your current session's state. Otherwise, you might need to synchronize \n"
-						"your wallet again (your wallet keys are NOT at risk in any case).\n"));
+						"your wallet again (your wallet keys are NOT at risk in any case).\n\n"));
 
 	print_seed(electrum_words, false);
 
@@ -3939,8 +3939,6 @@ bool simple_wallet::refresh_main(uint64_t start_height, bool reset, bool is_init
 		m_wallet->explicit_refresh_from_block_height(use_opt_height_old);
 
 		ok = true;
-		// Clear line "Height xxx of xxx"
-		GULPS_PRINT_OK("\r                                                                \r");
 		GULPS_PRINT_GREEN(tr("Refresh done, blocks received: "), fetched_blocks);
 		if(is_init)
 			print_accounts();
@@ -4129,12 +4127,12 @@ bool simple_wallet::show_incoming_transfers(const std::vector<std::string> &args
 				else
 					kimg = std::string(64, '?');
 
-				verbose_string = fmt::format("{:>68}{:>68}", td.get_public_key(), kimg);
+				verbose_string = fmt::format("{:>3}{:>64}{}{:>68}", "<", td.get_public_key(), ">", kimg);
 			}
 
-			GULPS_PRINTF_CLR(td.m_spent ? gulps::COLOR_MAGENTA : gulps::COLOR_GREEN, "{:>21}{:>8}{:>12}{:>16}{:>68}{:>16}{}",
+			GULPS_PRINTF_CLR(td.m_spent ? gulps::COLOR_MAGENTA : gulps::COLOR_GREEN, "{:>21}{:>8}{:>12}{:>16}{:>3}{:>64}{}{:>16}{}",
 							print_money(td.amount()), td.m_spent ? tr("T") : tr("F"), m_wallet->is_transfer_unlocked(td) ? tr("unlocked") : tr("locked"),
-							td.m_global_output_index, td.m_txid, td.m_subaddr_index.minor, verbose_string);
+							td.m_global_output_index, "<", td.m_txid, ">", td.m_subaddr_index.minor, verbose_string);
 		}
 	}
 
@@ -4181,7 +4179,7 @@ bool simple_wallet::show_payments(const std::vector<std::string> &args)
 			m_wallet->get_payments(payment_id, payments);
 			if(payments.empty())
 			{
-				GULPS_PRINT_GREEN(tr("No payments with id "), payment_id.payment_id);
+				GULPS_PRINT_OK(tr("No payments with id "), payment_id.payment_id);
 				continue;
 			}
 
@@ -6076,7 +6074,7 @@ bool simple_wallet::show_transfers(const std::vector<std::string> &args_)
 	// print in and out sorted by height
 	for(std::map<uint64_t, std::pair<bool, std::string>>::const_iterator i = output.begin(); i != output.end(); ++i)
 	{
-		GULPS_PRINTF_CLR(i->second.first ? gulps::COLOR_GREEN : gulps::COLOR_MAGENTA, "{:>8} {:6>} {}", i->first, i->second.first ? tr("in") : tr("out"), i->second.second);
+		GULPS_PRINTF_CLR(i->second.first ? gulps::COLOR_GREEN : gulps::COLOR_MAGENTA, "{:>8} {:>6} {}", i->first, i->second.first ? tr("in") : tr("out"), i->second.second);
 	}
 
 	if(pool)
@@ -6123,7 +6121,7 @@ bool simple_wallet::show_transfers(const std::vector<std::string> &args_)
 			bool is_failed = pd.m_state == tools::wallet2::unconfirmed_transfer_details::failed;
 			if((failed && is_failed) || (!is_failed && pending))
 			{
-				GULPS_PRINTF_OK("{:>8s} {:>6s} {:>16s} {:>20s} {} {} {} {} - {}", (is_failed ? tr("failed") : tr("pending")), tr("out"),
+				GULPS_PRINTF_OK("{:>8s} {:>6s} {:>16s} {:>20s} {} {} {:>14s} {} - {}", (is_failed ? tr("failed") : tr("pending")), tr("out"),
 								get_human_readable_timestamp(pd.m_timestamp), print_money(amount - pd.m_change - fee), string_tools::pod_to_hex(i->first),
 								payment_id, print_money(fee), print_subaddr_indices(pd.m_subaddr_indices), note);
 			}
@@ -6805,7 +6803,7 @@ bool simple_wallet::address_book(const std::vector<std::string> &args /* = std::
 			GULPS_PRINT_OK(tr("Index: "), i);
 			GULPS_PRINT_OK(tr("Address: "), get_public_address_as_str(m_wallet->nettype(), row.m_is_subaddress, row.m_address));
 			GULPS_PRINT_OK(tr("Payment ID: "), row.m_payment_id);
-			GULPS_PRINT_OK(tr("Description: "), row.m_description, "\n");
+			GULPS_PRINT_OK(tr("Description: "), row.m_description, "\n\n");
 		}
 	}
 	return true;
@@ -7472,7 +7470,7 @@ int main(int argc, char *argv[])
 	out.reset(new gulps::gulps_print_output(true, gulps::COLOR_WHITE));
 	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return msg.out == gulps::OUT_USER_0 && msg.lvl <= gulps::LEVEL_WARN; });
 	gulps::inst().add_output(std::move(out));
-	
+
 	po::options_description desc_params(wallet_args::tr("Wallet options"));
 	tools::wallet2::init_options(desc_params);
 	command_line::add_arg(desc_params, arg_wallet_file);

@@ -375,8 +375,8 @@ public:
 #ifdef WIN32
 				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_BLUE | FOREGROUND_RED | bright);
 #else
-				std::cout << "set_magenta " << bright << std::endl;
 				std::cout << (bright ? "\033[1;35m" : "\033[0;35m");
+				std::cout.flush();
 #endif
 				break;
 			case COLOR_YELLOW:

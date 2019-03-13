@@ -143,10 +143,10 @@ boost::optional<boost::program_options::variables_map> main(
 
 		if(command_line::get_arg(vm, command_line::arg_help))
 		{
-			GULPS_PRINT_OK("Ryo '", RYO_RELEASE_NAME, "' (", RYO_VERSION_FULL, ")");
-			GULPS_PRINT_OK(wallet_args::tr("This is the command line ryo wallet. It needs to connect to a ryo daemon to work correctly."));
+			GULPS_PRINT_OK("Ryo '", RYO_RELEASE_NAME, "' (", RYO_VERSION_FULL, ")\n\n");
+			GULPS_PRINT_OK(wallet_args::tr("This is the command line ryo wallet. It needs to connect to a ryo daemon to work correctly."), "\n\n");
 			GULPS_PRINT_OK(wallet_args::tr("Usage:"), "\n  ", usage);
-			GULPS_PRINT_OK(desc_all);
+			GULPS_PRINT_OK(desc_all,"\n");
 			error_code = 0;
 			return false;
 		}
@@ -189,7 +189,7 @@ boost::optional<boost::program_options::variables_map> main(
 				GULPS_ERROR(wallet_args::tr("Failed to parse filter string "), command_line::get_arg(vm, arg_file_level).c_str());
 				return false;
 			}
-			
+
 			try
 			{
 				file_out = std::unique_ptr<gulps::gulps_output>(new gulps::gulps_async_file_output(command_line::get_arg(vm, arg_log_file)));
@@ -211,7 +211,7 @@ boost::optional<boost::program_options::variables_map> main(
 	if(log_scr.is_active())
 	{
 		std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(false, gulps::COLOR_WHITE));
-		out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { 
+		out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool {
 				if(msg.out != gulps::OUT_LOG_0 && msg.out != gulps::OUT_USER_0)
 					return false;
 				if(printed)
@@ -223,7 +223,7 @@ boost::optional<boost::program_options::variables_map> main(
 
 	if(log_dsk.is_active())
 	{
-		file_out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { 
+		file_out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool {
 				if(msg.out != gulps::OUT_LOG_0 && msg.out != gulps::OUT_USER_0)
 					return false;
 				return log_dsk.match_msg(msg);
@@ -231,9 +231,9 @@ boost::optional<boost::program_options::variables_map> main(
 		gulps::inst().add_output(std::move(file_out));
 	}
 
-	// Check for extra screen logs 
+	// Check for extra screen logs
 	if(notice)
-		GULPS_PRINT_OK(notice);
+		GULPS_PRINT_OK(notice, "\n\n");
 
 	if(!command_line::is_arg_defaulted(vm, arg_max_concurrency))
 		tools::set_max_concurrency(command_line::get_arg(vm, arg_max_concurrency));
