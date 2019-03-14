@@ -1066,8 +1066,6 @@ bool simple_wallet::import_multisig(const std::vector<std::string> &args)
 	try
 	{
 		size_t n_outputs = m_wallet->import_multisig(info);
-		// Clear line "Height xxx of xxx"
-		GULPS_PRINT_OK("\r                                                                \r");
 		GULPS_PRINT_OK(tr("Multisig info imported"));
 	}
 	catch(const std::exception &e)
