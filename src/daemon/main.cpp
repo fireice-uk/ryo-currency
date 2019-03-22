@@ -90,7 +90,7 @@ int main(int argc, char* argv[])
 	gulps::inst().set_thread_tag("RYOD_MAIN");
 
 	// Temporary output
-	std::unique_ptr<gulps::gulps_output> gout_ptr(new gulps::gulps_print_output(true, gulps::COLOR_WHITE));
+	std::unique_ptr<gulps::gulps_output> gout_ptr(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TIMESTAMP_ONLY));
 	gout_ptr->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { if(msg.lvl != gulps::LEVEL_INFO ) return !printed; return false; });
 	uint64_t temp_out_id = gulps::inst().add_output(std::move(gout_ptr));
 
@@ -123,6 +123,7 @@ int main(int argc, char* argv[])
 			command_line::add_arg(core_settings, daemon_args::arg_max_concurrency);
 			command_line::add_arg(core_settings, daemon_args::arg_zmq_rpc_bind_ip);
 			command_line::add_arg(core_settings, daemon_args::arg_zmq_rpc_bind_port);
+			command_line::add_arg(core_settings, daemon_args::arg_display_timestamps);
 
 			daemonizer::init_options(hidden_options, visible_options);
 			daemonize::t_executor::init_options(core_settings);
@@ -161,7 +162,7 @@ int main(int argc, char* argv[])
 			return 0;
 		}
 
-		// Monero Version
+		// Ryo Version
 		if(command_line::get_arg(vm, command_line::arg_version))
 		{
 			GULPS_PRINTF("Ryo '{}' ({})\n", RYO_RELEASE_NAME , RYO_VERSION_FULL );
@@ -323,7 +324,15 @@ int main(int argc, char* argv[])
 		if(!command_line::is_arg_defaulted(vm, daemon_args::arg_max_concurrency))
 			tools::set_max_concurrency(command_line::get_arg(vm, daemon_args::arg_max_concurrency));
 
-		gout_ptr.reset(new gulps::gulps_print_output(false, gulps::COLOR_WHITE));
+		// OS
+		if(command_line::get_arg(vm, daemon_args::arg_display_timestamps))
+		{
+			gout_ptr.reset(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TIMESTAMP_ONLY));
+		}
+		else
+		{
+			gout_ptr.reset(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TEXT_ONLY));
+		}
 		gout_ptr->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return log_scr.match_msg(msg); }); 
 		gulps::inst().add_output(std::move(gout_ptr));
 

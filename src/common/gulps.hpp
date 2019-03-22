@@ -101,6 +101,13 @@ private:
 class gulps
 {
 public:
+	enum output_mode : uint32_t
+	{
+		TEXT_ONLY,
+		TIMESTAMP_ONLY,
+		TIMESTAMP_LOG
+	};
+
 	enum level : uint32_t
 	{
 		LEVEL_PRINT = 0,
@@ -205,15 +212,25 @@ public:
 				text += '\n';
 		}
 
-		std::string print_message(bool inc_text = true) const
+		const std::string& print_message(std::string& header, output_mode mode = TIMESTAMP_ONLY) const
 		{
-			std::string sout = fmt::format("{:%Y-%m-%d %H:%M:%S} [{}/{}] {} {}.{} {}:{} ", 
-				fmt::localtime(time), level_to_str(lvl), out_to_str(out), thread_id, cat_major, cat_minor, src_path, src_line);
+			switch(mode)
+			{
+			case TIMESTAMP_LOG:
+				header = fmt::format("{:%Y-%m-%d %H:%M:%S} [{}/{}] {} {}.{} {}:{} ", 
+					fmt::localtime(time), level_to_str(lvl), out_to_str(out), thread_id, cat_major, cat_minor, src_path, src_line);
+				break;
 
-			if(inc_text)
-				sout += text;
+			case TIMESTAMP_ONLY:
+				header = fmt::format("{:%Y-%m-%d %H:%M:%S} ", fmt::localtime(time));
+				break;
 
-			return sout;
+			case TEXT_ONLY:
+				header = "";
+				break;
+			}
+
+			return text;
 		}
 
 		message(message&& ) = default;
@@ -289,18 +306,22 @@ public:
 	class gulps_print_output : public gulps_output
 	{
 	public:
-		gulps_print_output(bool text_only, color hdr_color) : text_only(text_only), hdr_color(hdr_color) {}
+		gulps_print_output(color hdr_color, output_mode mode = TIMESTAMP_ONLY) : hdr_color(hdr_color), mode(mode) {}
 
 		output_stream get_stream() override { return STREAM_PRINT; }
 
 		void log_message(const message& msg) override
 		{
-			if(!text_only)
-				print(msg.print_message(false), hdr_color);
-			print(msg.text, msg.clr);
+			std::string header;
+			const std::string& text = msg.print_message(header, mode);
+			if(mode != TEXT_ONLY)
+				print(header, hdr_color);
+			print(text, msg.clr);
 		}
 
 	private:
+		output_mode mode;
+
 		static void print(const std::string& txt, color clr)
 		{
 			set_console_color(clr);
@@ -402,8 +423,8 @@ public:
 			std::cout.flush();
 #endif
 		}
+
 	protected:
-		bool text_only;
 		color hdr_color;
 	};
 
@@ -457,7 +478,9 @@ public:
 		{
 			try
 			{
-				output_file << msg.print_message(true);
+				std::string header;
+				const std::string text = msg.print_message(header, TIMESTAMP_LOG);
+				output_file << header << text;
 				output_file.flush();
 			}
 			catch(const std::exception& ex)
@@ -508,7 +531,9 @@ public:
 		{
 			try
 			{
-				output_file << msg.print_message(true);
+				std::string header;
+				const std::string text = msg.print_message(header, TIMESTAMP_LOG);
+				output_file << header << text;
 				output_file.flush();
 			}
 			catch(const std::exception& ex)
