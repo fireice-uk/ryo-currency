@@ -656,7 +656,7 @@ int main(int argc, char *argv[])
 	gulps::inst().set_thread_tag("BLOCKCH_IMPORT");
 
 	//Temp error output
-	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(false, gulps::COLOR_WHITE));
+	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TIMESTAMP_ONLY));
 	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return msg.lvl >= gulps::LEVEL_ERROR; });
 	auto temp_handle = gulps::inst().add_output(std::move(out));
 
@@ -683,7 +683,7 @@ int main(int argc, char *argv[])
 
 	if(log_scr.is_active())
 	{
-		std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(true, gulps::COLOR_WHITE));
+		std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TEXT_ONLY));
 		out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool {
 				if(msg.out != gulps::OUT_LOG_0 && msg.out != gulps::OUT_USER_0)
 					return false;

@@ -7460,12 +7460,12 @@ int main(int argc, char *argv[])
 	gulps::inst().set_thread_tag("WALLET_CLI");
 
 	//Secret output (never log to disk)
-	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(true, gulps::COLOR_WHITE));
+	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TEXT_ONLY));
 	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return msg.out == gulps::OUT_USER_1; });
 	gulps::inst().add_output(std::move(out));
 
 	//Ordinary output
-	out.reset(new gulps::gulps_print_output(true, gulps::COLOR_WHITE));
+	out.reset(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TEXT_ONLY));
 	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return msg.out == gulps::OUT_USER_0 && msg.lvl <= gulps::LEVEL_WARN; });
 	gulps::inst().add_output(std::move(out));
 

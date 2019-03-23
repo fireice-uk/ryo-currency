@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 
 	tools::on_startup();
 
-	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(false, gulps::COLOR_WHITE));
+	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TIMESTAMP_ONLY));
 	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { 
 		return true;
 	});

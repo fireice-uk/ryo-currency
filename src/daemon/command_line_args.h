@@ -93,6 +93,9 @@ const command_line::arg_descriptor<std::string, false, true, 2> arg_zmq_rpc_bind
         return std::to_string(cryptonote::config<cryptonote::STAGENET>::ZMQ_RPC_DEFAULT_PORT);
       return val; }};
 
+const command_line::arg_descriptor<bool> arg_display_timestamps = {
+	"display-timestamps", "Display screen log with timestamps"};
+
 } // namespace daemon_args
 
 #endif // DAEMON_COMMAND_LINE_ARGS_H
