@@ -67,15 +67,15 @@ static void print_extra_fields(const std::vector<cryptonote::tx_extra_field> &fi
 	{
 		GULPS_PRINTF("field {}: ", n );
 		if(typeid(cryptonote::tx_extra_padding) == fields[n].type())
-			GULPS_PRINTF("extra padding: {} bytes",  boost::get<cryptonote::tx_extra_padding>(fields[n]).size);
+			GULPS_PRINTF("extra padding: {} bytes", boost::get<cryptonote::tx_extra_padding>(fields[n]).size);
 		else if(typeid(cryptonote::tx_extra_pub_key) == fields[n].type())
-			GULPS_PRINTF("extra pub key: {}",  boost::get<cryptonote::tx_extra_pub_key>(fields[n]).pub_key);
+			GULPS_PRINTF("extra pub key: {}", boost::get<cryptonote::tx_extra_pub_key>(fields[n]).pub_key);
 		else if(typeid(cryptonote::tx_extra_nonce) == fields[n].type())
-			GULPS_PRINTF("extra nonce: {}",  epee::string_tools::buff_to_hex_nodelimer(boost::get<cryptonote::tx_extra_nonce>(fields[n]).nonce));
+			GULPS_PRINTF("extra nonce: {}", epee::string_tools::buff_to_hex_nodelimer(boost::get<cryptonote::tx_extra_nonce>(fields[n]).nonce));
 		else if(typeid(cryptonote::tx_extra_merge_mining_tag) == fields[n].type())
 			GULPS_PRINTF("extra merge mining tag: depth {}, merkle root {}", boost::get<cryptonote::tx_extra_merge_mining_tag>(fields[n]).depth ,  boost::get<cryptonote::tx_extra_merge_mining_tag>(fields[n]).merkle_root);
 		else if(typeid(cryptonote::tx_extra_mysterious_minergate) == fields[n].type())
-			GULPS_PRINT("extra minergate custom: ",  epee::string_tools::buff_to_hex_nodelimer(boost::get<cryptonote::tx_extra_mysterious_minergate>(fields[n])));
+			GULPS_PRINTF("extra minergate custom: {}", epee::string_tools::buff_to_hex_nodelimer(boost::get<cryptonote::tx_extra_mysterious_minergate>(fields[n]).data));
 		else
 			GULPS_PRINT("unknown");
 	}
