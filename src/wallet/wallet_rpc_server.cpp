@@ -2986,10 +2986,10 @@ int main(int argc, char **argv)
 
 	gulps::inst().set_thread_tag("WALLET_RPC");
 
-	//Temp error output
-	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TIMESTAMP_ONLY));
-	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return msg.lvl >= gulps::LEVEL_ERROR; });
-	auto temp_handle = gulps::inst().add_output(std::move(out));
+	//Ordinary output
+	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TEXT_ONLY));
+	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return msg.out == gulps::OUT_USER_0 && msg.lvl <= gulps::LEVEL_WARN; });
+	gulps::inst().add_output(std::move(out));
 
 	po::options_description desc_params(wallet_args::tr("Wallet options"));
 	tools::wallet2::init_options(desc_params);
@@ -3016,8 +3016,6 @@ int main(int argc, char **argv)
 	{
 		return vm_error_code;
 	}
-
-	gulps::inst().remove_output(temp_handle);
 
 	cryptonote::network_type net_type = cryptonote::UNDEFINED;
 	std::unique_ptr<tools::wallet2> wal;
